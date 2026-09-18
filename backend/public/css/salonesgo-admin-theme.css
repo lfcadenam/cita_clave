@@ -1,0 +1,181 @@
+/* SAAS CIERRA MINT & EMERALD THEME FOR FILAMENT ADMIN */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --saas-bg: #f3f8f6;
+  --saas-card-bg: #ffffff;
+  --saas-border: #e2f0ea;
+  --saas-navy: #1e3a5f;
+  --saas-emerald: #0d9488;
+  --saas-emerald-light: #e6f7f2;
+  --saas-sidebar-bg: #ffffff;
+}
+
+/* Brand Logo in Sidebar */
+.fi-logo img {
+  height: 2.8rem !important;
+  max-height: 3rem !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
+
+/* Base Body & Main Canvas */
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  background-color: var(--saas-bg) !important;
+}
+
+main.fi-main {
+  background-color: var(--saas-bg) !important;
+}
+
+/* Sidebar Clean Light SaaS Style */
+aside.fi-sidebar {
+  background-color: #ffffff !important;
+  border-right: 1px solid var(--saas-border) !important;
+  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+aside.fi-sidebar header.fi-sidebar-header {
+  border-bottom: 1px solid var(--saas-border) !important;
+  background-color: #ffffff !important;
+}
+
+aside.fi-sidebar .fi-sidebar-group-label {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: #64748b !important;
+  padding-left: 12px !important;
+  margin-top: 14px !important;
+}
+
+aside.fi-sidebar .fi-sidebar-item-button {
+  color: #334155 !important;
+  border-radius: 12px !important;
+  transition: all 0.15s ease !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  margin: 2px 8px !important;
+  padding: 8px 12px !important;
+}
+
+aside.fi-sidebar .fi-sidebar-item-button:hover {
+  background-color: #f0fdf9 !important;
+  color: #0f766e !important;
+}
+
+aside.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button {
+  background-color: #e6f7f2 !important;
+  color: #0d9488 !important;
+  font-weight: 700 !important;
+}
+
+aside.fi-sidebar .fi-sidebar-item-icon {
+  color: #64748b !important;
+}
+
+aside.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+  color: #0d9488 !important;
+}
+
+/* Topbar Clean White */
+header.fi-topbar {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid var(--saas-border) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Tables, Widgets & Cards in Filament */
+.fi-ta-ctn, .fi-section, .fi-wi-stats-overview-stat {
+  border-radius: 18px !important;
+  border: 1px solid var(--saas-border) !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(226, 240, 234, 0.6) !important;
+  overflow: hidden !important;
+}
+
+/* Table Header Row */
+.fi-ta-header {
+  padding: 16px 20px !important;
+  border-bottom: 1px solid var(--saas-border) !important;
+}
+
+.fi-ta-table thead tr {
+  background-color: #f8fafc !important;
+  border-bottom: 1px solid var(--saas-border) !important;
+}
+
+.fi-ta-table thead th {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: #64748b !important;
+  padding: 12px 18px !important;
+}
+
+/* Table Data Rows */
+.fi-ta-table tbody tr {
+  transition: background-color 0.15s ease !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.fi-ta-table tbody tr:hover {
+  background-color: #f0fdf9 !important;
+}
+
+.fi-ta-table tbody td {
+  padding: 14px 18px !important;
+  font-size: 13px !important;
+  color: #1e293b !important;
+  font-weight: 500 !important;
+}
+
+/* Cierra Pill Badges */
+.fi-badge {
+  border-radius: 9999px !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  padding: 3px 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* Primary Action Buttons */
+.fi-btn-primary {
+  background: linear-gradient(135deg, #0d9488 0%, #059669 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  padding: 8px 18px !important;
+  transition: all 0.15s ease !important;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2) !important;
+}
+.fi-btn-primary:hover {
+  background: linear-gradient(135deg, #0f766e 0%, #047857 100%) !important;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Form Inputs & Selects in Filament */
+.fi-input, .fi-select {
+  border-radius: 10px !important;
+  border-color: #cbd5e1 !important;
+  font-size: 13px !important;
+}
+.fi-input:focus, .fi-select:focus {
+  border-color: #0d9488 !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12) !important;
+}
+
+/* Filament Modals */
+.fi-modal-window {
+  border-radius: 22px !important;
+  border: 1px solid var(--saas-border) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+  overflow: hidden !important;
+}
