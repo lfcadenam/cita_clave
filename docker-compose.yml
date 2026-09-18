@@ -49,7 +49,10 @@ services:
       db:
         condition: service_healthy
     networks:
-      - citaclave_net
+      citaclave_net:
+        aliases:
+          - app
+          - citaclave_app
 
   # -------------------------------------------------------------
   # Procesador de Colas y Tareas en Segundo Plano (Queue Worker)
