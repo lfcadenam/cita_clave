@@ -93,8 +93,7 @@ services:
     container_name: citaclave_web
     restart: unless-stopped
     ports:
-      - "${HTTP_PORT:-80}:80"
-      - "${HTTPS_PORT:-443}:443"
+      - "${HTTP_PORT:-8080}:80"
     volumes:
       - backend_storage:/var/www/backend/public/storage:ro
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
