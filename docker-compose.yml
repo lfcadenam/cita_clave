@@ -95,7 +95,7 @@ services:
     environment:
       - VIRTUAL_HOST=cita-clave.nuvex-tecnologia.com
       - VIRTUAL_PORT=80
-      - VIRTUAL_NETWORK=nuvex-network
+      - VIRTUAL_NETWORK=elan_default
       - LETSENCRYPT_HOST=cita-clave.nuvex-tecnologia.com
       - LETSENCRYPT_EMAIL=admin@nuvex-tecnologia.com
     ports:
@@ -107,7 +107,7 @@ services:
       - app
     networks:
       - citaclave_net
-      - nuvex-network
+      - elan_default
 
 volumes:
   citaclave_db_data:
@@ -118,5 +118,5 @@ volumes:
 networks:
   citaclave_net:
     driver: bridge
-  nuvex-network:
+  elan_default:
     external: true
