@@ -95,6 +95,7 @@ services:
     environment:
       - VIRTUAL_HOST=cita-clave.nuvex-tecnologia.com
       - VIRTUAL_PORT=80
+      - VIRTUAL_NETWORK=nuvex-network
       - LETSENCRYPT_HOST=cita-clave.nuvex-tecnologia.com
       - LETSENCRYPT_EMAIL=admin@nuvex-tecnologia.com
     ports:
