@@ -106,6 +106,7 @@ services:
       - app
     networks:
       - citaclave_net
+      - nuvex-network
 
 volumes:
   citaclave_db_data:
@@ -116,3 +117,5 @@ volumes:
 networks:
   citaclave_net:
     driver: bridge
+  nuvex-network:
+    external: true
