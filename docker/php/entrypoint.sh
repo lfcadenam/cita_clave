@@ -51,7 +51,9 @@ php artisan migrate --force
 echo "👤 Asegurando existencia del Super Admin global..."
 php artisan db:seed --class="Database\\Seeders\\SuperAdminSeeder" --force
 
-# Caché y optimización en producción
+# Limpiar y optimizar caché en producción
+php artisan optimize:clear || true
+
 if [ "$APP_ENV" = "production" ]; then
     echo "⚡ Optimizando caché de Laravel para producción..."
     php artisan config:cache || true
