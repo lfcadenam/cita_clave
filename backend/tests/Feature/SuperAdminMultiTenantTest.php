@@ -30,7 +30,7 @@ class SuperAdminMultiTenantTest extends TestCase
         $this->seed(DatabaseSeeder::class);
 
         $this->tenantPaola = Tenant::where('slug', 'paola-aguilera')->first();
-        $this->superAdmin = User::where('email', 'admin@nuvex.co')->first();
+        $this->superAdmin = User::where('email', 'admin@nuvex-tecnologia.com')->first();
         $this->salonAdmin = User::where('email', 'paola@nuvex-belleza.com')->first();
     }
 

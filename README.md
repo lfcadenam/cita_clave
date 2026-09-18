@@ -148,10 +148,21 @@ El frontend estará disponible en: **`http://localhost:4200`**
 
 ### 👑 Super Administrador Global (Control Central Nuvex)
 Acceso al aprovisionamiento de salones, configuración de pasarelas y métricas globales de la plataforma:
-- **URL:** `http://localhost:8000/superadmin`
-- **Usuario:** `admin@nuvex.co`
-- **Contraseña:** `Nuvex2026!*`
+- **URL:** `http://localhost:8000/superadmin` (o en tu VPS: `https://tu-dominio.com/superadmin`)
+- **Usuario:** `admin@nuvex-tecnologia.com`
+- **Contraseña:** `C3be7x33ygh`
 - **Rol:** `SUPER_ADMIN`
+
+### 🐳 Despliegue en Servidor VPS con Docker
+Para desplegar Cita Clave en producción en un servidor VPS (Ubuntu / Debian) en 5 minutos con MySQL, PHP 8.3-FPM, Angular 19 y Nginx:
+Consulte la guía completa y detallada en **[DEPLOY_VPS.md](DEPLOY_VPS.md)**.
+
+```bash
+# Inicio rápido en VPS
+cp .env.docker.example .env
+# Configura APP_KEY, APP_URL y contraseñas en .env
+docker compose up -d --build
+```
 
 ### 🏢 Administrador de Salón (Tenant #1: Paola Aguilera)
 Acceso exclusivo a la agenda, catálogo de servicios, bloqueos de horario y lista de espera del salón:

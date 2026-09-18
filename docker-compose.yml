@@ -1,0 +1,111 @@
+services:
+  # -------------------------------------------------------------
+  # Base de Datos MySQL 8.0
+  # -------------------------------------------------------------
+  db:
+    image: mysql:8.0
+    container_name: citaclave_db
+    restart: unless-stopped
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-SecretRoot2026!}
+      MYSQL_DATABASE: ${DB_DATABASE:-citaclave}
+      MYSQL_USER: ${DB_USERNAME:-citaclave_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-SecretDb2026!}
+    volumes:
+      - citaclave_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-SecretRoot2026!}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - citaclave_net
+
+  # -------------------------------------------------------------
+  # Backend Laravel 12 & Filament v5 (PHP 8.3-FPM)
+  # -------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: citaclave_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-citaclave}
+      DB_USERNAME: ${DB_USERNAME:-citaclave_user}
+      DB_PASSWORD: ${DB_PASSWORD:-SecretDb2026!}
+    volumes:
+      - backend_storage:/var/www/backend/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - citaclave_net
+
+  # -------------------------------------------------------------
+  # Procesador de Colas y Tareas en Segundo Plano (Queue Worker)
+  # -------------------------------------------------------------
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: citaclave_queue
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    env_file:
+      - .env
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-citaclave}
+      DB_USERNAME: ${DB_USERNAME:-citaclave_user}
+      DB_PASSWORD: ${DB_PASSWORD:-SecretDb2026!}
+    volumes:
+      - backend_storage:/var/www/backend/storage
+    depends_on:
+      app:
+        condition: service_started
+      db:
+        condition: service_healthy
+    networks:
+      - citaclave_net
+
+  # -------------------------------------------------------------
+  # Servidor Web Nginx & Frontend Angular 19
+  # -------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    container_name: citaclave_web
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - backend_storage:/var/www/backend/public/storage:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    networks:
+      - citaclave_net
+
+volumes:
+  citaclave_db_data:
+    driver: local
+  backend_storage:
+    driver: local
+
+networks:
+  citaclave_net:
+    driver: bridge
