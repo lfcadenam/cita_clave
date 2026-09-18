@@ -148,7 +148,7 @@ El frontend estará disponible en: **`http://localhost:4200`**
 
 ### 👑 Super Administrador Global (Control Central Nuvex)
 Acceso al aprovisionamiento de salones, configuración de pasarelas y métricas globales de la plataforma:
-- **URL:** `http://localhost:8000/superadmin` (o en tu VPS: `https://tu-dominio.com/superadmin`)
+- **URL:** `http://localhost:8000/superadmin` (o en producción: `https://cita-clave.nuvex-tecnologia.com/superadmin`)
 - **Usuario:** `admin@nuvex-tecnologia.com`
 - **Contraseña:** `C3be7x33ygh`
 - **Rol:** `SUPER_ADMIN`

@@ -46,7 +46,7 @@ newgrp docker
    ```
    **Campos indispensables a configurar:**
    - `APP_KEY=base64:EL_VALOR_GENERADO`
-   - `APP_URL=https://tu-dominio.com` (o la IP pública si aún no tienes dominio)
+   - `APP_URL=https://cita-clave.nuvex-tecnologia.com`
    - `DB_PASSWORD=TuPasswordSeguroParaLaBD`
    - `DB_ROOT_PASSWORD=TuPasswordRootSeguro`
 
@@ -80,7 +80,7 @@ docker compose ps
 
 Una vez los contenedores estén arriba, abre tu navegador web e ingresa a:
 
-👉 **`http://tu-dominio.com/superadmin`** (o `https://` si ya tienes SSL)
+👉 **`https://cita-clave.nuvex-tecnologia.com/superadmin`**
 
 ### Credenciales de Acceso:
 - **Correo Electrónico:** `admin@nuvex-tecnologia.com`
@@ -97,9 +97,9 @@ Desde este panel podrás:
 
 ## 5. Configurar Certificado SSL Gratuito (HTTPS)
 
-Si tienes tu dominio apuntando al VPS, la manera más rápida y estándar de activar HTTPS con **Let's Encrypt** usando Certbot en el host es:
+Para activar HTTPS en `cita-clave.nuvex-tecnologia.com` con **Let's Encrypt** usando Certbot:
 
-1. Instala Certbot:
+1. Instala Certbot en tu VPS:
    ```bash
    sudo apt install certbot -y
    ```
@@ -109,15 +109,15 @@ Si tienes tu dominio apuntando al VPS, la manera más rápida y estándar de act
    docker compose stop web
    ```
 
-3. Emite el certificado SSL:
+3. Emite el certificado SSL para el dominio:
    ```bash
-   sudo certbot certonly --standalone -d tu-dominio.com -d www.tu-dominio.com
+   sudo certbot certonly --standalone -d cita-clave.nuvex-tecnologia.com
    ```
 
 4. Copia o vincula los certificados a la carpeta `docker/nginx/ssl`:
    ```bash
-   sudo cp /etc/letsencrypt/live/tu-dominio.com/fullchain.pem docker/nginx/ssl/cert.pem
-   sudo cp /etc/letsencrypt/live/tu-dominio.com/privkey.pem docker/nginx/ssl/key.pem
+   sudo cp /etc/letsencrypt/live/cita-clave.nuvex-tecnologia.com/fullchain.pem docker/nginx/ssl/cert.pem
+   sudo cp /etc/letsencrypt/live/cita-clave.nuvex-tecnologia.com/privkey.pem docker/nginx/ssl/key.pem
    ```
 
 5. Reinicia el contenedor web:
