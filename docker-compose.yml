@@ -99,7 +99,7 @@ services:
       - LETSENCRYPT_HOST=${DOMAIN_NAME:-labellenailsbog.com},www.${DOMAIN_NAME:-labellenailsbog.com}
       - LETSENCRYPT_EMAIL=${ADMIN_EMAIL:-admin@nuvex-tecnologia.com}
     ports:
-      - "${HTTP_PORT:-80}:80"
+      - "${HTTP_PORT:-8080}:80"
     volumes:
       - backend_storage:/var/www/backend/storage:ro
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
