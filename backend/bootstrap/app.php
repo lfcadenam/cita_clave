@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\IdentifyTenantMiddleware;
 use App\Http\Middleware\SecurityHeadersMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
         $middleware->append(SecurityHeadersMiddleware::class);
+        $middleware->append(IdentifyTenantMiddleware::class);
         $middleware->validateCsrfTokens(except: [
             'livewire*',
             'livewire/*',

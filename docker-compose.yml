@@ -93,15 +93,15 @@ services:
     container_name: citaclave_web
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=cita-clave.nuvex-tecnologia.com
+      - VIRTUAL_HOST=${DOMAIN_NAME:-labellenailsbog.com},www.${DOMAIN_NAME:-labellenailsbog.com}
       - VIRTUAL_PORT=80
-      - VIRTUAL_NETWORK=elan_default
-      - LETSENCRYPT_HOST=cita-clave.nuvex-tecnologia.com
-      - LETSENCRYPT_EMAIL=admin@nuvex-tecnologia.com
+      - VIRTUAL_NETWORK=${PROXY_NETWORK:-elan_default}
+      - LETSENCRYPT_HOST=${DOMAIN_NAME:-labellenailsbog.com},www.${DOMAIN_NAME:-labellenailsbog.com}
+      - LETSENCRYPT_EMAIL=${ADMIN_EMAIL:-admin@nuvex-tecnologia.com}
     ports:
-      - "${HTTP_PORT:-8080}:80"
+      - "${HTTP_PORT:-80}:80"
     volumes:
-      - backend_storage:/var/www/backend/public/storage:ro
+      - backend_storage:/var/www/backend/storage:ro
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       - app

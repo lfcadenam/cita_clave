@@ -52,6 +52,10 @@ php artisan migrate --force
 echo "👤 Asegurando existencia del Super Admin global..."
 php artisan db:seed --class="Database\\Seeders\\SuperAdminSeeder" --force
 
+# Asegurar existencia del tenant inicial La Belle Nails en producción
+echo "💅 Asegurando existencia del salón La Belle Nails Bogotá en producción..."
+php artisan db:seed --class="Database\\Seeders\\ProductionTenantSeeder" --force
+
 # Limpiar y optimizar caché en producción
 php artisan optimize:clear || true
 

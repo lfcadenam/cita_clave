@@ -766,3 +766,26 @@
      * Guía de comandos de calidad y pruebas automatizadas (`php artisan test` y `npx ng build`).
   2. **Verificación:**
      * Archivo creado y verificado con codificación UTF-8 sin BOM en `d:\Users\Usuario\Documents\Nuvex\Proyecto_agendamiento\README.md`.
+
+---
+
+### 🏷️ Registro #052 — Auditoría Docker, Puesta en Producción y Dominio labellenailsbog.com
+* **Fecha:** 23 de Septiembre de 2026
+* **Responsable:** Nuvex Tecnología
+* **Solicitud:** Revisar y optimizar la configuración de Docker, analizar la mejor forma de poner en producción el proyecto bajo el dominio oficial `https://labellenailsbog.com`, resolver problemas de almacenamiento de comprobantes, inicializar automáticamente el tenant en producción e incluir guía detallada de configuración DNS.
+* **Actividades Realizadas:**
+  1. **Auditoría y Corrección de Infraestructura Docker:**
+     * **Almacenamiento de Comprobantes:** Se corrigió el volumen montado en el contenedor web `citaclave_web` hacia `backend_storage:/var/www/backend/storage:ro` y el alias Nginx a `/var/www/backend/storage/app/public/`, eliminando los errores 404 en comprobantes Nequi y fotografías de servicios.
+     * **Enrutamiento Nginx & FastCGI:** Se amplió la directiva de paso a PHP-FPM para soportar `/reserva/...` (vouchers y calendarios `.ics`), `/filament/...` y el reto de renovación ACME `/.well-known/acme-challenge/`.
+     * **Parametrización Dinámica:** `docker-compose.yml` y `.env.docker.example` fueron actualizados con variables dinámicas de dominio (`DOMAIN_NAME=labellenailsbog.com`), soporte de red `elan_default` y mapeo de puertos estándar `80` y `443`.
+  2. **Multi-Tenancy y Aprovisionamiento Inicial en Producción:**
+     * Creación de `IdentifyTenantMiddleware`: Detecta automáticamente el salón a partir del host HTTP (`labellenailsbog.com`) e inyecta el `active_tenant_id` en el contenedor de servicios de Laravel, garantizando aislamiento y visualización instantánea del catálogo.
+     * Creación de `ProductionTenantSeeder`: Aprovisiona el salón oficial *La Belle Nails Bogotá • Paola Aguilera*, horarios de lunes a sábado de 08:00 a 19:00, franja de almuerzo y 7 tratamientos de belleza de alta demanda con precios y anticipos.
+     * Actualización de `entrypoint.sh` para ejecutar `SuperAdminSeeder` y `ProductionTenantSeeder` de forma segura y desatendida.
+  3. **SEO y Branding del Frontend:**
+     * Actualización de títulos y metadatos en `index.html` para posicionar la marca *La Belle Nails Bogotá*.
+  4. **Documentación de Despliegue y DNS:**
+     * Rediseño integral de `DEPLOY_VPS.md` con instrucciones de registros DNS (`A` y `CNAME`), configuración recomendada con Cloudflare SSL Full/Flexible, comandos de despliegue y credenciales de acceso.
+  5. **Verificación y Pruebas Automatizadas:**
+     * Suite de pruebas ampliada con `ProductionTenantSetupTest`: **37 pruebas automatizadas aprobadas al 100%** (236 aserciones en 3.93s).
+     * Compilación de frontend Angular 19 verificada con 0 errores (`npx ng build`).
