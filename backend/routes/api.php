@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\v1\AppointmentBookingController;
 use App\Http\Controllers\Api\v1\AvailabilityController;
 use App\Http\Controllers\Api\v1\PaymentController;
 use App\Http\Controllers\Api\v1\ServiceController;
+use App\Http\Controllers\Api\v1\TenantProfileController;
 use App\Http\Controllers\Api\v1\WaitlistController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('v1')->group(function () {
+    // Perfil Comercial Dinámico del Salón / Tenant
+    Route::get('/tenant/profile', [TenantProfileController::class, 'show']);
+
     // Health check
     Route::get('/health', function () {
         return response()->json([

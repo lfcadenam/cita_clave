@@ -51,7 +51,7 @@ class AppointmentResource extends Resource
                 ->icon('heroicon-o-user')
                 ->schema([
                     Forms\Components\Select::make('existing_client_selector')
-                        ->label('🔍 Buscar Clienta Frecuente (Autocompletar Datos)')
+                        ->label('Buscar Clienta Frecuente')
                         ->placeholder('Escribe nombre o celular para autocompletar...')
                         ->searchable()
                         ->options(function () {
@@ -65,7 +65,7 @@ class AppointmentResource extends Resource
                                 ->mapWithKeys(function ($item) {
                                     $email = $item->client_email ?? '';
                                     $key = "{$item->client_name}|{$item->client_phone}|{$email}";
-                                    return [$key => "👤 {$item->client_name} (📞 +57 {$item->client_phone})"];
+                                    return [$key => "{$item->client_name} (+57 {$item->client_phone})"];
                                 });
                         })
                         ->reactive()
@@ -79,7 +79,7 @@ class AppointmentResource extends Resource
                         })
                         ->dehydrated(false)
                         ->columnSpanFull()
-                        ->helperText('💡 Puedes elegir una clienta previa para autocompletar su información, o digitar una clienta nueva en los campos inferiores.'),
+                        ->helperText('Puedes seleccionar una clienta registrada para autocompletar sus datos, o ingresar una clienta nueva.'),
 
                     Forms\Components\TextInput::make('client_name')
                         ->label('Nombre Completo')
@@ -256,23 +256,16 @@ class AppointmentResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('appointment_number')
-                    ->label('N° Cita')
-                    ->weight('bold')
-                    ->searchable()
-                    ->copyable()
-                    ->icon('heroicon-m-calendar'),
-
                 TextColumn::make('client_name')
                     ->label('Clienta')
                     ->weight('bold')
-                    ->searchable()
-                    ->description(fn (Appointment $record): string => "📞 {$record->client_phone}"),
+                    ->searchable(['client_name', 'client_phone', 'appointment_number'])
+                    ->description(fn (Appointment $record): string => ($record->client_phone ?? '') . ($record->appointment_number ? " • #{$record->appointment_number}" : '')),
 
                 TextColumn::make('service.name')
                     ->label('Servicio')
                     ->searchable()
-                    ->description(fn (Appointment $record): string => "⏱️ " . ($record->service?->formatted_duration ?? '')),
+                    ->description(fn (Appointment $record): string => $record->service?->formatted_duration ?? ''),
 
                 TextColumn::make('appointment_date')
                     ->label('Fecha & Hora')
@@ -303,80 +296,107 @@ class AppointmentResource extends Resource
                     ->label('Filtrar por Servicio')
                     ->relationship('service', 'name'),
             ])
+            ->filtersTriggerAction(function ($action) {
+                return $action
+                    ->badge(fn ($table) => $table->getActiveFiltersCount() > 0 ? (string) $table->getActiveFiltersCount() : null);
+            })
+            ->recordAction('viewDetails')
             ->actions([
-                ActionGroup::make([
-                    // Botón 1 Clic: Validar Comprobante Nequi
-                    Action::make('verifyNequi')
-                        ->label('Verificar Comprobante Nequi')
-                        ->icon('heroicon-o-camera')
-                        ->color('warning')
-                        ->visible(fn (Appointment $record) => $record->status === AppointmentStatus::PENDING_VERIFICATION)
-                        ->modalHeading(fn (Appointment $record) => "📸 Validación de Transferencia Nequi — #{$record->appointment_number}")
-                        ->modalContent(fn (Appointment $record) => view('admin.appointments.modal-nequi-receipt', ['appointment' => $record]))
-                        ->form([
-                            Forms\Components\Textarea::make('verification_notes')
-                                ->label('Nota de Aprobación (Opcional)')
-                                ->placeholder('Ej: Comprobante verificado en cuenta Nequi'),
-                        ])
-                        ->action(function (Appointment $record, array $data): void {
-                            $record->update([
-                                'status' => AppointmentStatus::CONFIRMED,
-                                'deposit_paid' => $record->deposit_amount,
-                                'balance_due' => $record->total_amount - $record->deposit_amount,
-                                'verified_at' => now(),
-                                'verification_notes' => $data['verification_notes'] ?? 'Comprobante aprobado por Paola',
-                            ]);
-                        })
-                        ->modalSubmitActionLabel('✓ Aprobar Abono y Confirmar Cita')
-                        ->modalCancelActionLabel('Cerrar')
-                        ->modalWidth(\Filament\Support\Enums\Width::Large),
+                // 1. Ver Detalle Informativo (Modal de Solo Lectura)
+                Action::make('viewDetails')
+                    ->label('Ver información de la cita')
+                    ->tooltip('Ver detalles de la cita')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->iconButton()
+                    ->size('sm')
+                    ->modalHeading(fn (Appointment $record) => "Detalle de Cita — #{$record->appointment_number}")
+                    ->modalContent(fn (Appointment $record) => view('admin.appointments.modal-view-details', ['appointment' => $record]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Cerrar')
+                    ->modalWidth(\Filament\Support\Enums\Width::FiveExtraLarge),
 
-                    // Botón: Rechazar Comprobante Nequi
-                    Action::make('rejectNequi')
-                        ->label('Rechazar Comprobante')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->visible(fn (Appointment $record) => $record->status === AppointmentStatus::PENDING_VERIFICATION)
-                        ->form([
-                            Forms\Components\Textarea::make('cancellation_reason')
-                                ->label('Motivo del Rechazo')
-                                ->placeholder('Ej: Comprobante no legible o valor inferior al abono')
-                                ->required(),
-                        ])
-                        ->action(function (Appointment $record, array $data): void {
-                            $record->update([
-                                'status' => AppointmentStatus::CANCELLED,
-                                'cancellation_reason' => $data['cancellation_reason'],
-                                'cancelled_at' => now(),
-                            ]);
-                        })
-                        ->modalSubmitActionLabel('Rechazar Comprobante y Cancelar Cita'),
+                // 2. Botón 1 Clic: Validar Comprobante Nequi
+                Action::make('verifyNequi')
+                    ->label('Aprobar comprobante Nequi')
+                    ->tooltip('Aprobar abono Nequi')
+                    ->icon('heroicon-o-camera')
+                    ->color('warning')
+                    ->iconButton()
+                    ->size('sm')
+                    ->visible(fn (Appointment $record) => $record->status === AppointmentStatus::PENDING_VERIFICATION)
+                    ->modalHeading(fn (Appointment $record) => "Validación de Transferencia Nequi — #{$record->appointment_number}")
+                    ->modalContent(fn (Appointment $record) => view('admin.appointments.modal-nequi-receipt', ['appointment' => $record]))
+                    ->form([
+                        Forms\Components\Textarea::make('verification_notes')
+                            ->label('Nota de Aprobación (Opcional)')
+                            ->placeholder('Ej: Comprobante verificado en cuenta Nequi'),
+                    ])
+                    ->action(function (Appointment $record, array $data): void {
+                        $record->update([
+                            'status' => AppointmentStatus::CONFIRMED,
+                            'deposit_paid' => $record->deposit_amount,
+                            'balance_due' => $record->total_amount - $record->deposit_amount,
+                            'verified_at' => now(),
+                            'verification_notes' => $data['verification_notes'] ?? 'Comprobante aprobado por Paola',
+                        ]);
+                    })
+                    ->modalSubmitActionLabel('Aprobar Abono y Confirmar Cita')
+                    ->modalCancelActionLabel('Cerrar')
+                    ->modalWidth(\Filament\Support\Enums\Width::Large),
 
-                    // Marcar como completada en el local
-                    Action::make('complete')
-                        ->label('Marcar como Completada')
-                        ->icon('heroicon-o-check-badge')
-                        ->color('success')
-                        ->visible(fn (Appointment $record) => in_array($record->status, [AppointmentStatus::CONFIRMED, AppointmentStatus::IN_PROGRESS]))
-                        ->requiresConfirmation()
-                        ->modalHeading('¿Completar servicio y confirmar cobro de saldo?')
-                        ->action(function (Appointment $record): void {
-                            $record->update([
-                                'status' => AppointmentStatus::COMPLETED,
-                                'balance_due' => 0,
-                            ]);
-                        }),
+                // 3. Botón: Rechazar Comprobante Nequi
+                Action::make('rejectNequi')
+                    ->label('Rechazar comprobante Nequi')
+                    ->tooltip('Rechazar comprobante Nequi')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->iconButton()
+                    ->size('sm')
+                    ->visible(fn (Appointment $record) => $record->status === AppointmentStatus::PENDING_VERIFICATION)
+                    ->form([
+                        Forms\Components\Textarea::make('cancellation_reason')
+                            ->label('Motivo del Rechazo')
+                            ->placeholder('Ej: Comprobante no legible o valor inferior al abono')
+                            ->required(),
+                    ])
+                    ->action(function (Appointment $record, array $data): void {
+                        $record->update([
+                            'status' => AppointmentStatus::CANCELLED,
+                            'cancellation_reason' => $data['cancellation_reason'],
+                            'cancelled_at' => now(),
+                        ]);
+                    })
+                    ->modalSubmitActionLabel('Rechazar Comprobante y Cancelar Cita'),
 
-                    EditAction::make()
-                        ->label('Editar Cita')
-                        ->modalHeading('✏️ Modificar Cita / Reserva')
-                        ->modalWidth(\Filament\Support\Enums\Width::SevenExtraLarge),
-                ])
-                ->label('Acciones')
-                ->icon('heroicon-m-ellipsis-horizontal')
-                ->button()
-                ->color('primary')
-                ->size('sm'),
+                // 4. Marcar como completada en el local
+                Action::make('complete')
+                    ->label('Marcar como completada')
+                    ->tooltip('Marcar como completada en el local')
+                    ->icon('heroicon-o-check-badge')
+                    ->color('success')
+                    ->iconButton()
+                    ->size('sm')
+                    ->visible(fn (Appointment $record) => in_array($record->status, [AppointmentStatus::CONFIRMED, AppointmentStatus::IN_PROGRESS]))
+                    ->requiresConfirmation()
+                    ->modalHeading('¿Completar servicio y confirmar cobro de saldo?')
+                    ->action(function (Appointment $record): void {
+                        $record->update([
+                            'status' => AppointmentStatus::COMPLETED,
+                            'balance_due' => 0,
+                        ]);
+                    }),
+
+                // 5. Edición técnica si se requiere
+                EditAction::make()
+                    ->label('Editar cita')
+                    ->tooltip('Modificar datos de la reserva')
+                    ->icon('heroicon-o-pencil-square')
+                    ->color('gray')
+                    ->iconButton()
+                    ->size('sm')
+                    ->modalHeading('Modificar Cita / Reserva')
+                    ->modalWidth(\Filament\Support\Enums\Width::SevenExtraLarge),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

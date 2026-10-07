@@ -8,7 +8,8 @@ import {
   ClientProfile, 
   AppointmentBookingRequest, 
   AppointmentResponse,
-  NequiInfoResponse 
+  NequiInfoResponse,
+  SalonProfile
 } from '../models/booking.models';
 
 @Injectable({
@@ -116,5 +117,29 @@ export class ApiService {
     }
 
     return this.http.post<AppointmentResponse>(`${this.baseUrl}/appointments/book`, formData);
+  }
+
+  getSalonProfile(): Observable<SalonProfile> {
+    return this.http.get<{ success?: boolean; data?: SalonProfile } | SalonProfile>(`${this.baseUrl}/tenant/profile`).pipe(
+      map(res => {
+        if (res && (res as any).data) {
+          return (res as any).data as SalonProfile;
+        }
+        return res as SalonProfile;
+      }),
+      catchError(err => {
+        console.warn('Could not fetch salon profile from API, using default fallback', err);
+        return of({
+          name: 'Paola Andrea Aguilera Camacho',
+          display_name: 'Paola Aguilera',
+          business_type: 'ESTUDIO DE BELLEZA',
+          slug: 'paola-aguilera',
+          city: 'Bogotá, Colombia',
+          whatsapp_url: 'https://wa.me/573103248385',
+          specialties: 'Pestañas · Cejas · Faciales · Micropigmentación',
+          schedule_summary: 'Lunes a Sábado 8:00 AM - 6:00 PM | Almuerzo 1:00 PM - 2:00 PM'
+        } as SalonProfile);
+      })
+    );
   }
 }

@@ -34,9 +34,21 @@ class TenantResource extends Resource
                     ->description('Datos comerciales y de marca de la empresa.')
                     ->schema([
                         Forms\Components\TextInput::make('name')
-                            ->label('Nombre de la Empresa o Especialista')
+                            ->label('Nombre Completo de la Empresa o Especialista')
                             ->required()
                             ->maxLength(255),
+
+                        Forms\Components\TextInput::make('short_name')
+                            ->label('Nombre Comercial Corto (Cabecera)')
+                            ->placeholder('Ej: Paola Aguilera')
+                            ->maxLength(100)
+                            ->helperText('Aparece en la cabecera superior y comunicaciones breves.'),
+
+                        Forms\Components\TextInput::make('business_type')
+                            ->label('Tipo de Negocio / Subtítulo')
+                            ->default('ESTUDIO DE BELLEZA')
+                            ->maxLength(100)
+                            ->helperText('Ej: ESTUDIO DE BELLEZA, SPA & ESTÉTICA, SALÓN VIP'),
 
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug / Identificador URL')
@@ -59,9 +71,26 @@ class TenantResource extends Resource
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('phone')
-                            ->label('Teléfono de Contacto / WhatsApp')
+                            ->label('Teléfono de Contacto')
                             ->tel()
                             ->maxLength(50),
+
+                        Forms\Components\TextInput::make('whatsapp_number')
+                            ->label('Celular WhatsApp Oficial')
+                            ->tel()
+                            ->placeholder('Ej: 3103248385')
+                            ->maxLength(50)
+                            ->helperText('Número para enlace directo de WhatsApp en la cabecera y pie.'),
+
+                        Forms\Components\TextInput::make('specialties')
+                            ->label('Especialidades (Pie de Página)')
+                            ->default('Pestañas · Cejas · Faciales · Micropigmentación')
+                            ->maxLength(255),
+
+                        Forms\Components\TextInput::make('schedule_summary')
+                            ->label('Resumen de Horarios (Pie de Página)')
+                            ->default('Lunes a Sábado 8:00 AM - 6:00 PM | Almuerzo 1:00 PM - 2:00 PM')
+                            ->maxLength(255),
 
                         Forms\Components\TextInput::make('email')
                             ->label('Correo Electrónico')

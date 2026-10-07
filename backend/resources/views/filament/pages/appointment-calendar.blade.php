@@ -18,8 +18,8 @@
             grid-template-columns: 260px minmax(0, 1fr);
             gap: 24px;
             background: #ffffff;
-            border-radius: 20px;
-            border: 1px solid #e2f0ea;
+            border-radius: 24px;
+            border: 1px solid #E2E8F0;
             box-shadow: 0 4px 20px -2px rgba(13, 148, 136, 0.04);
             padding: 24px;
             min-width: 0;
@@ -45,14 +45,14 @@
             display: flex;
             flex-direction: column;
             gap: 18px;
-            border-right: 1px solid #e2f0ea;
+            border-right: 1px solid #E2E8F0;
             padding-right: 24px;
             min-width: 0;
         }
         @media (max-width: 1100px) {
             .salonesgo-left-panel {
                 border-right: none;
-                border-bottom: 1px solid #e2f0ea;
+                border-bottom: 1px solid #E2E8F0;
                 padding-right: 0;
                 padding-bottom: 20px;
             }
@@ -92,7 +92,7 @@
         /* Filter Card Styles */
         .filter-card {
             background: #f8fafc;
-            border: 1px solid #e2f0ea;
+            border: 1px solid #E2E8F0;
             border-radius: 14px;
             padding: 14px;
             display: flex;
@@ -117,7 +117,7 @@
         .filter-card-badge {
             font-size: 10px;
             font-weight: 700;
-            background: #e2f0ea;
+            background: #E2E8F0;
             color: #0f766e;
             padding: 2px 6px;
             border-radius: 6px;
@@ -582,7 +582,7 @@
             width: 100%;
             overflow: hidden;
             box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(226, 240, 234, 0.8);
-            border: 1px solid #e2f0ea;
+            border: 1px solid #E2E8F0;
             animation: cierraModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             flex-direction: column;
@@ -597,7 +597,7 @@
         .cierra-modal-header {
             padding: 18px 22px;
             background: linear-gradient(180deg, #f0fdf9 0%, #ffffff 100%);
-            border-bottom: 1px solid #e2f0ea;
+            border-bottom: 1px solid #E2E8F0;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -726,7 +726,7 @@
         /* Cierra Sub-Card Box */
         .cierra-section-box {
             background: #f8fafc;
-            border: 1px solid #e2f0ea;
+            border: 1px solid #E2E8F0;
             border-radius: 14px;
             padding: 12px 14px;
             display: flex;
@@ -795,6 +795,122 @@
             justify-content: space-between;
             gap: 8px;
             flex-wrap: wrap;
+        }
+
+        /* Nuvex Modern Curve UI — Dark Mode Support */
+        .dark .salonesgo-grid-layout {
+            background: #1E293B !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            color: #F8FAFC !important;
+            box-shadow: 0 4px 25px -2px rgba(0, 0, 0, 0.3) !important;
+        }
+        .dark .salonesgo-left-panel {
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .dark .filter-card {
+            background: #182234 !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .dark .filter-card-title,
+        .dark .stat-label {
+            color: #94A3B8 !important;
+        }
+        .dark .stat-value {
+            color: #F8FAFC !important;
+        }
+        .dark .service-filter-item {
+            color: #CBD5E1 !important;
+        }
+        .dark .service-filter-item:hover {
+            background: #141D2B !important;
+        }
+        .dark .cal-month-title {
+            color: #F8FAFC !important;
+        }
+        .dark .cal-nav-btn {
+            background: #182234 !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #CBD5E1 !important;
+        }
+        .dark .cal-view-btn {
+            background: #182234 !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #94A3B8 !important;
+        }
+        .dark .cal-view-btn.active {
+            background: #0d9488 !important;
+            color: #FFFFFF !important;
+        }
+        .dark .salonesgo-month-table th {
+            background: #182234 !important;
+            color: #94A3B8 !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .dark .salonesgo-month-table td {
+            background: #1E293B !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .dark .salonesgo-month-table td.out-month {
+            background: #141D2B !important;
+        }
+        .dark .salonesgo-month-table td.today-cell {
+            background: rgba(13, 148, 136, 0.08) !important;
+            border-color: #0d9488 !important;
+        }
+        .dark .day-num-text {
+            color: #CBD5E1 !important;
+        }
+        .dark .week-day-column {
+            background: #182234 !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .dark .week-day-header {
+            background: #141D2B !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .dark .week-day-name {
+            color: #94A3B8 !important;
+        }
+        .dark .week-day-num {
+            color: #F8FAFC !important;
+        }
+        .dark .cal-modal-container {
+            background: #1E293B !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+        }
+        .dark .cierra-modal-header {
+            background: #182234 !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .dark .cierra-header-title {
+            color: #FFFFFF !important;
+        }
+        .dark .cierra-header-sub {
+            color: #94A3B8 !important;
+        }
+        .dark .cierra-modal-close {
+            background: #182234 !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #CBD5E1 !important;
+        }
+        .dark .cierra-modal-body {
+            background: #1E293B !important;
+        }
+        .dark .cierra-section-box {
+            background: #182234 !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .dark .cierra-finance-box {
+            background: #141D2B !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .dark .cierra-finance-val {
+            color: #FFFFFF !important;
+        }
+        .dark .cierra-modal-footer {
+            background: #182234 !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
         }
     </style>
 
@@ -934,13 +1050,13 @@
                         <table class="salonesgo-month-table">
                             <thead>
                                 <tr>
-                                    <th>DOM</th>
                                     <th>LUN</th>
                                     <th>MAR</th>
                                     <th>MIÉ</th>
                                     <th>JUE</th>
                                     <th>VIE</th>
                                     <th>SÁB</th>
+                                    <th>DOM</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -964,7 +1080,7 @@
                                                         @endphp
                                                         <div wire:click="selectAppointment({{ $apt->id }})" 
                                                              class="salonesgo-event-pill {{ $pillClass }}"
-                                                             title="{{ $apt->service?->name }} • {{ $apt->client_name }}">
+                                                             title="{{ $apt->service?->name }} â€¢ {{ $apt->client_name }}">
                                                             <span style="font-size: 9px; opacity: 0.9;">{{ substr($apt->start_time, 0, 5) }}</span>
                                                             <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $apt->client_name }}</span>
                                                         </div>
@@ -994,7 +1110,7 @@
                                         @forelse($day['appointments'] as $apt)
                                             <div wire:click="selectAppointment({{ $apt->id }})" 
                                                  class="week-appointment-card status-{{ $apt->status->value }}"
-                                                 title="{{ $apt->service?->name }} • {{ $apt->client_name }}">
+                                                 title="{{ $apt->service?->name }} â€¢ {{ $apt->client_name }}">
                                                 <div class="week-apt-time">{{ substr($apt->start_time, 0, 5) }} - {{ substr($apt->end_time, 0, 5) }}</div>
                                                 <div class="week-apt-name">{{ $apt->client_name }}</div>
                                                 <div class="week-apt-service">{{ $apt->service?->name }}</div>
@@ -1017,13 +1133,13 @@
                     @php 
                         $singleDay = $data['days'][0] ?? null; 
                         $dayAppointments = $singleDay ? $singleDay['appointments'] : collect();
-                        $confirmedDayCount = $dayAppointments->where('status.value', 'confirmed')->count();
-                        $pendingDayCount = $dayAppointments->where('status.value', 'pending_verification')->count();
+                        $confirmedDayCount = $dayAppointments->where('status', \App\Enums\AppointmentStatus::CONFIRMED)->count();
+                        $pendingDayCount = $dayAppointments->where('status', \App\Enums\AppointmentStatus::PENDING_VERIFICATION)->count();
                     @endphp
                     @if($singleDay)
-                        <div style="background: #ffffff; border: 1px solid #e2f0ea; border-radius: 20px; padding: 22px; box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.04);">
+                        <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 24px; padding: 22px; box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.04);">
                             <!-- Header Section Cierra Style -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #e2f0ea;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #E2E8F0;">
                                 <div>
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         <span style="width: 4px; height: 16px; background: #0d9488; border-radius: 9999px; display: inline-block;"></span>
@@ -1077,7 +1193,7 @@
                                                     <span style="font-size: 10px; color: #64748b; font-weight: 700;">#{{ $apt->appointment_number }}</span>
                                                 </div>
                                                 <div style="font-size: 12px; color: #64748b; font-weight: 500; margin-top: 2px;">
-                                                    {{ $apt->service?->name }} • {{ $apt->service?->duration_minutes }} min
+                                                    {{ $apt->service?->name }} â€¢ {{ $apt->service?->duration_minutes }} min
                                                 </div>
                                             </div>
                                         </div>
@@ -1103,7 +1219,7 @@
                                 @empty
                                     <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px; padding: 40px 20px; text-align: center; color: #64748b;">
                                         <p style="font-size: 13px; font-weight: 600; margin: 0;">No hay citas agendadas para esta fecha.</p>
-                                        <p style="font-size: 11px; margin-top: 4px; color: #94a3b8;">Usa el botón "Nueva Reserva" para programar una cita.</p>
+                                        <p style="font-size: 11px; margin-top: 4px; color: #94a3b8;">Usa el botÃ³n "Nueva Reserva" para programar una cita.</p>
                                     </div>
                                 @endforelse
                             </div>
@@ -1140,7 +1256,7 @@
                             <span class="cierra-header-sub">{{ $selectedApt->client_name }}</span>
                         </div>
                     </div>
-                    <button wire:click="closeModal" type="button" class="cierra-modal-close">✕</button>
+                    <button wire:click="closeModal" type="button" class="cierra-modal-close">âœ•</button>
                 </div>
 
                 <!-- Body (Concise, Ordered & Structured) -->
@@ -1159,7 +1275,7 @@
                         <div style="display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px;">
                             <div>
                                 <div style="font-weight: 800; font-size: 14px; color: #0f172a;">{{ $selectedApt->service?->name }}</div>
-                                <div style="font-size: 11px; color: #64748b; font-weight: 600;">{{ $selectedApt->service?->category ? ($selectedApt->service->category instanceof \App\Enums\ServiceCategory ? $selectedApt->service->category->label() : $selectedApt->service->category) . ' • ' : '' }}{{ $selectedApt->service?->duration_minutes }} min</div>
+                                <div style="font-size: 11px; color: #64748b; font-weight: 600;">{{ $selectedApt->service?->category ? ($selectedApt->service->category instanceof \App\Enums\ServiceCategory ? $selectedApt->service->category->label() : $selectedApt->service->category) . ' â€¢ ' : '' }}{{ $selectedApt->service?->duration_minutes }} min</div>
                             </div>
                             <div style="text-align: right;">
                                 <div style="font-size: 11px; font-weight: 700; color: #64748b;">TOTAL</div>
@@ -1168,7 +1284,7 @@
                         </div>
                     </div>
 
-                    <!-- 2. Programación (Fecha & Horario) -->
+                    <!-- 2. ProgramaciÃ³n (Fecha & Horario) -->
                     <div class="cierra-section-box">
                         <div class="cierra-section-header">
                             <span>Fecha & Horario Programado</span>
@@ -1180,7 +1296,7 @@
                                 </div>
                                 <div>
                                     <div style="font-size: 13px; font-weight: 800; color: #0f172a;">
-                                        {{ substr($selectedApt->start_time, 0, 5) }} — {{ substr($selectedApt->end_time, 0, 5) }}
+                                        {{ substr($selectedApt->start_time, 0, 5) }} â€” {{ substr($selectedApt->end_time, 0, 5) }}
                                     </div>
                                     <div style="font-size: 10px; color: #64748b;">Horario confirmado en agenda</div>
                                 </div>
@@ -1188,7 +1304,7 @@
                         </div>
                     </div>
 
-                    <!-- 3. Liquidación Financiera en 3 Pastillas -->
+                    <!-- 3. LiquidaciÃ³n Financiera en 3 Pastillas -->
                     <div class="cierra-finance-grid">
                         <div class="cierra-finance-box">
                             <div class="cierra-finance-label">Valor Servicio</div>
@@ -1208,7 +1324,7 @@
                         </div>
                     </div>
 
-                    <!-- 4. Sección de Comprobante Nequi Directa -->
+                    <!-- 4. SecciÃ³n de Comprobante Nequi Directa -->
                     @if($selectedApt->status->value === 'pending_verification' || $selectedApt->deposit_proof_image)
                         @php
                             $proofUrl = $selectedApt->deposit_proof_image ? asset('storage/' . $selectedApt->deposit_proof_image) : null;
@@ -1219,7 +1335,7 @@
                                 @if($proofUrl)
                                     <a href="{{ $proofUrl }}" target="_blank" 
                                        style="color: #7e22ce; font-weight: 700; text-decoration: none; font-size: 11px;">
-                                        Ver tamaño completo
+                                        Ver tamaÃ±o completo
                                     </a>
                                 @endif
                             </div>
@@ -1241,7 +1357,7 @@
                                 <div style="margin-top: 4px;">
                                     <input type="text" 
                                            wire:model="verificationNotes" 
-                                           placeholder="Notas de validación interna (opcional)..." 
+                                           placeholder="Notas de validaciÃ³n interna (opcional)..." 
                                            style="width: 100%; border: 1px solid #e9d5ff; border-radius: 8px; font-size: 12px; padding: 7px 10px; background: #ffffff; outline: none; color: #1e293b;">
                                 </div>
                             @endif
@@ -1250,7 +1366,7 @@
 
                 </div>
 
-                <!-- Footer (Acciones Puntuales y Aprobación Directa) -->
+                <!-- Footer (Acciones Puntuales y AprobaciÃ³n Directa) -->
                 <div class="cierra-modal-footer">
                     <button wire:click="closeModal" type="button" class="cal-nav-btn" style="border: 1px solid #cbd5e1; background: white; font-size: 12px; padding: 8px 16px;">
                         Cerrar
@@ -1295,16 +1411,16 @@
                         </div>
                         <div class="cierra-header-info">
                             <div class="cierra-header-title-row">
-                                <h3 class="cierra-header-title">Validación de Abono Nequi</h3>
+                                <h3 class="cierra-header-title">ValidaciÃ³n de Abono Nequi</h3>
                                 <span class="cierra-status-pill pending_verification">
                                     <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block;"></span>
                                     <span>Por Verificar</span>
                                 </span>
                             </div>
-                            <span class="cierra-header-sub">#{{ $selectedApt->appointment_number }} • {{ $selectedApt->client_name }}</span>
+                            <span class="cierra-header-sub">#{{ $selectedApt->appointment_number }} â€¢ {{ $selectedApt->client_name }}</span>
                         </div>
                     </div>
-                    <button wire:click="closeModal" type="button" class="cierra-modal-close">✕</button>
+                    <button wire:click="closeModal" type="button" class="cierra-modal-close">âœ•</button>
                 </div>
 
                 <!-- Body -->
@@ -1323,12 +1439,12 @@
                                  style="max-height: 260px; max-width: 100%; border-radius: 8px; margin: 0 auto; display: block; object-fit: contain;" 
                                  alt="Comprobante Nequi">
                         @else
-                            <p style="color: #94a3b8; font-size: 12px; padding: 20px;">No se encontró archivo adjunto.</p>
+                            <p style="color: #94a3b8; font-size: 12px; padding: 20px;">No se encontrÃ³ archivo adjunto.</p>
                         @endif
                     </div>
 
                     <!-- Notas -->
-                    <textarea wire:model="verificationNotes" placeholder="Notas internas de validación (opcional)..." 
+                    <textarea wire:model="verificationNotes" placeholder="Notas internas de validaciÃ³n (opcional)..." 
                               style="width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 12px; padding: 10px; outline: none;"></textarea>
                 </div>
 

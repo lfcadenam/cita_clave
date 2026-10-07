@@ -13,12 +13,17 @@ class Tenant extends Model implements HasCurrentTenantLabel
 
     protected $fillable = [
         'name',
+        'short_name',
+        'business_type',
         'slug',
         'domain',
         'phone',
+        'whatsapp_number',
         'email',
         'address',
         'city',
+        'specialties',
+        'schedule_summary',
         'logo_path',
         'primary_color',
         'nequi_phone',
@@ -43,7 +48,7 @@ class Tenant extends Model implements HasCurrentTenantLabel
 
     public function getCurrentTenantLabel(): string
     {
-        return 'Estudio: ' . $this->name;
+        return 'Salón Especialista';
     }
 
     public function users(): HasMany
@@ -74,5 +79,21 @@ class Tenant extends Model implements HasCurrentTenantLabel
     public function waitlists(): HasMany
     {
         return $this->hasMany(Waitlist::class);
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        if (! empty($this->short_name)) {
+            return $this->short_name;
+        }
+
+        $parts = explode(' ', trim($this->name));
+        return count($parts) >= 2 ? $parts[0] . ' ' . $parts[1] : $this->name;
+    }
+
+    public function getWhatsappUrlAttribute(): string
+    {
+        $num = preg_replace('/\D/', '', $this->whatsapp_number ?: $this->phone ?: '3103248385');
+        return 'https://wa.me/57' . $num;
     }
 }

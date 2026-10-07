@@ -789,3 +789,56 @@
   5. **Verificación y Pruebas Automatizadas:**
      * Suite de pruebas ampliada con `ProductionTenantSetupTest`: **37 pruebas automatizadas aprobadas al 100%** (236 aserciones en 3.93s).
      * Compilación de frontend Angular 19 verificada con 0 errores (`npx ng build`).
+---
+
+### 🏷️ Registro #053 — Adopción del Sistema de Diseño Oficial Nuvex Modern Curve UI en Paneles de Administración
+* **Fecha:** 06 de Octubre de 2026
+* **Responsable:** Nuvex Tecnología
+* **Solicitud:** Aplicar a los paneles de administración los estilos corporativos oficiales de acuerdo a la Fuente Única de Verdad de Cerebro Nuvex (cerebro_nuvex/core/sistema_diseno_dashboard_nuvex.md y .agents/skills/nuvex-dashboard-theme/).
+* **Actividades Realizadas:**
+  1. **Hoja de Estilos Oficial 
+uvex-admin-theme.css:**
+     * Creación de ackend/public/css/nuvex-admin-theme.css y actualización de enlace de compatibilidad en salonesgo-admin-theme.css.
+     * **Sidebar Flotante Curva:** Curvatura amplia de 32px (ounded-[32px]), elevación y gradiente esmeralda (#00C975), items de navegación tipo píldora translúcidos, tipografía y elementos en blanco puro. En modo oscuro, transición fluida a Pizarra (#1E293B) con acentos esmeralda.
+     * **Tarjetas Elevadas Suaves (Soft Neumorphic):** Curvatura de 24px (ounded-3xl / ounded-2xl), sombras difusas multicapa sin bordes toscos (ox-shadow: 0 10px 25px -5px rgba(0,0,0,0.035)).
+     * **Tarjetas de Métricas KPI:** Tipografía de métricas en negrita destacada (1.85rem), rótulos en mayúsculas discretas y badges circulares tintados flotantes para los iconos (w-12 h-12 rounded-full con fondo esmeralda sutil #E6FDF4 / #00C975).
+     * **Topbar Píldora:** Cabecera flotante redondeada con desenfoque de fondo (ackdrop-filter: blur(12px)), buscador en píldora (ounded-full) y modo oscuro nativo.
+  2. **Configuración de Providers Filament (AdminPanelProvider & SuperAdminPanelProvider):**
+     * Habilitación nativa de soporte dual: ->darkMode(true).
+     * Paleta primaria y de éxito asignada a Verde Esmeralda Nuvex: Color::hex('#00C975').
+     * Inyección del tema corporativo mediante render hook a /css/nuvex-admin-theme.css.
+  3. **Widget Hero Spotlight Card (SalonSpotlightWidget):**
+     * Implementación del widget destacado superior para el panel de salón con avatar central, indicador de estado en vivo (*"Disponible Hoy"*), jornada laboral, próxima cita agendada, acceso directo a la agenda y selector de carrusel < >.
+  4. **Armonización del Calendario Interactivo:**
+     * Reemplazo de tonos verde azulado por la paleta esmeralda Nuvex (#00C975, #00B368, #E6FDF4), esquinas redondeadas de 24px y compatibilidad completa con Dark Mode.
+  5. **Verificación y Pruebas Automatizadas:**
+     * Ejecución de suite de pruebas: **37 pruebas feature/unitarias pasadas con éxito al 100% (236 aserciones)**.
+
+---
+
+### 🏷️ Registro #054 — Modal Informativo Ejecutivo, Acciones Solo Ícono, Ajustes de Calendario y Población de Mes Actual
+* **Fecha:** 06 de Octubre de 2026 / 07 de Octubre de 2026
+* **Responsable:** Nuvex Tecnología
+* **Actividades Realizadas:**
+  1. **Ajuste Responsive y Eliminación de Scroll Permanente:**
+     * En `nuvex-admin-theme.css`, se ajustó el cálculo de ancho del layout a `calc(100% - 19.5rem)` en desktop y `100%` en tablet/mobile, eliminando el corte derecho y el scroll innecesario.
+     * En la tabla de citas, se removió la columna redundante `N° Cita` y se unificó como subtítulo estilizado debajo del nombre de la clienta.
+  2. **Modal de Detalle Informativo Ejecutivo (Solo Lectura):**
+     * Creación de `resources/views/admin/appointments/modal-view-details.blade.php`.
+     * Vista ejecutiva en dos columnas (clienta con enlace directo a WhatsApp y liquidación financiera clara de Total, Abono recibido, Saldo en salón y visor de comprobante).
+     * Eliminación de formularios de edición con inputs aplastados; se configuró como modal de solo lectura con botón único de Cerrar (`modalSubmitAction(false)`).
+     * Activación automática al hacer clic sobre cualquier fila (`->recordAction('viewDetails')`).
+  3. **Botones de Acción en Modo Solo Ícono:**
+     * Separación de acciones fuera del menú desplegable `ActionGroup` a botones directos por fila.
+     * Configuración con `->iconButton()->size('sm')` y tooltips para máxima sobriedad visual según las directivas Nuvex.
+  4. **Corrección Integral del Calendario de Citas:**
+     * Corrección del desfase de días en la cuadrícula mensual: se alineó la cabecera a `LUN` ... `DOM` coincidiendo con el inicio de semana de Carbon.
+     * Corrección de contadores en la vista diaria para evaluar correctamente las instancias del enum `AppointmentStatus`.
+     * Corrección de codificación de caracteres especiales (`Día`, `MIÉ`, `SÁB`, `Período`).
+     * Integración de estilos completos para Dark Mode.
+  5. **Población de Citas del Mes Actual:**
+     * Creación y ejecución de `CurrentMonthAppointmentsSeeder.php` con 29 citas distribuidas en Octubre 2026 (hoy, semana actual y semanas siguientes) con estados confirmados, completados y por verificar con comprobante Nequi.
+  6. **Sincronización con el Cerebro Nuvex:**
+     * Creación del repositorio de conocimiento del proyecto en `cerebro_nuvex/proyectos/proyecto_agendamiento/` (`01_dominio_y_reglas.md`, `02_arquitectura.md`, `03_backlog_tareas.md`, `05_aprendizajes.md`) y actualización del índice central `README.md`.
+  7. **Verificación:**
+     * Suite completa de **37 pruebas automatizadas aprobadas al 100%** (236 aserciones).

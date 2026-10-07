@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { StorageService } from '../../core/services/storage.service';
-import { Service, AvailableSlot, ClientProfile, AppointmentResponse } from '../../core/models/booking.models';
+import { Service, AvailableSlot, ClientProfile, AppointmentResponse, SalonProfile } from '../../core/models/booking.models';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -18,7 +18,7 @@ export class BookingComponent implements OnInit {
   private storage = inject(StorageService);
   private fb = inject(FormBuilder);
 
-  // Stepper State: 1: Catálogo, 2: Fecha y Horario, 3: Datos y Abono, 4: Pase VIP
+  // Stepper State: 1: Servicio, 2: Horario, 3: Tus Datos, 4: Abono, 5: Confirmación VIP
   currentStep = signal<number>(1);
   isLoading = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
@@ -27,6 +27,9 @@ export class BookingComponent implements OnInit {
   // Search & Filter
   searchQuery = signal<string>('');
   selectedCategory = signal<string>('ALL');
+
+  // Salon / Tenant Branding (100% Dynamic)
+  salonProfile = signal<SalonProfile | null>(null);
 
   // Services State
   services = signal<Service[]>([]);
@@ -43,11 +46,42 @@ export class BookingComponent implements OnInit {
     { key: 'DEPILACION', label: 'Depilación' }
   ];
 
-  // Slots State
-  selectedDate = signal<string>('');
+  // Slots & Days State
+  private getInitialDays(): { date: string; day_short: string; day_number: number; is_open: boolean }[] {
+    const days: { date: string; day_short: string; day_number: number; is_open: boolean }[] = [];
+    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const today = new Date();
+
+    for (let i = 0; i < 14; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() + i);
+      const isSunday = d.getDay() === 0;
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const dayNum = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${dayNum}`;
+
+      days.push({
+        date: dateStr,
+        day_short: dayNames[d.getDay()],
+        day_number: d.getDate(),
+        is_open: !isSunday
+      });
+    }
+    return days;
+  }
+
+  availableDays = signal<{ date: string; day_short: string; day_number: number; is_open: boolean }[]>(this.getInitialDays());
+  selectedDate = signal<string>(this.getInitialDays().find(d => d.is_open)?.date || '');
   availableSlots = signal<AvailableSlot[]>([]);
   selectedSlot = signal<AvailableSlot | null>(null);
   loadingSlots = signal<boolean>(false);
+
+  // Step Completion Guards
+  isStep2Valid = computed(() => {
+    return !!(this.selectedService() && this.selectedDate() && this.selectedSlot());
+  });
+  isStep3Valid = signal<boolean>(false);
 
   // Client Profile & Payment State
   clientForm!: FormGroup;
@@ -113,12 +147,74 @@ export class BookingComponent implements OnInit {
     return cat ? cat.label : key;
   }
 
+  formatPrice(amount?: number | string | null): string {
+    const num = Number(amount || 0);
+    return new Intl.NumberFormat('es-CO').format(num);
+  }
+
+  formatTime12h(timeStr?: string): string {
+    if (!timeStr) return '';
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return timeStr;
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    if (isNaN(h) || isNaN(m)) return timeStr;
+    const period = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${period}`;
+  }
+
+  generateUpcomingDays(): void {
+    const days: { date: string; day_short: string; day_number: number; is_open: boolean }[] = [];
+    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const today = new Date();
+
+    for (let i = 0; i < 14; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() + i);
+      const isSunday = d.getDay() === 0;
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const dayNum = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${dayNum}`;
+
+      days.push({
+        date: dateStr,
+        day_short: dayNames[d.getDay()],
+        day_number: d.getDate(),
+        is_open: !isSunday
+      });
+    }
+    this.availableDays.set(days);
+
+    if (!this.selectedDate()) {
+      const firstOpen = days.find(d => d.is_open);
+      if (firstOpen) {
+        this.selectedDate.set(firstOpen.date);
+      }
+    }
+  }
+
+  selectDate(dateStr: string): void {
+    this.selectedDate.set(dateStr);
+    this.selectedSlot.set(null);
+    this.loadSlotsForCurrentSelection();
+  }
+
   ngOnInit(): void {
     this.initForm();
-    this.initDefaultDate();
+    this.generateUpcomingDays();
+    this.loadSalonProfile();
     this.loadServices();
     this.loadNequiInfo();
-    this.loadSavedDeviceProfile();
+  }
+
+  loadSalonProfile(): void {
+    this.api.getSalonProfile().subscribe(profile => {
+      if (profile) {
+        this.salonProfile.set(profile);
+      }
+    });
   }
 
   private initForm(): void {
@@ -129,23 +225,24 @@ export class BookingComponent implements OnInit {
       notes: ['']
     });
 
-    this.clientForm.get('phone')?.valueChanges.subscribe(val => {
-      if (!val) return;
-      const clean = val.replace(/\D/g, '');
-      if (clean.length === 10) {
-        this.lookupClientData(clean);
+    this.clientForm.valueChanges.subscribe(val => {
+      this.isStep3Valid.set(this.checkStep3Validity());
+      if (val && val.phone) {
+        const clean = val.phone.toString().replace(/\D/g, '');
+        if (clean.length === 10) {
+          this.lookupClientData(clean);
+        }
       }
     });
   }
 
-  private initDefaultDate(): void {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const yyyy = tomorrow.getFullYear();
-    const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-    const dd = String(tomorrow.getDate()).padStart(2, '0');
-    this.selectedDate.set(`${yyyy}-${mm}-${dd}`);
+  checkStep3Validity(): boolean {
+    const val = this.clientForm?.value;
+    if (!val) return false;
+    const nameValid = !!(val.name && val.name.trim().length >= 3);
+    const phoneClean = (val.phone || '').toString().replace(/\D/g, '');
+    const phoneValid = phoneClean.length === 10;
+    return nameValid && phoneValid;
   }
 
   loadServices(): void {
@@ -170,10 +267,11 @@ export class BookingComponent implements OnInit {
     if (profile && profile.phone) {
       this.clientForm.patchValue({
         name: profile.name || '',
-        phone: this.formatPhone(profile.phone),
+        phone: profile.phone.replace(/\D/g, ''),
         email: profile.email || '',
         notes: profile.notes || ''
-      }, { emitEvent: false });
+      }, { emitEvent: true });
+      this.isStep3Valid.set(this.checkStep3Validity());
     }
   }
 
@@ -196,6 +294,15 @@ export class BookingComponent implements OnInit {
     this.selectedService.set(svc);
     this.selectedSlot.set(null);
     this.currentStep.set(2);
+    if (!this.availableDays().length) {
+      this.generateUpcomingDays();
+    }
+    if (!this.selectedDate()) {
+      const firstOpen = this.availableDays().find(d => d.is_open);
+      if (firstOpen) {
+        this.selectedDate.set(firstOpen.date);
+      }
+    }
     this.loadSlotsForCurrentSelection();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -257,8 +364,8 @@ export class BookingComponent implements OnInit {
   formatPhoneInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     const clean = input.value.replace(/\D/g, '').substring(0, 10);
-    input.value = this.formatPhone(clean);
     this.clientForm.get('phone')?.setValue(clean, { emitEvent: true });
+    this.isStep3Valid.set(this.checkStep3Validity());
   }
 
   formatPhone(phone: string): string {
@@ -298,24 +405,56 @@ export class BookingComponent implements OnInit {
     this.receiptPreview.set(null);
   }
 
+  canProceedToStep4(): boolean {
+    return this.isStep3Valid();
+  }
+
+  canGoToStep(targetStep: number): boolean {
+    if (targetStep === 1) return true;
+    if (targetStep === 2) return !!this.selectedService();
+    if (targetStep === 3) return this.isStep2Valid();
+    if (targetStep === 4) return this.isStep2Valid() && this.isStep3Valid();
+    if (targetStep === 5) return !!this.bookingResult();
+    return false;
+  }
+
   goToStep(step: number): void {
-    if (step > 1 && !this.selectedService()) {
-      alert('Por favor selecciona un servicio.');
+    // Permite regresar a pasos anteriores completados
+    if (step < this.currentStep()) {
+      this.currentStep.set(step);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    if (step > 2 && (!this.selectedDate() || !this.selectedSlot())) {
-      alert('Por favor selecciona fecha y horario disponible.');
+
+    // No permite saltarse pasos hacia adelante
+    if (step > this.currentStep() + 1) {
       return;
     }
-    if (step === 3 && this.selectedService()) {
+
+    // Validaciones estrictas por paso
+    if (this.currentStep() === 1 && !this.selectedService()) {
+      alert('Por favor selecciona un tratamiento del catálogo para continuar.');
+      return;
+    }
+
+    if (this.currentStep() === 2 && !this.isStep2Valid()) {
+      alert('Por favor selecciona una fecha con un turno disponible antes de avanzar.');
+      return;
+    }
+
+    if (this.currentStep() === 3 && !this.isStep3Valid()) {
+      this.clientForm.markAllAsTouched();
+      alert('Por favor completa tu Nombre (mínimo 3 caracteres) y tu WhatsApp (10 dígitos) para continuar.');
+      return;
+    }
+
+    if (step === 4 && this.isStep3Valid()) {
       const formVal = this.clientForm.value;
-      if (formVal.phone) {
-        this.storage.saveProfile({
-          name: formVal.name,
-          phone: formVal.phone,
-          email: formVal.email
-        });
-      }
+      this.storage.saveProfile({
+        name: formVal.name,
+        phone: formVal.phone,
+        email: formVal.email
+      });
     }
 
     this.currentStep.set(step);
@@ -327,19 +466,22 @@ export class BookingComponent implements OnInit {
   }
 
   submitBooking(): void {
-    const svc = this.selectedService();
-    const slot = this.selectedSlot();
-    const date = this.selectedDate();
-    const formVal = this.clientForm.value;
-
-    if (!svc || !slot || !date) {
-      alert('Por favor verifica el servicio y horario.');
+    if (!this.selectedService()) {
+      alert('Por favor selecciona un tratamiento.');
+      this.goToStep(1);
       return;
     }
 
-    if (this.clientForm.invalid) {
+    if (!this.isStep2Valid()) {
+      alert('Por favor selecciona una fecha y horario disponible.');
+      this.goToStep(2);
+      return;
+    }
+
+    if (!this.isStep3Valid()) {
       this.clientForm.markAllAsTouched();
-      alert('Por favor completa tu nombre y número de WhatsApp.');
+      alert('Por favor completa tu Nombre y celular WhatsApp.');
+      this.goToStep(3);
       return;
     }
 
@@ -347,6 +489,11 @@ export class BookingComponent implements OnInit {
       alert('Por favor adjunta el comprobante de transferencia Nequi para apartar tu cupo.');
       return;
     }
+
+    const svc = this.selectedService()!;
+    const slot = this.selectedSlot()!;
+    const date = this.selectedDate();
+    const formVal = this.clientForm.value;
 
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
@@ -366,7 +513,7 @@ export class BookingComponent implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.data) {
           this.bookingResult.set(res.data);
-          this.currentStep.set(4);
+          this.currentStep.set(5);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           this.errorMessage.set(res?.message || 'Ocurrió un error al procesar tu cita.');

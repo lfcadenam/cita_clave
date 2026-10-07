@@ -1,0 +1,1047 @@
+/* ==========================================================================
+   NUVEX MODERN CURVE UI — ADMIN & SUPERADMIN FILAMENT THEME
+   Estándar Oficial de Frontend para Dashboards Nuvex Tecnología
+   Paleta: Verde Esmeralda (#00C975) | Slate (#1E293B) | Canvas (#F0F4F8 / #111827)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --nuvex-emerald: #0d9488;
+  --nuvex-emerald-hover: #0f766e;
+  --nuvex-emerald-light: #e6f7f2;
+  --nuvex-bg-light: #F0F4F8;
+  --nuvex-surface-light: #FFFFFF;
+  --nuvex-border-light: #e2f0ea;
+  --nuvex-text-light: #1e3a5f;
+  --nuvex-muted-light: #64748B;
+
+  --nuvex-slate: #1e3a5f;
+  --nuvex-slate-elevated: #244673;
+  --nuvex-bg-dark: #0f172a;
+  --nuvex-surface-dark: #1e293b;
+  --nuvex-border-dark: rgba(255, 255, 255, 0.08);
+  --nuvex-text-dark: #F8FAFC;
+  --nuvex-muted-dark: #94A3B8;
+
+  --nuvex-radius-sidebar: 32px;
+  --nuvex-radius-card: 24px;
+  --nuvex-radius-btn: 14px;
+  --nuvex-radius-input: 14px;
+  --nuvex-radius-badge: 9999px;
+}
+
+/* ==========================================================================
+   1. TIPOGRAFÍA Y CANVAS GLOBAL (SIN SCROLL INNECESARIO)
+   ========================================================================== */
+html {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  background-color: var(--nuvex-bg-light) !important;
+  color: var(--nuvex-text-light) !important;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  height: 100% !important;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  background-color: var(--nuvex-bg-light) !important;
+  color: var(--nuvex-text-light) !important;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden !important;
+  min-height: 100% !important;
+}
+
+.dark html,
+.dark body {
+  background-color: var(--nuvex-bg-dark) !important;
+  color: var(--nuvex-text-dark) !important;
+}
+
+/* Scrollbar Minimalista Nuvex (Solo visible si el contenido excede la pantalla) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nuvex-emerald);
+}
+
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--nuvex-emerald);
+}
+
+/* ==========================================================================
+   2. LAYOUT PRINCIPAL CON CANVAS ESPACIADO (CEREBRO NUVEX ARCHITECTURE)
+   ========================================================================== */
+@media (min-width: 1024px) {
+  /* Sidebar Flotante Curva Nuvex (Fijada a la izquierda en Desktop) */
+  #fi-main-sidebar.fi-sidebar,
+  aside.fi-sidebar,
+  div.fi-sidebar.fi-main-sidebar {
+    width: 17rem !important;
+    min-width: 17rem !important;
+    max-width: 17rem !important;
+    position: fixed !important;
+    top: 1rem !important;
+    bottom: 1rem !important;
+    left: 1.25rem !important;
+    height: calc(100vh - 2rem) !important;
+    border-radius: var(--nuvex-radius-sidebar) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    box-shadow: 0 12px 35px -8px rgba(13, 148, 136, 0.28), 0 4px 12px -2px rgba(0, 0, 0, 0.05) !important;
+    border: none !important;
+    margin: 0 !important;
+    background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%) !important;
+    z-index: 30 !important;
+    transform: none !important;
+    visibility: visible !important;
+  }
+
+  #fi-main-sidebar.fi-sidebar::-webkit-scrollbar,
+  aside.fi-sidebar::-webkit-scrollbar,
+  div.fi-sidebar.fi-main-sidebar::-webkit-scrollbar,
+  .fi-sidebar nav.fi-sidebar-nav::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  .dark #fi-main-sidebar.fi-sidebar,
+  .dark aside.fi-sidebar {
+    background: var(--nuvex-slate) !important;
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.45) !important;
+    border: 1px solid var(--nuvex-border-dark) !important;
+  }
+
+  /* Topbar Nuvex alineada a la derecha de la Sidebar */
+  .fi-topbar-ctn {
+    margin-left: 19.5rem !important;
+    width: calc(100% - 19.5rem) !important;
+    max-width: calc(100% - 19.5rem) !important;
+    padding: 1rem 1.25rem 0.5rem 0 !important;
+    background: transparent !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Layout principal a la derecha de la Sidebar en Desktop */
+  .fi-layout {
+    margin-left: 19.5rem !important;
+    width: calc(100% - 19.5rem) !important;
+    max-width: calc(100% - 19.5rem) !important;
+    padding: 0 1.25rem 1.5rem 0 !important;
+    background-color: transparent !important;
+    min-height: auto !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+
+  .fi-main-ctn {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE MÓVIL Y TABLET (PANTALLAS < 1024px)
+   ========================================================================== */
+@media (max-width: 1023px) {
+  /* Reseteo completo del margen lateral en pantallas pequeñas */
+  .fi-topbar-ctn {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0.5rem 0.75rem !important;
+    background: transparent !important;
+    box-sizing: border-box !important;
+  }
+
+  .fi-layout {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background-color: var(--nuvex-bg-light) !important;
+    padding: 0.5rem 0.75rem 1.25rem 0.75rem !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+
+  .dark .fi-layout {
+    background-color: var(--nuvex-bg-dark) !important;
+  }
+
+  .fi-main-ctn {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Sidebar tipo Drawer Flotante en Móvil */
+  #fi-main-sidebar.fi-sidebar,
+  aside.fi-sidebar,
+  div.fi-sidebar.fi-main-sidebar {
+    position: fixed !important;
+    top: 0.75rem !important;
+    bottom: 0.75rem !important;
+    left: 0.75rem !important;
+    width: min(18rem, calc(100vw - 1.5rem)) !important;
+    max-width: calc(100vw - 1.5rem) !important;
+    height: calc(100vh - 1.5rem) !important;
+    border-radius: 28px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    z-index: 50 !important;
+    background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%) !important;
+    box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.25) !important;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  /* Estado Oculto en Móvil */
+  #fi-main-sidebar.fi-sidebar:not(.fi-sidebar-open) {
+    transform: translateX(-115%) !important;
+  }
+
+  /* Estado Visible al abrir menú en Móvil */
+  #fi-main-sidebar.fi-sidebar.fi-sidebar-open {
+    transform: translateX(0) !important;
+  }
+
+  .fi-sidebar-close-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(15, 23, 42, 0.45) !important;
+    backdrop-filter: blur(4px) !important;
+    z-index: 45 !important;
+  }
+}
+
+main.fi-main {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+/* ==========================================================================
+   3. SIDEBAR BRANDING, SELECTOR Y NAVEGACIÓN
+   ========================================================================== */
+.fi-sidebar header.fi-sidebar-header,
+.fi-sidebar .fi-sidebar-header-ctn,
+.fi-sidebar nav.fi-sidebar-nav {
+  background: transparent !important;
+  border: none !important;
+}
+
+.fi-sidebar header.fi-sidebar-header {
+  padding: 1rem 1.15rem 0.5rem 1.15rem !important;
+}
+
+/* Logo en la Sidebar */
+.fi-logo img {
+  height: 2.2rem !important;
+  max-height: 2.4rem !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
+
+/* Selector de Tenant en la Sidebar */
+.fi-sidebar .fi-tenant-menu-trigger,
+.fi-sidebar .fi-tenant-menu-trigger-btn,
+.fi-sidebar [data-fi-tenant-menu-trigger] {
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #FFFFFF !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  padding: 9px 13px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+  margin: 0 8px 10px 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.fi-sidebar .fi-tenant-menu-trigger:hover,
+.fi-sidebar .fi-tenant-menu-trigger-btn:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.fi-sidebar .fi-tenant-menu-trigger *,
+.fi-sidebar .fi-tenant-menu-trigger-btn *,
+.fi-sidebar .fi-tenant-menu-trigger span,
+.fi-sidebar .fi-tenant-menu-trigger-btn span,
+.fi-sidebar .fi-tenant-menu-trigger p,
+.fi-sidebar .fi-tenant-menu-trigger-btn p {
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+}
+
+.fi-sidebar .fi-tenant-menu-trigger .fi-avatar,
+.fi-sidebar .fi-tenant-menu-trigger-btn .fi-avatar,
+.fi-sidebar .fi-tenant-menu-trigger [class*="avatar"],
+.fi-sidebar .fi-tenant-menu-trigger-btn [class*="avatar"] {
+  background: #1e3a5f !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.6) !important;
+  font-weight: 800 !important;
+}
+
+.fi-sidebar .fi-tenant-menu-trigger svg,
+.fi-sidebar .fi-tenant-menu-trigger-btn svg {
+  color: #FFFFFF !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+/* Rótulos de Grupos de Navegación */
+.fi-sidebar .fi-sidebar-group-label,
+.fi-sidebar .fi-sidebar-group-label span,
+.fi-sidebar .fi-sidebar-group-btn span,
+.fi-sidebar .fi-sidebar-group-header span,
+.fi-sidebar .fi-sidebar-group-header button span {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+  padding-left: 12px !important;
+  margin-top: 8px !important;
+  margin-bottom: 2px !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
+}
+
+.fi-sidebar .fi-sidebar-group-btn svg,
+.fi-sidebar .fi-sidebar-group-header svg {
+  color: #FFFFFF !important;
+  stroke: currentColor !important;
+  opacity: 0.9 !important;
+}
+
+/* Items de Navegación Tipo Píldora — Máximo Contraste Blanco Puro */
+.fi-sidebar .fi-sidebar-item-btn,
+.fi-sidebar .fi-sidebar-item-button,
+.fi-sidebar a.fi-sidebar-item-btn,
+.fi-sidebar a.fi-sidebar-item-button,
+.fi-sidebar .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item-btn span,
+.fi-sidebar .fi-sidebar-item-button span,
+.fi-sidebar a.fi-sidebar-item-btn span,
+.fi-sidebar a.fi-sidebar-item-button span {
+  color: #FFFFFF !important;
+  border-radius: 14px;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) !important;
+}
+
+.fi-sidebar .fi-sidebar-item-btn,
+.fi-sidebar .fi-sidebar-item-button,
+.fi-sidebar a.fi-sidebar-item-btn,
+.fi-sidebar a.fi-sidebar-item-button {
+  margin: 2px 8px !important;
+  padding: 8px 12px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.fi-sidebar .fi-sidebar-item-btn:hover,
+.fi-sidebar .fi-sidebar-item-button:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: translateX(3px) !important;
+}
+
+.fi-sidebar .fi-sidebar-item-btn:hover *,
+.fi-sidebar .fi-sidebar-item-button:hover *,
+.fi-sidebar .fi-sidebar-item-btn:hover .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item-button:hover .fi-sidebar-item-label {
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+}
+
+/* Item Activo en Modo Claro */
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-btn,
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button,
+.fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-btn,
+.fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-button,
+.fi-sidebar .fi-sidebar-item-active > a,
+.fi-sidebar .fi-sidebar-item-active > button {
+  background: rgba(255, 255, 255, 0.28) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-btn *,
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button *,
+.fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-btn *,
+.fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-button * {
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Iconos de la Sidebar */
+.fi-sidebar .fi-sidebar-item-icon,
+.fi-sidebar .fi-sidebar-item-btn svg,
+.fi-sidebar .fi-sidebar-item-button svg,
+.fi-sidebar .fi-sidebar-group-icon,
+.fi-sidebar svg {
+  color: #FFFFFF !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15)) !important;
+}
+
+/* Badges Contadores en Sidebar (ej. Citas '9', Servicios '8') */
+.fi-sidebar .fi-badge,
+.fi-sidebar .fi-sidebar-item-badge,
+.fi-sidebar [class*="badge"] {
+  background: #FFFFFF !important;
+  color: #0d9488 !important;
+  font-weight: 800 !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.fi-sidebar .fi-badge *,
+.fi-sidebar .fi-sidebar-item-badge * {
+  color: #0d9488 !important;
+  font-weight: 800 !important;
+}
+
+/* Sidebar en Modo Oscuro: Pizarra / Slate (#1E293B) */
+.dark .fi-sidebar .fi-sidebar-group-label,
+.dark .fi-sidebar .fi-sidebar-group-btn span {
+  color: var(--nuvex-muted-dark) !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item-btn,
+.dark .fi-sidebar .fi-sidebar-item-button {
+  color: #CBD5E1 !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item-btn:hover,
+.dark .fi-sidebar .fi-sidebar-item-button:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #FFFFFF !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-btn,
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button,
+.dark .fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-btn {
+  background: rgba(0, 201, 117, 0.18) !important;
+  color: var(--nuvex-emerald) !important;
+  box-shadow: 0 4px 14px rgba(0, 201, 117, 0.15) !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item-icon,
+.dark .fi-sidebar .fi-sidebar-item-btn svg {
+  color: #94A3B8 !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon,
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-btn svg {
+  color: var(--nuvex-emerald) !important;
+}
+
+.dark .fi-sidebar .fi-tenant-menu-trigger,
+.dark .fi-sidebar .fi-tenant-menu-trigger-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #F8FAFC !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ==========================================================================
+   4. TOPBAR PÍLDORA ELEVADA
+   ========================================================================== */
+.fi-topbar,
+nav.fi-topbar,
+header.fi-topbar {
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--nuvex-border-light) !important;
+  border-radius: var(--nuvex-radius-card) !important;
+  margin: 0 !important;
+  padding: 0.5rem 1.25rem !important;
+  box-shadow: 0 4px 20px -3px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.3s ease !important;
+}
+
+.dark .fi-topbar,
+.dark nav.fi-topbar,
+.dark header.fi-topbar {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-color: var(--nuvex-border-dark) !important;
+  box-shadow: 0 6px 22px -3px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Buscador en Topbar */
+.fi-topbar .fi-global-search-field input,
+.fi-topbar input[type="search"] {
+  border-radius: var(--nuvex-radius-badge) !important;
+  border: 1px solid #CBD5E1 !important;
+  background-color: #F8FAFC !important;
+  font-size: 13px !important;
+  padding: 8px 16px 8px 36px !important;
+}
+
+.dark .fi-topbar .fi-global-search-field input,
+.dark .fi-topbar input[type="search"] {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: #182234 !important;
+  color: #F8FAFC !important;
+}
+
+/* ==========================================================================
+   5. BOTONES DE ACCIÓN DE CABECERA (HEADER ACTIONS EN LISTAS)
+   ========================================================================== */
+.fi-page {
+  gap: 1rem !important;
+}
+
+.fi-page-header {
+  margin-bottom: 0.5rem !important;
+}
+
+.fi-page-header-actions-ctn {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+}
+
+.fi-page-header-actions-ctn a.fi-btn,
+.fi-page-header-actions-ctn button.fi-btn {
+  border-radius: var(--nuvex-radius-btn) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  padding: 8px 18px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Botón Secundario (ej: Vista Calendario) */
+.fi-page-header-actions-ctn a.fi-btn:not(.fi-color-primary),
+.fi-page-header-actions-ctn button.fi-btn:not(.fi-color-primary) {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.dark .fi-page-header-actions-ctn a.fi-btn:not(.fi-color-primary),
+.dark .fi-page-header-actions-ctn button.fi-btn:not(.fi-color-primary) {
+  background: var(--nuvex-surface-dark) !important;
+  border-color: var(--nuvex-border-dark) !important;
+  color: #F8FAFC !important;
+}
+
+.fi-page-header-actions-ctn a.fi-btn:not(.fi-color-primary):hover,
+.fi-page-header-actions-ctn button.fi-btn:not(.fi-color-primary):hover {
+  background: #F8FAFC !important;
+  border-color: #94A3B8 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ==========================================================================
+   6. TARJETAS ELEVADAS SUAVES (SOFT NEUMORPHIC CARDS)
+   ========================================================================== */
+.fi-section,
+.fi-ta-ctn,
+.fi-wi-stats-overview-stat,
+.fi-wi-chart,
+.fi-card {
+  border-radius: var(--nuvex-radius-card) !important;
+  border: 1px solid var(--nuvex-border-light) !important;
+  background-color: var(--nuvex-surface-light) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.035), 0 8px 10px -6px rgba(0, 0, 0, 0.025) !important;
+  overflow: hidden !important;
+  transition: all 0.25s ease !important;
+}
+
+.dark .fi-section,
+.dark .fi-ta-ctn,
+.dark .fi-wi-stats-overview-stat,
+.dark .fi-wi-chart,
+.dark .fi-card {
+  border-color: var(--nuvex-border-dark) !important;
+  background-color: var(--nuvex-surface-dark) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ==========================================================================
+   7. TARJETAS KPI CON BADGE CIRCULAR (KPI STAT WIDGETS)
+   ========================================================================== */
+.fi-wi-stats-overview-stat {
+  position: relative !important;
+  padding: 1.5rem 1.65rem !important;
+  border-radius: 24px !important;
+  background-color: #FFFFFF !important;
+  border: 1px solid var(--nuvex-border-light) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.035), 0 8px 10px -6px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.25s ease !important;
+}
+
+.dark .fi-wi-stats-overview-stat {
+  background-color: var(--nuvex-slate) !important;
+  border-color: var(--nuvex-border-dark) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
+}
+
+.fi-wi-stats-overview-stat:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.06), 0 10px 15px -6px rgba(0, 0, 0, 0.03) !important;
+}
+
+.dark .fi-wi-stats-overview-stat:hover {
+  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.45) !important;
+}
+
+.fi-wi-stats-overview-stat-content {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.fi-wi-stats-overview-stat-label-ctn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.fi-wi-stats-overview-stat-label {
+  font-size: 0.75rem !important;
+  font-weight: 800 !important;
+  color: var(--nuvex-muted-light) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+}
+
+.dark .fi-wi-stats-overview-stat-label {
+  color: var(--nuvex-muted-dark) !important;
+}
+
+.fi-wi-stats-overview-stat-value {
+  font-size: 1.85rem !important;
+  font-weight: 800 !important;
+  color: var(--nuvex-text-light) !important;
+  line-height: 1.2 !important;
+  margin-top: 0.35rem !important;
+  letter-spacing: -0.02em !important;
+}
+
+.dark .fi-wi-stats-overview-stat-value {
+  color: var(--nuvex-text-dark) !important;
+}
+
+.fi-wi-stats-overview-stat-description {
+  margin-top: 0.65rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  color: var(--nuvex-muted-light) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+}
+
+.dark .fi-wi-stats-overview-stat-description {
+  color: var(--nuvex-muted-dark) !important;
+}
+
+/* Badge circular flotante en esquina superior derecha de la tarjeta KPI */
+.fi-wi-stats-overview-stat-label-ctn svg {
+  position: absolute !important;
+  top: -0.25rem !important;
+  right: 0 !important;
+  width: 2.6rem !important;
+  height: 2.6rem !important;
+  padding: 8px !important;
+  border-radius: 50% !important;
+  background-color: var(--nuvex-emerald-light) !important;
+  color: var(--nuvex-emerald) !important;
+  box-shadow: 0 4px 12px rgba(0, 201, 117, 0.15) !important;
+  flex-shrink: 0 !important;
+}
+
+.dark .fi-wi-stats-overview-stat-label-ctn svg {
+  background-color: rgba(0, 201, 117, 0.16) !important;
+  color: var(--nuvex-emerald) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+.fi-wi-stats-overview-stat-description svg {
+  display: none !important;
+}
+
+/* ==========================================================================
+   8. TABLAS ELEGANTES, ENCABEZADOS Y BUSCADOR
+   ========================================================================== */
+.fi-ta-ctn {
+  border-radius: var(--nuvex-radius-card) !important;
+}
+
+.fi-ta-header {
+  padding: 12px 18px !important;
+  border-bottom: 1px solid var(--nuvex-border-light) !important;
+  background-color: #FFFFFF !important;
+}
+
+.dark .fi-ta-header {
+  background-color: var(--nuvex-surface-dark) !important;
+  border-bottom-color: var(--nuvex-border-dark) !important;
+}
+
+.fi-ta-table thead tr {
+  background-color: #F8FAFC !important;
+  border-bottom: 1px solid var(--nuvex-border-light) !important;
+}
+
+.dark .fi-ta-table thead tr {
+  background-color: #182234 !important;
+  border-bottom-color: var(--nuvex-border-dark) !important;
+}
+
+.fi-ta-table thead th {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: var(--nuvex-muted-light) !important;
+  padding: 10px 14px !important;
+}
+
+.dark .fi-ta-table thead th {
+  color: var(--nuvex-muted-dark) !important;
+}
+
+.fi-ta-table tbody tr {
+  transition: background-color 0.15s ease !important;
+  border-bottom: 1px solid #F1F5F9 !important;
+}
+
+.dark .fi-ta-table tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.fi-ta-table tbody tr:hover {
+  background-color: #F8FAFC !important;
+}
+
+.dark .fi-ta-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+.fi-ta-table tbody td {
+  padding: 10px 14px !important;
+  font-size: 13px !important;
+}
+
+.fi-ta-content {
+  scrollbar-width: thin !important;
+}
+
+/* Buscador en la tabla: Píldora única y limpia */
+.fi-ta-search-field .fi-input-wrp {
+  border-radius: 9999px !important;
+  border: 1px solid #CBD5E1 !important;
+  background-color: #F8FAFC !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  transition: all 0.2s ease !important;
+}
+
+.fi-ta-search-field .fi-input-wrp:focus-within {
+  border-color: var(--nuvex-emerald) !important;
+  box-shadow: 0 0 0 3px rgba(0, 201, 117, 0.15) !important;
+  background-color: #FFFFFF !important;
+}
+
+.dark .fi-ta-search-field .fi-input-wrp {
+  background-color: #182234 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.dark .fi-ta-search-field .fi-input-wrp:focus-within {
+  border-color: var(--nuvex-emerald) !important;
+  background-color: #1E293B !important;
+}
+
+.fi-ta-search-field input,
+.fi-ta-search-field input.fi-input {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
+  font-size: 13px !important;
+}
+
+.dark .fi-ta-search-field input,
+.dark .fi-ta-search-field input.fi-input {
+  background: transparent !important;
+  border: none !important;
+  color: #F8FAFC !important;
+}
+
+/* ==========================================================================
+   9. BOTONES NUVEX (VERDE ESMERALDA)
+   ========================================================================== */
+.fi-btn-primary,
+button.fi-btn.fi-color-primary,
+a.fi-btn.fi-color-primary {
+  background: var(--nuvex-emerald) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: var(--nuvex-radius-btn) !important;
+  font-weight: 600 !important;
+  padding: 8px 18px !important;
+  box-shadow: 0 4px 14px rgba(0, 201, 117, 0.28) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.fi-btn-primary:hover,
+button.fi-btn.fi-color-primary:hover,
+a.fi-btn.fi-color-primary:hover {
+  background: var(--nuvex-emerald-hover) !important;
+  box-shadow: 0 6px 20px rgba(0, 201, 117, 0.38) !important;
+  transform: translateY(-1px) !important;
+}
+
+.fi-btn-color-gray,
+button.fi-btn.fi-color-gray {
+  border-radius: var(--nuvex-radius-btn) !important;
+  border-color: #CBD5E1 !important;
+}
+
+/* ==========================================================================
+   10. BADGES Y PÍLDORAS (DISEÑO LIMPIO SIN EMOJIS)
+   ========================================================================== */
+.fi-badge {
+  border-radius: var(--nuvex-radius-badge) !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  letter-spacing: 0.02em !important;
+  padding: 4px 12px !important;
+}
+
+/* Badges sobre botones de icono (como el embudo de filtros) */
+.fi-icon-btn-badge-ctn {
+  position: absolute !important;
+  top: -4px !important;
+  right: -4px !important;
+  z-index: 5 !important;
+  pointer-events: none !important;
+}
+
+.fi-icon-btn-badge-ctn .fi-badge {
+  min-width: 18px !important;
+  height: 18px !important;
+  padding: 0 4px !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 9999px !important;
+  line-height: 1 !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
+}
+
+.fi-icon-btn {
+  border-radius: 12px !important;
+  transition: all 0.2s ease !important;
+}
+
+.fi-icon-btn:hover {
+  background-color: rgba(0, 201, 117, 0.08) !important;
+}
+
+.dark .fi-icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ==========================================================================
+   11. INPUTS, SELECTS Y FORMULARIOS
+   ========================================================================== */
+.fi-input-wrp {
+  border-radius: var(--nuvex-radius-input) !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.fi-input-wrp:focus-within {
+  border-color: var(--nuvex-emerald) !important;
+  box-shadow: 0 0 0 3px rgba(0, 201, 117, 0.18) !important;
+}
+
+.dark .fi-input-wrp {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background-color: #182234 !important;
+}
+
+.fi-input, .fi-select, select.fi-select-input, input.fi-input {
+  font-size: 13.5px !important;
+}
+
+/* ==========================================================================
+   12. MODALES ELEVADOS
+   ========================================================================== */
+.fi-modal-window {
+  border-radius: 26px !important;
+  border: 1px solid var(--nuvex-border-light) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden !important;
+}
+
+.dark .fi-modal-window {
+  background-color: var(--nuvex-surface-dark) !important;
+  border-color: var(--nuvex-border-dark) !important;
+}
+
+/* ==========================================================================
+   13. PANTALLA DE LOGIN (FILAMENT SIMPLE LAYOUT)
+   ========================================================================== */
+.fi-simple-layout {
+  background: radial-gradient(circle at 50% 18%, rgba(0, 201, 117, 0.08) 0%, transparent 55%), var(--nuvex-bg-light) !important;
+  min-height: 100vh;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1.5rem !important;
+}
+
+.dark .fi-simple-layout {
+  background: radial-gradient(circle at 50% 18%, rgba(0, 201, 117, 0.06) 0%, transparent 55%), var(--nuvex-bg-dark) !important;
+}
+
+.fi-simple-main {
+  background: var(--nuvex-surface-light) !important;
+  border-radius: var(--nuvex-radius-sidebar) !important;
+  padding: 2.5rem 2rem !important;
+  border: 1px solid var(--nuvex-border-light) !important;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(226, 232, 240, 0.8) !important;
+  max-width: 440px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+
+.dark .fi-simple-main {
+  background: var(--nuvex-surface-dark) !important;
+  border-color: var(--nuvex-border-dark) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+
+.fi-simple-header-heading {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  color: var(--nuvex-text-light) !important;
+  letter-spacing: -0.02em !important;
+  text-align: center !important;
+}
+
+.dark .fi-simple-header-heading {
+  color: var(--nuvex-text-dark) !important;
+}
+
+/* ==========================================================================
+   14. CALENDARIO INTERACTIVO NUVEX
+   ========================================================================== */
+.salonesgo-grid-layout {
+  border-radius: var(--nuvex-radius-card) !important;
+  border: 1px solid var(--nuvex-border-light) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.035), 0 8px 10px -6px rgba(0, 0, 0, 0.025) !important;
+}
+
+.dark .salonesgo-container {
+  color: var(--nuvex-text-dark) !important;
+}
+
+.dark .salonesgo-grid-layout {
+  background-color: var(--nuvex-surface-dark) !important;
+  border-color: var(--nuvex-border-dark) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .salonesgo-left-panel {
+  border-color: var(--nuvex-border-dark) !important;
+}
+
+.dark .filter-card {
+  background-color: #182234 !important;
+  border-color: var(--nuvex-border-dark) !important;
+}
+
+.dark .filter-pill-btn {
+  background-color: var(--nuvex-surface-dark) !important;
+  border-color: var(--nuvex-border-dark) !important;
+  color: #CBD5E1 !important;
+}
+
+.dark .filter-pill-btn:hover {
+  background-color: rgba(0, 201, 117, 0.12) !important;
+  color: var(--nuvex-emerald) !important;
+}
+
+.dark .cal-nav-btn {
+  background-color: #182234 !important;
+  border-color: var(--nuvex-border-dark) !important;
+  color: #F8FAFC !important;
+}
+
+.dark .cal-col-header,
+.dark .cal-grid-body {
+  background-color: var(--nuvex-surface-dark) !important;
+  border-color: var(--nuvex-border-dark) !important;
+}
+
+.dark .cal-day-cell {
+  background-color: var(--nuvex-surface-dark) !important;
+  border-color: var(--nuvex-border-dark) !important;
+}
+
+.dark .cal-time-slot {
+  border-color: rgba(255, 255, 255, 0.04) !important;
+}

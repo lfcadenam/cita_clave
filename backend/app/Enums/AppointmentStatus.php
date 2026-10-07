@@ -15,13 +15,13 @@ enum AppointmentStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::PENDING_DEPOSIT => '⏳ Pendiente de Abono',
-            self::PENDING_VERIFICATION => '📸 Comprobante Nequi por Verificar',
-            self::CONFIRMED => '✅ Cita Confirmada',
-            self::IN_PROGRESS => '💆‍♀️ En Atención',
-            self::COMPLETED => '🎉 Servicio Completado',
-            self::CANCELLED => '❌ Cancelada',
-            self::NO_SHOW => '⚠️ Inasistencia (No-Show)',
+            self::PENDING_DEPOSIT => 'Pendiente de Abono',
+            self::PENDING_VERIFICATION => 'Comprobante por Verificar',
+            self::CONFIRMED => 'Cita Confirmada',
+            self::IN_PROGRESS => 'En Atención',
+            self::COMPLETED => 'Servicio Completado',
+            self::CANCELLED => 'Cancelada',
+            self::NO_SHOW => 'Inasistencia',
         };
     }
 

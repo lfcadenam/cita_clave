@@ -19,6 +19,8 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+use Filament\View\PanelsRenderHook;
+
 class SuperAdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -32,36 +34,35 @@ class SuperAdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.8rem')
             ->favicon(fn () => asset('favicon.png'))
             ->font('Plus Jakarta Sans')
-            ->darkMode(false)
-            ->sidebarCollapsibleOnDesktop()
+            ->darkMode(true)
+            ->sidebarWidth('17.5rem')
             ->maxContentWidth(Width::Full)
             ->colors([
-                'primary' => Color::Emerald,
+                'primary' => Color::hex('#0d9488'),
                 'danger' => Color::Red,
                 'gray' => Color::Slate,
-                'info' => Color::Sky,
-                'success' => Color::Emerald,
+                'info' => Color::hex('#1e3a5f'),
+                'success' => Color::hex('#0d9488'),
                 'warning' => Color::Amber,
             ])
             ->renderHook(
-                'panels::head.done',
-                fn (): string => '<link rel="stylesheet" href="/css/salonesgo-admin-theme.css">'
+                PanelsRenderHook::HEAD_END,
+                fn (): string => '<link rel="stylesheet" href="' . asset('css/nuvex-admin-theme.css') . '?v=' . (file_exists(public_path('css/nuvex-admin-theme.css')) ? filemtime(public_path('css/nuvex-admin-theme.css')) : time()) . '">'
             )
             ->navigationGroups([
                 NavigationGroup::make()
-                    ->label('EMPRESAS & SALONES')
-                    ->icon('heroicon-o-building-office-2'),
+                    ->label('EMPRESAS & SALONES'),
                 NavigationGroup::make()
-                    ->label('SISTEMA & PLATAFORMA')
-                    ->icon('heroicon-o-cpu-chip'),
+                    ->label('SISTEMA & PLATAFORMA'),
             ])
             ->discoverResources(in: app_path('Filament/SuperAdmin/Resources'), for: 'App\\Filament\\SuperAdmin\\Resources')
             ->discoverPages(in: app_path('Filament/SuperAdmin/Pages'), for: 'App\\Filament\\SuperAdmin\\Pages')
             ->pages([
                 Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/SuperAdmin/Widgets'), for: 'App\\Filament\\SuperAdmin\\Widgets')
-            ->widgets([])
+            ->widgets([
+                \App\Filament\SuperAdmin\Widgets\PlatformStatsOverviewWidget::class,
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

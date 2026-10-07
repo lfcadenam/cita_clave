@@ -39,22 +39,22 @@ class StatsOverviewWidget extends BaseWidget
         return [
             Stat::make('Citas para Hoy', $todayAppointments)
                 ->description('Agendadas para el día de hoy')
-                ->descriptionIcon('heroicon-m-calendar-days')
+                ->icon('heroicon-o-calendar-days')
                 ->color('primary'),
 
             Stat::make('Nequi por Aprobar', $pendingNequiCount)
-                ->description($pendingNequiCount > 0 ? '¡Comprobantes esperando tu 1-clic!' : 'Al día, sin transferencias pendientes')
-                ->descriptionIcon('heroicon-m-clock')
+                ->description($pendingNequiCount > 0 ? 'Comprobantes pendientes de validación' : 'Al día, sin transferencias pendientes')
+                ->icon('heroicon-o-camera')
                 ->color($pendingNequiCount > 0 ? 'warning' : 'success'),
 
             Stat::make('Anticipos Recaudados', '$ ' . number_format($totalRevenueDeposits, 0, ',', '.') . ' COP')
                 ->description('Total depósitos confirmados')
-                ->descriptionIcon('heroicon-m-banknotes')
+                ->icon('heroicon-o-banknotes')
                 ->color('success'),
 
             Stat::make('Lista de Espera Activa', $activeWaitlistCount)
                 ->description('Clientas esperando cupo disponible')
-                ->descriptionIcon('heroicon-m-user-group')
+                ->icon('heroicon-o-user-group')
                 ->color('info'),
         ];
     }

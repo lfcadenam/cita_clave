@@ -1,20 +1,21 @@
-<div class="studio-canvas font-sans antialiased text-zinc-800 pb-20">
+<div class="studio-canvas font-sans antialiased text-slate-800 min-h-screen pb-36 sm:pb-32 lg:pb-28 selection:bg-[#e6f7f2] selection:text-[#1e3a5f]">
 
-  <!-- TOP NAVIGATION BAR (SAAS HEADER STYLE) -->
-  <!-- TOP NAVIGATION BAR (SAAS HEADER STYLE) -->
+  <!-- ========================================================================= -->
+  <!-- TOP NAVIGATION BAR (LUXURY SAAS HEADER)                                    -->
+  <!-- ========================================================================= -->
   <header class="bg-white/95 backdrop-blur-md border-b border-[#e2f0ea] sticky top-0 z-40 shadow-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-3">
+    <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-4 sm:px-6 h-18 sm:h-20 flex items-center justify-between gap-3">
       
       <!-- Brand Logo & Studio Identity -->
       <div class="flex items-center gap-3 cursor-pointer group min-w-0" (click)="resetBooking()">
         <img src="/assets/brand/citaclave-logo.png" 
              alt="Cita Clave" 
-             class="h-9 sm:h-11 md:h-12 w-auto object-contain shrink-0 transition-transform group-hover:scale-[1.02]"
+             class="h-9 sm:h-11 w-auto object-contain shrink-0 transition-transform group-hover:scale-[1.02]"
              (error)="$any($event.target).style.display='none'; logoFallback.style.display='flex'" />
         
         <!-- Fallback if image asset is pending -->
         <div #logoFallback style="display:none;" class="items-center gap-2 shrink-0">
-          <div class="w-10 h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center text-white shadow-xs">
+          <div class="w-10 h-10 rounded-2xl bg-[#1e3a5f] flex items-center justify-center text-white shadow-xs">
             <svg class="w-5 h-5 text-[#0d9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
@@ -22,813 +23,732 @@
           <span class="font-bold text-base text-[#1e3a5f]">Cita Clave</span>
         </div>
 
-        <div class="border-l border-slate-200 pl-2.5 hidden sm:block">
+        <div class="border-l border-slate-200 pl-3 hidden sm:block">
           <div class="flex items-center gap-2">
             <span class="text-xs sm:text-sm font-bold tracking-tight text-[#1e3a5f] leading-none">
-              Paola Aguilera
-            </span>
-            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#e6f7f2] text-[#0d9488] border border-[#e2f0ea]">
-              <span class="w-1 h-1 rounded-full bg-[#0d9488]"></span>
-              <span>1 a 1</span>
+              {{ salonProfile()?.display_name || 'Paola Aguilera' }}
             </span>
           </div>
-          <span class="text-[10px] text-zinc-400 font-medium block mt-0.5">
-            Estudio de Belleza & Miradas • Bogotá
+          <span class="text-[10px] text-[#0d9488] font-bold tracking-wider uppercase block mt-0.5">
+            {{ salonProfile()?.business_type || 'ESTUDIO DE BELLEZA' }}
           </span>
         </div>
       </div>
 
-      <!-- Top Right Status Badges & Quick Action -->
-      <div class="flex items-center gap-2 shrink-0">
-        <div class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold">
-          <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+      <!-- Top Right Actions -->
+      <div class="flex items-center gap-2.5 shrink-0">
+        <a href="/reserva/consulta" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
-          <span>Agenda Abierta</span>
-        </div>
+          <span>Consultar Cita</span>
+        </a>
 
-        <div class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-50 text-zinc-700 border border-slate-200 text-xs font-semibold">
-          <span class="text-amber-500">★</span>
-          <span>4.9</span>
-        </div>
-
-        <a href="https://wa.me/573106080402" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors">
-          <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+        <a [href]="salonProfile()?.whatsapp_url || 'https://wa.me/573103248385'" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-bold shadow-md shadow-teal-500/20 transition-all hover:scale-[1.02]">
+          <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.542 1.897.82 2.791.82h.001c3.181 0 5.768-2.586 5.768-5.766 0-3.18-2.587-5.766-5.769-5.766zm3.376 8.204c-.149.419-.747.781-1.026.832-.27.05-.62.072-1.808-.419-1.52-.628-2.502-2.18-2.578-2.282-.075-.102-.614-.817-.614-1.558 0-.741.388-1.106.526-1.255.138-.149.3-.186.4-.186.1 0 .2.001.288.006.094.005.218-.035.341.262.126.305.433 1.056.471 1.134.038.077.063.168.013.268-.05.101-.075.163-.15.251-.075.088-.158.197-.225.264-.075.075-.153.156-.066.305.087.149.387.639.83 1.033.57.507 1.051.664 1.2.739.149.075.237.063.325-.038.088-.101.376-.438.476-.588.1-.15.2-.125.338-.075.138.05.877.413 1.027.488.15.075.25.112.288.175.037.063.037.363-.112.782z"/>
           </svg>
-          <span class="text-xs font-semibold">WhatsApp</span>
+          <span class="text-xs font-bold">WhatsApp</span>
         </a>
       </div>
 
     </div>
   </header>
 
-  <!-- MAIN WORKFLOW CONTAINER -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-8">
+  <!-- ========================================================================= -->
+  <!-- MAIN WORKFLOW CONTAINER                                                    -->
+  <!-- ========================================================================= -->
+  <main [ngClass]="currentStep() === 1 ? 'max-w-7xl 2xl:max-w-[1536px]' : 'max-w-4xl'" class="mx-auto px-4 sm:px-6 py-6 sm:py-10 transition-all duration-300">
     
-    <!-- ========================================================================= -->
-    <!-- STEP 1: FULL-WIDTH 3-COLUMN SERVICES CATALOG                              -->
-    <!-- ========================================================================= -->
-    <div *ngIf="currentStep() === 1" class="space-y-4 sm:space-y-6 animate-fade-in">
-      
-      <!-- Section Title Bar (Modern Responsive SaaS Style) -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
-        <div class="flex items-center gap-2 sm:gap-2.5">
-          <div class="w-1.5 h-5 rounded-full bg-[#0d9488] shrink-0"></div>
-          <h1 class="text-lg sm:text-xl font-bold text-[#1e3a5f] tracking-tight">
-            Catálogo de Tratamientos
-          </h1>
-          <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#e6f7f2] text-[#0d9488] border border-[#e2f0ea]">
-            Disponibles
-          </span>
+    <!-- Hero / Presentation Banner -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#e6f7f2] text-[#0d9488] text-[11px] font-bold uppercase tracking-widest mb-3 border border-[#e2f0ea] shadow-xs">
+        <svg class="w-3.5 h-3.5 text-[#0d9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+        </svg>
+        <span>AGENDA EN LÍNEA • CONFIRMACIÓN INMEDIATA</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
+        Reserva tu Experiencia de Belleza
+      </h1>
+      <p class="text-slate-600 text-sm sm:text-base mt-2 max-w-xl mx-auto leading-relaxed">
+        Realza tu mirada y cuida tu piel con tratamientos personalizados en un ambiente exclusivo.
+      </p>
+    </div>
+
+    <!-- Stepper Navigation (4 Steps with Connected Progress Bar) -->
+    <div class="flex items-center justify-between mb-8 px-4 sm:px-12 relative max-w-2xl mx-auto">
+      <div class="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-1 bg-[#e6f7f2] -z-0"></div>
+      <div class="absolute left-10 top-1/2 -translate-y-1/2 h-1 bg-[#0d9488] -z-0 transition-all duration-300"
+           [style.width.%]="((currentStep() > 4 ? 4 : currentStep()) - 1) / 3 * 100"></div>
+
+      <!-- Step 1 Indicator: Clickable only to return from a later step -->
+      <button type="button" 
+              (click)="currentStep() > 1 ? goToStep(1) : null" 
+              [disabled]="currentStep() <= 1"
+              class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none"
+              [ngClass]="currentStep() > 1 ? 'cursor-pointer' : 'cursor-default'">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
+             [ngClass]="currentStep() >= 1 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+          <svg *ngIf="currentStep() > 1" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span *ngIf="currentStep() <= 1">1</span>
         </div>
-        <p class="text-xs text-zinc-500 font-normal pl-3.5 sm:pl-0">
-          Selecciona un tratamiento para ver horarios
-        </p>
+        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 1 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Servicio</span>
+      </button>
+
+      <!-- Step 2 Indicator: Clickable only to return from step 3 or 4 -->
+      <button type="button" 
+              (click)="currentStep() > 2 ? goToStep(2) : null" 
+              [disabled]="currentStep() <= 2"
+              class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none"
+              [ngClass]="currentStep() > 2 ? 'cursor-pointer' : 'cursor-default'">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
+             [ngClass]="currentStep() >= 2 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+          <svg *ngIf="currentStep() > 2" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span *ngIf="currentStep() <= 2">2</span>
+        </div>
+        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 2 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Horario</span>
+      </button>
+
+      <!-- Step 3 Indicator: Clickable only to return from step 4 -->
+      <button type="button" 
+              (click)="currentStep() > 3 ? goToStep(3) : null" 
+              [disabled]="currentStep() <= 3"
+              class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none"
+              [ngClass]="currentStep() > 3 ? 'cursor-pointer' : 'cursor-default'">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
+             [ngClass]="currentStep() >= 3 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+          <svg *ngIf="currentStep() > 3" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span *ngIf="currentStep() <= 3">3</span>
+        </div>
+        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 3 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Tus Datos</span>
+      </button>
+
+      <!-- Step 4 Indicator: Clickable only if on step 5 to return -->
+      <button type="button" 
+              (click)="currentStep() > 4 ? goToStep(4) : null" 
+              [disabled]="currentStep() <= 4"
+              class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none"
+              [ngClass]="currentStep() > 4 ? 'cursor-pointer' : 'cursor-default'">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
+             [ngClass]="currentStep() >= 4 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+          <svg *ngIf="currentStep() > 4" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span *ngIf="currentStep() <= 4">4</span>
+        </div>
+        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 4 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Abono</span>
+      </button>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- STEP 1: SELECT SERVICE (MODERN BEAUTY CARDS GRID)                         -->
+    <!-- ========================================================================= -->
+    <div *ngIf="currentStep() === 1" class="animate-fade-in">
+      
+      <!-- Filter & Search Controls -->
+      <div class="mb-6 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 class="font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">1. Selecciona tu Tratamiento</h2>
+          
+          <!-- Search Input -->
+          <div class="relative w-full sm:w-80">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" 
+                   [value]="searchQuery()"
+                   (input)="searchQuery.set($any($event.target).value)" 
+                   placeholder="Buscar tratamiento..."
+                   class="w-full pl-9 pr-3.5 py-2 rounded-full border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488] bg-white shadow-xs font-medium">
+          </div>
+        </div>
+
+        <!-- Category Pills -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar scroll-smooth">
+          <button type="button" 
+                  *ngFor="let cat of categories"
+                  (click)="selectedCategory.set(cat.key)"
+                  class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer"
+                  [ngClass]="selectedCategory() === cat.key ? (cat.key === 'ALL' ? 'bg-slate-900 text-white shadow-md' : 'bg-[#0d9488] text-white shadow-md shadow-teal-500/20') : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#e6f7f2]'">
+            {{ cat.label }}
+          </button>
+        </div>
       </div>
 
-      <!-- Category Filter Bar & Search Toolbar (Sleek SaaS Select Style) -->
-      <div class="bg-white rounded-2xl p-3 sm:p-4 border border-[#e2f0ea] shadow-xs">
-        
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+      <!-- Loading State -->
+      <div *ngIf="isLoading()" class="py-16 text-center">
+        <div class="w-10 h-10 border-3 border-[#0d9488] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+        <p class="text-xs text-slate-500 font-medium">Cargando catálogo de tratamientos exclusivos...</p>
+      </div>
+
+      <!-- Modern Beauty Cards Grid (4 Columns on Desktop with Expanded Width) -->
+      <div *ngIf="!isLoading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 min-[1150px]:grid-cols-4 2xl:grid-cols-4 gap-6">
+        <div *ngFor="let service of filteredServices()"
+             (click)="selectService(service)"
+             class="group rounded-3xl border transition-all duration-300 cursor-pointer bg-white overflow-hidden flex flex-col justify-between h-full hover:shadow-xl hover:shadow-teal-500/10 hover:-translate-y-1 relative"
+             [ngClass]="selectedService()?.id === service.id ? 'border-[#0d9488] ring-2 ring-[#0d9488]/30 shadow-lg shadow-teal-200/60 bg-gradient-to-b from-[#e6f7f2]/40 to-white' : 'border-slate-200/80 hover:border-[#e2f0ea]'">
           
-          <!-- 1. Search Input (7 Columns on Desktop, Full Width on Mobile) -->
-          <div class="sm:col-span-7 relative">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-zinc-400 pointer-events-none">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-            </span>
-            <input type="text"
-                   [ngModel]="searchQuery()"
-                   (ngModelChange)="searchQuery.set($event)"
-                   placeholder="Buscar por nombre o palabra clave..."
-                   class="w-full pl-10 pr-8 py-2.5 text-xs sm:text-sm bg-slate-50/80 hover:bg-slate-50 border border-slate-200/90 rounded-xl text-zinc-900 placeholder-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488] transition-all font-medium">
-            <button *ngIf="searchQuery()" (click)="searchQuery.set('')" class="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-600 p-0.5 cursor-pointer">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          <!-- Selected Ribbon Badge -->
+          <div *ngIf="selectedService()?.id === service.id" class="absolute top-3 right-3 z-20 px-3 py-1 rounded-full bg-[#0d9488] text-white text-[10px] font-bold uppercase tracking-wider shadow-md flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>Elegido</span>
+          </div>
+
+          <div>
+            <!-- Image with Overlay & Floating Badges -->
+            <div class="relative h-48 sm:h-52 w-full overflow-hidden bg-[#e6f7f2]">
+              <img [src]="getServiceImage(service)" [alt]="service.name"
+                   class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out">
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-black/20"></div>
+
+              <!-- Category Pill (Top Left) -->
+              <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
+                {{ getCategoryLabel(service.category || 'FACIAL') }}
+              </span>
+
+              <!-- Duration Badge (Bottom Left) -->
+              <span class="absolute bottom-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold flex items-center gap-1 shadow-xs">
+                <svg class="w-3 h-3 text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>{{ service.duration_minutes }} min</span>
+              </span>
+            </div>
+
+            <!-- Content -->
+            <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base leading-snug group-hover:text-[#0d9488] transition-colors line-clamp-2">
+                  {{ service.name }}
+                </h3>
+                <p class="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">
+                  {{ service.description }}
+                </p>
+              </div>
+
+              <!-- Required Deposit Badge -->
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs gap-1">
+                <div class="flex items-center gap-1 text-[#0d9488] font-bold text-[11px] sm:text-xs shrink-0">
+                  <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                  </svg>
+                  <span>Abono: ${{ formatPrice(service.deposit_amount) }}</span>
+                </div>
+                <span class="text-slate-400 font-medium text-[10px] sm:text-[11px] truncate">
+                  Saldo: ${{ formatPrice((service.price || service.base_price || 0) - (service.deposit_amount || 0)) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Price & CTA Footer -->
+          <div class="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 flex items-center justify-between gap-2 mt-3">
+            <div>
+              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Precio Total</span>
+              <span class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                ${{ formatPrice(service.price || service.base_price) }}
+              </span>
+            </div>
+
+            <button type="button"
+                    class="px-4 sm:px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
+                    [ngClass]="selectedService()?.id === service.id ? 'bg-[#0d9488] text-white shadow-teal-500/30' : 'bg-[#e6f7f2] text-[#1e3a5f] hover:bg-[#0d9488] hover:text-white'">
+              <span>{{ selectedService()?.id === service.id ? 'Continuar' : 'Agendar Cita' }}</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
               </svg>
             </button>
           </div>
-
-          <!-- 2. Aesthetic Category Select Dropdown (5 Columns on Desktop, Full Width on Mobile) -->
-          <div class="sm:col-span-5 relative">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#0d9488] pointer-events-none">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-              </svg>
-            </span>
-            
-            <select [ngModel]="selectedCategory()"
-                    (ngModelChange)="selectedCategory.set($event)"
-                    class="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm bg-slate-50/80 hover:bg-slate-50 border border-slate-200/90 rounded-xl text-zinc-800 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488] transition-all cursor-pointer appearance-none">
-              <option value="ALL">Todas las categorías</option>
-              <option *ngFor="let cat of categories.slice(1)" [value]="cat.key">
-                {{ cat.label }}
-              </option>
-            </select>
-
-            <!-- Custom Chevron Down -->
-            <span class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-zinc-400">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </span>
-          </div>
-
         </div>
-
-        <!-- Active Filter Status & Reset (if filter active) -->
-        <div *ngIf="selectedCategory() !== 'ALL' || searchQuery()" class="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs animate-fade-in">
-          <div class="flex items-center gap-1.5 text-zinc-500 min-w-0">
-            <span class="text-[11px] shrink-0">Filtrado por:</span>
-            <span *ngIf="selectedCategory() !== 'ALL'" class="inline-flex items-center gap-1 font-bold text-[#0d9488] bg-[#e6f7f2] px-2 py-0.5 rounded-md border border-[#ccfbf1] text-[11px] truncate">
-              {{ getCategoryLabel(selectedCategory()) }}
-              <button (click)="selectedCategory.set('ALL')" class="hover:text-emerald-900 cursor-pointer ml-0.5">✕</button>
-            </span>
-            <span *ngIf="searchQuery()" class="inline-flex items-center gap-1 font-medium text-zinc-700 bg-slate-100 px-2 py-0.5 rounded-md text-[11px] truncate">
-              "{{ searchQuery() }}"
-              <button (click)="searchQuery.set('')" class="hover:text-zinc-900 cursor-pointer ml-0.5">✕</button>
-            </span>
-          </div>
-
-          <button (click)="selectedCategory.set('ALL'); searchQuery.set('')" 
-                  class="text-[11px] font-semibold text-[#0d9488] hover:text-[#0f766e] transition-colors cursor-pointer shrink-0 ml-2">
-            Restablecer
-          </button>
-        </div>
-
-      </div>
-
-      <!-- Loading Skeleton (3 Columns) -->
-      <div *ngIf="isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-        <div *ngFor="let i of [1,2,3,4,5,6]" class="h-80 rounded-2xl bg-white animate-pulse border border-[#e2f0ea]"></div>
       </div>
 
       <!-- Empty State -->
-      <div *ngIf="!isLoading() && filteredServices().length === 0" class="bg-white rounded-2xl p-12 text-center border border-[#e2f0ea] shadow-xs">
-        <svg class="w-10 h-10 text-zinc-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <p class="font-semibold text-zinc-800 text-sm mt-3">No se encontraron servicios en esta categoría.</p>
-        <button (click)="selectedCategory.set('ALL'); searchQuery.set('')" class="mt-3 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold cursor-pointer transition-all shadow-xs">
-          Ver todos los servicios
+      <div *ngIf="!isLoading() && filteredServices().length === 0" class="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8">
+        <p class="text-sm text-slate-500">No se encontraron servicios en esta categoría o búsqueda.</p>
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- STEP 2: SELECT DATE & IMMEDIATE SINGLE SLOT (MATCHING SCREENSHOT)         -->
+    <!-- ========================================================================= -->
+    <div *ngIf="currentStep() === 2 && selectedService()" class="animate-fade-in">
+      
+      <!-- Header Row -->
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">2. Selecciona Fecha</h2>
+          <p class="text-xs text-[#1e3a5f] font-semibold mt-0.5">
+            Tratamiento: {{ selectedService()?.name }}
+          </p>
+        </div>
+        <button type="button" (click)="goToStep(1)" class="text-xs font-bold text-[#0d9488] hover:underline flex items-center gap-1 cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          <span>Cambiar servicio</span>
         </button>
       </div>
 
-      <!-- 3-Column Modern Service Cards Grid -->
-      <div *ngIf="!isLoading() && filteredServices().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-        
-        <div *ngFor="let svc of filteredServices()"
-             (click)="selectService(svc)"
-             class="group bg-white rounded-2xl border border-[#e2f0ea] hover:border-[#a7f3d0] shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col justify-between cursor-pointer">
-          
-          <div>
-            <!-- Top Image Header -->
-            <div class="relative h-48 w-full overflow-hidden bg-slate-100">
-              <img [src]="getServiceImage(svc)" [alt]="svc.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10"></div>
-
-              <!-- Top Left: Category Badge -->
-              <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-md text-[10px] font-bold text-zinc-800 uppercase tracking-wide shadow-xs">
-                {{ svc.category || 'Belleza' }}
-              </span>
-
-              <!-- Bottom Left: Duration Pill -->
-              <span class="absolute bottom-3 left-3 px-2.5 py-1 rounded-full bg-zinc-900/80 backdrop-blur-md text-white text-[10px] font-semibold flex items-center gap-1.5 shadow-xs">
-                <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span>{{ svc.duration_minutes }} min</span>
-              </span>
-            </div>
-
-            <!-- Card Body Content -->
-            <div class="p-5 space-y-2.5">
-              <div class="flex items-center gap-2">
-                <span class="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md">
-                  Atención 1 a 1
-                </span>
-                <span class="text-[10px] font-semibold text-sky-800 bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-md">
-                  Estudio Privado
-                </span>
-              </div>
-
-              <h3 class="text-base font-bold text-zinc-900 leading-snug group-hover:text-emerald-700 transition-colors">
-                {{ svc.name }}
-              </h3>
-
-              <p class="text-xs text-zinc-500 line-clamp-2 leading-relaxed font-normal">
-                {{ svc.description || 'Tratamiento profesional personalizado con insumos de alta calidad y bioseguridad.' }}
-              </p>
-
-              <!-- Button to view full details -->
-              <div class="pt-0.5">
-                <button type="button" 
-                        (click)="openServiceDetail(svc, $event)"
-                        class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#0d9488] hover:text-[#0f766e] bg-[#e6f7f2]/70 hover:bg-[#e6f7f2] px-2.5 py-1 rounded-lg border border-[#ccfbf1] transition-all cursor-pointer">
-                  <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  <span>Ver detalle completo</span>
-                </button>
-              </div>
-
-              <!-- Pricing Breakdown (Clean Alignment with Breathing Room) -->
-              <div class="pt-3.5 border-t border-slate-100 flex items-end justify-between text-xs">
-                <div>
-                  <span class="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block mb-1">Inversión Total</span>
-                  <span class="font-extrabold text-base text-[#1e3a5f] leading-none block">
-                    ${{ (svc.price || svc.base_price || 0) | number }} <span class="text-[11px] font-semibold text-zinc-500">COP</span>
-                  </span>
-                </div>
-                <div class="text-right flex flex-col items-end">
-                  <span class="text-[10px] uppercase font-bold tracking-wider text-[#0d9488] block mb-1.5">Abono Cupo</span>
-                  <span class="inline-flex items-center font-bold text-xs text-[#0d9488] bg-[#e6f7f2] px-2.5 py-1 rounded-lg border border-[#ccfbf1]">
-                    ${{ (svc.deposit_amount || 0) | number }} COP
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card Action Footer -->
-          <div class="px-5 pb-5 pt-0">
-            <button type="button" 
-                    (click)="selectService(svc); $event.stopPropagation()"
-                    class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs tracking-wide transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 group-hover:bg-emerald-700">
-              <span>Reservar Tratamiento</span>
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
-            </button>
-          </div>
-
+      <!-- Date Picker Pills Carousel -->
+      <div class="mb-6">
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">DÍA DE TU CITA</label>
+        <div class="flex items-center gap-2.5 overflow-x-auto pb-2.5 no-scrollbar scroll-smooth">
+          <button type="button"
+                  *ngFor="let day of availableDays()"
+                  (click)="day.is_open ? selectDate(day.date) : null"
+                  [disabled]="!day.is_open"
+                  class="shrink-0 w-20 py-3 px-2 rounded-2xl border text-center transition-all duration-200 cursor-pointer"
+                  [ngClass]="selectedDate() === day.date
+                    ? 'border-[#0d9488] bg-[#0d9488] text-white shadow-md shadow-teal-500/25 ring-2 ring-[#0d9488]/20'
+                    : (day.is_open ? 'border-slate-200 bg-white hover:border-[#99f6e4] text-slate-800 shadow-xs' : 'opacity-40 bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed')">
+            <span class="block text-[11px] font-bold uppercase tracking-wider">{{ day.day_short }}</span>
+            <span class="block text-xl font-bold leading-tight my-0.5">{{ day.day_number }}</span>
+            <span class="block text-[9px] font-semibold" 
+                  [ngClass]="selectedDate() === day.date ? 'text-teal-100' : 'text-slate-400'">
+              {{ day.is_open ? 'Abierto' : 'Cerrado' }}
+            </span>
+          </button>
         </div>
-
       </div>
 
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- SERVICE DETAIL MODAL (MODAL DE DETALLE COMPLETO DEL SERVICIO)             -->
-    <!-- ========================================================================= -->
-    <div *ngIf="detailService()" class="fixed inset-0 z-50 overflow-y-auto flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-      
-      <!-- Backdrop click to close -->
-      <div class="fixed inset-0" (click)="closeServiceDetail()"></div>
-
-      <!-- Modal Card -->
-      <div class="relative bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden z-10 max-h-[90vh] flex flex-col border border-[#e2f0ea]">
-        
-        <!-- Modal Image Header -->
-        <div class="relative h-52 sm:h-56 w-full shrink-0 overflow-hidden bg-slate-100">
-          <img [src]="getServiceImage(detailService()!)" [alt]="detailService()!.name" class="w-full h-full object-cover">
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-black/30"></div>
-
-          <!-- Close Button -->
-          <button type="button" 
-                  (click)="closeServiceDetail()" 
-                  class="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors cursor-pointer z-20 backdrop-blur-xs">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-
-          <!-- Badges on Image -->
-          <div class="absolute bottom-3.5 left-4 right-4 flex items-center justify-between text-white">
-            <span class="px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-md text-[10px] font-bold text-zinc-900 uppercase tracking-wide">
-              {{ detailService()!.category || 'Tratamiento' }}
-            </span>
-            <span class="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <span>{{ detailService()!.duration_minutes }} minutos de sesión</span>
-            </span>
-          </div>
+      <!-- Single Next Available Slot Presentation -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">HORARIO DISPONIBLE INMEDIATO</label>
+          <span class="text-[11px] text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200">
+            ⏱ Duración: {{ selectedService()?.duration_minutes }} min
+          </span>
         </div>
 
-        <!-- Modal Body Content (Scrollable) -->
-        <div class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
-          
-          <!-- Title & Guarantees -->
-          <div>
-            <div class="flex items-center gap-2 mb-1.5">
-              <span class="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md">
-                Atención 1 a 1
-              </span>
-              <span class="text-[10px] font-semibold text-sky-800 bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-md">
-                Estudio Privado
-              </span>
-              <span class="text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-md">
-                Insumos Esterilizados
+        <!-- Loading Spinner -->
+        <div *ngIf="loadingSlots()" class="text-center py-10">
+          <div class="w-8 h-8 border-3 border-[#0d9488] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+          <p class="text-xs text-slate-500 font-medium">Calculando el próximo turno disponible...</p>
+        </div>
+
+        <!-- Single Slot Card (Only 1 Next Available Slot) -->
+        <div *ngIf="!loadingSlots() && selectedSlot()" class="max-w-lg mx-auto my-3">
+          <div class="p-6 sm:p-7 rounded-3xl bg-gradient-to-b from-[#e6f7f2]/60 to-white border-2 border-[#0d9488] shadow-xl shadow-teal-200/50 text-center relative overflow-hidden ring-4 ring-[#e6f7f2]">
+            <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-extrabold bg-[#0d9488] text-white uppercase tracking-wider shadow-xs mb-3">
+              <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+              </svg>
+              <span>ÚNICO TURNO INMEDIATO DISPONIBLE</span>
+            </div>
+
+            <div class="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight my-1.5">
+              {{ formatTime12h(selectedSlot()?.start_time) }}
+            </div>
+            
+            <div class="flex items-center justify-center gap-2 text-xs text-slate-600 font-medium my-2.5">
+              <span class="bg-[#e6f7f2] text-[#1e3a5f] px-3.5 py-1 rounded-full font-bold border border-[#e2f0ea]">
+                Finaliza a las {{ formatTime12h(selectedSlot()?.end_time) }}
               </span>
             </div>
-            <h3 class="text-lg sm:text-xl font-bold text-[#1e3a5f] leading-snug">
-              {{ detailService()!.name }}
-            </h3>
-          </div>
 
-          <!-- Description -->
-          <div class="space-y-1.5">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">
-              Descripción del Tratamiento
-            </h4>
-            <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed font-normal bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
-              {{ detailService()!.description || 'Tratamiento profesional personalizado con insumos de alta calidad, aparatología estética avanzada y estrictas normas de bioseguridad.' }}
+            <p class="text-[11px] text-slate-500 mt-2 leading-relaxed max-w-sm mx-auto">
+              Horario habilitado inmediatamente después del último servicio agendado para optimizar la jornada de Paola.
             </p>
           </div>
-
-          <!-- Financial Breakdown Card -->
-          <div class="bg-[#f3f8f6] p-4 rounded-2xl border border-[#e2f0ea] space-y-2.5">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500">
-              Desglose de Pago
-            </h4>
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-zinc-600 font-medium">Inversión Total del Tratamiento:</span>
-              <span class="font-bold text-zinc-900 text-sm">
-                ${{ (detailService()!.price || detailService()!.base_price || 0) | number }} COP
-              </span>
-            </div>
-            <div class="flex justify-between items-center text-xs bg-white p-2.5 rounded-xl border border-emerald-200 shadow-2xs">
-              <div class="flex items-center gap-1.5 text-[#0d9488] font-bold">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                </svg>
-                <span>Abono Requerido (Anticipo):</span>
-              </div>
-              <span class="font-extrabold text-[#0d9488] text-sm">
-                ${{ (detailService()!.deposit_amount || 0) | number }} COP
-              </span>
-            </div>
-            <div class="flex justify-between items-center text-[11px] text-zinc-500 pt-1">
-              <span>Saldo a cancelar el día de tu cita:</span>
-              <span class="font-medium text-zinc-700">
-                ${{ ((detailService()!.price || detailService()!.base_price || 0) - (detailService()!.deposit_amount || 0)) | number }} COP
-              </span>
-            </div>
-          </div>
-
         </div>
 
-        <!-- Modal Footer CTA -->
-        <div class="p-4 sm:p-5 border-t border-slate-100 bg-white shrink-0 flex items-center gap-3">
-          <button type="button" 
-                  (click)="closeServiceDetail()" 
-                  class="w-1/3 py-3 rounded-xl border border-slate-200 text-zinc-600 hover:bg-slate-50 font-semibold text-xs transition-colors cursor-pointer text-center">
-            Cerrar
-          </button>
-          <button type="button" 
-                  (click)="confirmServiceFromDetail(detailService()!)" 
-                  class="w-2/3 py-3 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white font-semibold text-xs tracking-wide shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-center gap-2">
-            <span>Elegir Horario</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        <!-- Empty State -->
+        <div *ngIf="!loadingSlots() && !selectedSlot()" class="text-center py-8 px-4 rounded-3xl bg-[#e6f7f2]/50 border border-[#e2f0ea]">
+          <div class="w-11 h-11 rounded-full bg-[#e6f7f2] text-[#0d9488] mx-auto flex items-center justify-center mb-2.5">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-          </button>
+          </div>
+          <h4 class="font-bold text-slate-900 text-base">No hay turnos disponibles para esta fecha</h4>
+          <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
+            La agenda para este día está completa o coincide con el horario de almuerzo de Paola.
+          </p>
         </div>
-
       </div>
+
+      <!-- Continue Button -->
+      <div class="mt-8 flex justify-end">
+        <button type="button"
+                (click)="goToStep(3)"
+                [disabled]="!isStep2Valid() || loadingSlots()"
+                class="px-8 py-3.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-2 tracking-wide shadow-md"
+                [ngClass]="isStep2Valid() && !loadingSlots() ? 'bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white hover:from-[#0f766e] hover:to-[#115e59] shadow-teal-500/25 hover:scale-[1.02] cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'">
+          <span>Continuar a Mis Datos</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+      </div>
+
     </div>
 
     <!-- ========================================================================= -->
-    <!-- STEPS 2, 3 & 4: 2-COLUMN WORKFLOW WITH STICKY SUMMARY SIDEBAR              -->
+    <!-- STEP 3: CLIENT DETAILS (AUTO-FILL & PERSISTENT PROFILE)                   -->
     <!-- ========================================================================= -->
-    <div *ngIf="currentStep() > 1" class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+    <div *ngIf="currentStep() === 3 && selectedService()" class="animate-fade-in">
       
-      <!-- MOBILE COLLAPSIBLE SUMMARY BAR (Visible on screens < lg) -->
-      <div *ngIf="selectedService()" class="lg:hidden col-span-1 bg-white rounded-2xl border border-[#e2f0ea] p-4 shadow-xs">
-        <div class="flex items-center justify-between cursor-pointer" (click)="toggleSummary()">
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-[#e6f7f2] text-[#0d9488] flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-              </svg>
-            </div>
-            <div class="min-w-0">
-              <p class="text-xs font-bold text-[#1e3a5f] truncate">{{ selectedService()?.name }}</p>
-              <p class="text-[11px] text-[#0d9488] font-semibold">Abono: ${{ selectedService()?.deposit_amount | number }} COP</p>
-            </div>
-          </div>
-          <button type="button" class="text-xs font-semibold text-slate-600 flex items-center gap-1 shrink-0 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200">
-            <span>{{ summaryVisible() ? 'Ocultar' : 'Ver detalle' }}</span>
-            <svg class="w-3 h-3 transition-transform duration-200" [class.rotate-180]="summaryVisible()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
-          </button>
+      <!-- Section Header -->
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">3. Tus Datos de Contacto</h2>
+          <p class="text-xs text-slate-500 font-medium mt-0.5">
+            Ingresa tus datos para apartar tu turno y enviarte la confirmación por WhatsApp.
+          </p>
         </div>
-
-        <!-- Collapsible Content on Mobile -->
-        <div *ngIf="summaryVisible()" class="mt-3 pt-3 border-t border-slate-100 text-xs space-y-2 animate-fade-in">
-          <div *ngIf="selectedSlot()" class="flex justify-between text-slate-700">
-            <span>Horario:</span>
-            <span class="font-bold text-[#0d9488]">{{ selectedDate() }} • {{ selectedSlot()?.start_time?.substring(0, 5) }}</span>
-          </div>
-          <div class="flex justify-between text-slate-600">
-            <span>Inversión Total:</span>
-            <span class="font-bold text-slate-900">${{ (selectedService()?.price || selectedService()?.base_price || 0) | number }} COP</span>
-          </div>
-          <div class="flex justify-between text-slate-500 text-[11px]">
-            <span>Saldo en local:</span>
-            <span>${{ ((selectedService()?.price || selectedService()?.base_price || 0) - (selectedService()?.deposit_amount || 0)) | number }} COP</span>
-          </div>
-        </div>
+        <button type="button" (click)="goToStep(2)" class="text-xs font-bold text-[#0d9488] hover:text-[#162d4a] flex items-center gap-1.5 transition-colors cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          <span>Cambiar horario</span>
+        </button>
       </div>
 
-      <!-- LEFT COLUMN: MAIN WORKFLOW (7 COLS) -->
-      <div class="lg:col-span-7 space-y-6">
-
-        <!-- ----------------------------------------------------------------------- -->
-        <!-- STEP 2: DATE & TIME SELECTOR                                            -->
-        <!-- ----------------------------------------------------------------------- -->
-        <div *ngIf="currentStep() === 2 && selectedService()" class="bg-white rounded-2xl border border-[#e2f0ea] p-6 sm:p-8 shadow-xs space-y-6 animate-fade-in">
+      <!-- Luxury Booking Summary Card -->
+      <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#e6f7f2]/90 via-[#e6f7f2]/50 to-white border border-[#e2f0ea] mb-6 shadow-xs relative overflow-hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           
-          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+          <!-- Service & Schedule Info -->
+          <div class="flex items-start sm:items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-white text-[#0d9488] shrink-0 flex items-center justify-center shadow-md border border-[#e2f0ea]">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+              </svg>
+            </div>
             <div>
-              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
-                Paso 2 de 3
-              </span>
-              <h2 class="text-xl sm:text-2xl font-bold text-zinc-900 mt-1">Elige Fecha y Horario</h2>
-            </div>
-            <button (click)="goToStep(1)" class="text-xs font-semibold text-zinc-600 hover:text-emerald-700 flex items-center gap-1.5 transition-colors cursor-pointer">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-              </svg>
-              <span>Cambiar tratamiento</span>
-            </button>
-          </div>
-
-          <!-- Date Selector -->
-          <div class="bg-slate-50/80 p-5 rounded-xl border border-slate-200/80 space-y-2">
-            <label class="text-xs font-bold uppercase tracking-wider text-zinc-600 block">
-              1. Selecciona la Fecha
-            </label>
-            <input type="date" 
-                   [value]="selectedDate()"
-                   (change)="onDateChange($event)"
-                   class="w-full text-sm font-semibold text-zinc-900 bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer">
-            <p class="text-xs text-emerald-800 font-medium capitalize mt-1">
-              {{ formattedDateDisplay() }}
-            </p>
-          </div>
-
-          <!-- Time Slot Box (Anti-Huecos SaaS Style) -->
-          <div class="space-y-2">
-            <label class="text-xs font-bold uppercase tracking-wider text-zinc-600 block">
-              2. Horario Disponible Inmediato (Sin Huecos)
-            </label>
-
-            <div *ngIf="loadingSlots()" class="p-6 text-center bg-slate-50 rounded-xl border border-slate-200 animate-pulse text-xs text-zinc-500 font-medium">
-              Consultando disponibilidad en tiempo real...
-            </div>
-
-            <div *ngIf="!loadingSlots() && selectedSlot()" class="p-5 rounded-xl bg-[#eaf8f2] border border-[#a7f3d0] text-emerald-950 flex items-center justify-between shadow-2xs">
-              <div class="space-y-1">
-                <div class="flex items-center gap-2">
-                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Turno Inmediato Asignado</span>
-                </div>
-                <div class="text-xl sm:text-2xl font-extrabold tracking-tight text-emerald-950 flex items-center gap-2">
-                  <span>{{ selectedSlot()?.start_time?.substring(0, 5) }}</span>
-                  <span class="text-emerald-700 font-normal text-sm">—</span>
-                  <span>{{ selectedSlot()?.end_time?.substring(0, 5) }}</span>
-                </div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h4 class="font-bold text-slate-900 text-base sm:text-lg leading-tight">{{ selectedService()?.name }}</h4>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#e6f7f2] text-[#1e3a5f] uppercase tracking-wider">
+                  {{ selectedService()?.duration_minutes }} min
+                </span>
               </div>
-
-              <span class="text-xs font-bold bg-white text-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-200 shadow-2xs">
-                Confirmado
-              </span>
-            </div>
-
-            <div *ngIf="!loadingSlots() && !selectedSlot()" class="p-6 text-center bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium">
-              No hay cupos disponibles para esta fecha. Por favor selecciona otro día en el calendario.
+              
+              <!-- Formatted Spanish Date & Time -->
+              <div class="flex items-center gap-2 mt-1.5 text-xs text-slate-600 font-medium flex-wrap">
+                <span class="inline-flex items-center gap-1 font-semibold text-slate-800 bg-white/80 px-2.5 py-1 rounded-lg border border-[#e2f0ea] shadow-2xs">
+                  <svg class="w-3.5 h-3.5 text-[#0d9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  <span>{{ formattedDateDisplay() }}</span>
+                </span>
+                <span class="inline-flex items-center gap-1 font-bold text-[#1e3a5f] bg-[#e6f7f2] px-2.5 py-1 rounded-lg">
+                  <svg class="w-3.5 h-3.5 text-[#0d9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span>{{ formatTime12h(selectedSlot()?.start_time) }} a {{ formatTime12h(selectedSlot()?.end_time) }}</span>
+                </span>
+              </div>
             </div>
           </div>
 
-          <!-- Continue Button -->
-          <button type="button" 
-                  (click)="goToStep(3)"
-                  [disabled]="!selectedSlot()"
-                  class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs">
-            <span>Continuar con mis datos</span>
+          <!-- Financial Settlement Box -->
+          <div class="flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 md:border-l border-[#e2f0ea] pt-3 md:pt-0 md:pl-5">
+            <div class="text-left md:text-right">
+              <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">Abono Requerido</span>
+              <span class="font-bold text-[#1e3a5f] text-lg sm:text-xl">${{ formatPrice(selectedService()?.deposit_amount) }} COP</span>
+            </div>
+            <span class="text-[11px] text-slate-500 font-medium block mt-0.5">
+              Saldo en local: <strong class="text-slate-700">${{ formatPrice((selectedService()?.price || selectedService()?.base_price || 0) - (selectedService()?.deposit_amount || 0)) }} COP</strong>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Client Details Form Card -->
+      <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs">
+        <form [formGroup]="clientForm" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <!-- Nombre Completo -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nombre Completo *</label>
+              <input type="text" formControlName="name" placeholder="Ej: Paola Andrea Gómez"
+                     class="w-full text-xs text-slate-900 border border-slate-200 rounded-xl px-4 py-3 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]">
+              <span *ngIf="clientForm.get('name')?.touched && clientForm.get('name')?.invalid" class="text-[10px] text-rose-500 font-semibold mt-1 block">
+                Por favor ingresa tu nombre (mínimo 3 caracteres).
+              </span>
+            </div>
+
+            <!-- WhatsApp Celular -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Celular WhatsApp *</label>
+              <input type="tel" formControlName="phone" (input)="formatPhoneInput($event)" placeholder="Ej: 310 123 4567"
+                     class="w-full text-xs text-slate-900 border rounded-xl px-4 py-3 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]"
+                     [ngClass]="clientForm.get('phone')?.touched && clientForm.get('phone')?.invalid ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'">
+              <span *ngIf="clientForm.get('phone')?.touched && clientForm.get('phone')?.invalid" class="text-[10px] text-rose-500 font-semibold mt-1 block">
+                Ingresa un número de 10 dígitos válido.
+              </span>
+            </div>
+          </div>
+
+          <!-- Correo Electrónico Opcional -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Correo Electrónico (Opcional)</label>
+            <input type="email" formControlName="email" placeholder="Para enviarte el voucher digital y recordatorio de cita"
+                   class="w-full text-xs text-slate-900 border border-slate-200 rounded-xl px-4 py-3 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]">
+          </div>
+
+          <!-- Notas Opcionales -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Notas o Preferencias Especiales</label>
+            <textarea formControlName="notes" rows="2" placeholder="¿Alguna condición, alergia o detalle que debamos tener en cuenta?"
+                      class="w-full text-xs text-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]"></textarea>
+          </div>
+        </form>
+
+        <!-- Continue CTA -->
+        <div class="mt-6 flex justify-end">
+          <button type="button"
+                  (click)="goToStep(4)"
+                  [disabled]="!isStep3Valid()"
+                  class="px-8 py-3.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-2 tracking-wide shadow-md"
+                  [ngClass]="isStep3Valid() ? 'bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white hover:from-[#0f766e] hover:to-[#115e59] shadow-teal-500/25 hover:scale-[1.02] cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'">
+            <span>Continuar al Pago del Abono (${{ formatPrice(selectedService()?.deposit_amount) }} COP)</span>
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
             </svg>
           </button>
-
         </div>
-
-        <!-- ----------------------------------------------------------------------- -->
-        <!-- STEP 3: CLIENT INFO & NEQUI DEPOSIT                                     -->
-        <!-- ----------------------------------------------------------------------- -->
-        <div *ngIf="currentStep() === 3 && selectedService()" class="bg-white rounded-2xl border border-[#e2f0ea] p-6 sm:p-8 shadow-xs space-y-6 animate-fade-in">
-          
-          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-            <div>
-              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
-                Paso 3 de 3
-              </span>
-              <h2 class="text-xl sm:text-2xl font-bold text-zinc-900 mt-1">Tus Datos y Comprobante</h2>
-            </div>
-            <button (click)="goToStep(2)" class="text-xs font-semibold text-zinc-600 hover:text-emerald-700 flex items-center gap-1.5 transition-colors cursor-pointer">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-              </svg>
-              <span>Cambiar horario</span>
-            </button>
-          </div>
-
-          <!-- Returning Client Banner -->
-          <div *ngIf="isExistingClient()" class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-3">
-            <svg class="w-5 h-5 text-emerald-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <div>
-              <p class="font-semibold">Hola de nuevo, {{ existingClientName() }}</p>
-              <p class="text-emerald-700/80 text-[11px]">Tus datos de contacto se cargaron automáticamente desde este dispositivo.</p>
-            </div>
-          </div>
-
-          <!-- Client Form -->
-          <form [formGroup]="clientForm" class="space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="font-bold text-zinc-700 text-xs block mb-1">WhatsApp Móvil *</label>
-                <div class="relative">
-                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-zinc-400 font-semibold text-xs">+57</span>
-                  <input type="tel" 
-                         placeholder="310 000 0000"
-                         (input)="formatPhoneInput($event)"
-                         [value]="formatPhone(clientForm.get('phone')?.value || '')"
-                         class="w-full pl-12 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50/60 text-xs font-semibold text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
-                </div>
-              </div>
-
-              <div>
-                <label class="font-bold text-zinc-700 text-xs block mb-1">Nombre Completo *</label>
-                <input type="text" 
-                       formControlName="name"
-                       placeholder="Ej: Laura Sofía Restrepo"
-                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/60 text-xs font-semibold text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="font-bold text-zinc-700 text-xs block mb-1">Correo Electrónico (Opcional)</label>
-                <input type="email" 
-                       formControlName="email"
-                       placeholder="laura@ejemplo.com"
-                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/60 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
-              </div>
-
-              <div>
-                <label class="font-bold text-zinc-700 text-xs block mb-1">Observaciones (Opcional)</label>
-                <input type="text" 
-                       formControlName="notes"
-                       placeholder="Alergias o requerimientos..."
-                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/60 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
-              </div>
-            </div>
-          </form>
-
-          <!-- Nequi Box (Nested Channel Look) -->
-          <div class="bg-slate-50/90 p-5 rounded-xl border border-[#e2f0ea] space-y-4">
-            
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
-                  NQ
-                </div>
-                <div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">Transferencia Nequi</span>
-                  <span class="font-mono text-base font-bold text-zinc-900">{{ nequiInfo().account_number }}</span>
-                  <span class="text-[11px] text-zinc-500 block">Titular: Paola Andrea Aguilera Camacho</span>
-                </div>
-              </div>
-
-              <button (click)="copyNequiNumber()" class="px-3.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-zinc-800 shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer">
-                <svg *ngIf="!copiedNequi()" class="w-3.5 h-3.5 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                </svg>
-                <svg *ngIf="copiedNequi()" class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                <span>{{ copiedNequi() ? 'Copiado' : 'Copiar' }}</span>
-              </button>
-            </div>
-
-            <!-- Receipt Dropzone -->
-            <div class="pt-3 border-t border-slate-200/80">
-              <label class="text-xs font-bold uppercase tracking-wider text-zinc-600 block mb-1.5">
-                Adjuntar Comprobante de Pago *
-              </label>
-              <input type="file" 
-                     accept="image/*,application/pdf"
-                     (change)="onReceiptSelected($event)"
-                     class="w-full text-xs text-zinc-600 file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer">
-              <p *ngIf="receiptFile" class="text-xs text-emerald-700 font-semibold mt-1.5 flex items-center gap-1">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                <span>{{ receiptFile.name }}</span>
-              </p>
-            </div>
-
-          </div>
-
-          <!-- Error Alert -->
-          <div *ngIf="errorMessage()" class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
-            <strong>Error:</strong> {{ errorMessage() }}
-          </div>
-
-          <!-- Confirm CTA -->
-          <button type="button" 
-                  (click)="submitBooking()"
-                  [disabled]="isSubmitting() || !receiptFile"
-                  class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs">
-            <span *ngIf="!isSubmitting()">Confirmar y Apartar Cita</span>
-            <span *ngIf="isSubmitting()" class="flex items-center gap-2">
-              <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span>Procesando...</span>
-            </span>
-          </button>
-
-        </div>
-
-        <!-- ----------------------------------------------------------------------- -->
-        <!-- STEP 4: VIP APPOINTMENT PASS (SUCCESS STATE)                            -->
-        <!-- ----------------------------------------------------------------------- -->
-        <div *ngIf="currentStep() === 4 && bookingResult()" class="bg-white rounded-2xl border border-[#e2f0ea] p-8 sm:p-10 text-center space-y-6 animate-fade-in shadow-xs">
-          
-          <div class="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto">
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-          </div>
-
-          <div>
-            <span class="text-xs font-mono font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-md border border-emerald-200">
-              RESERVA #{{ bookingResult()?.appointment_number }}
-            </span>
-            <h2 class="text-2xl sm:text-3xl font-bold text-zinc-900 mt-3">
-              Cita Apartada con Éxito
-            </h2>
-            <p class="text-xs sm:text-sm text-zinc-500 mt-1">
-              Hemos registrado tu reserva y validaremos el comprobante en breve.
-            </p>
-          </div>
-
-          <div class="bg-slate-50/90 p-5 rounded-xl border border-[#e2f0ea] text-left space-y-2.5 text-xs sm:text-sm">
-            <div class="flex justify-between">
-              <span class="text-zinc-500">Tratamiento:</span>
-              <span class="font-bold text-zinc-900">{{ bookingResult()?.service_name }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-zinc-500">Fecha y Horario:</span>
-              <span class="font-semibold text-emerald-800">{{ bookingResult()?.booking_date }} • {{ bookingResult()?.start_time?.substring(0, 5) }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-zinc-500">Clienta:</span>
-              <span class="font-semibold text-zinc-900">{{ bookingResult()?.client_name }}</span>
-            </div>
-            <div class="flex justify-between font-bold text-emerald-800 pt-2 border-t border-slate-200">
-              <span>Abono Reportado:</span>
-              <span>${{ bookingResult()?.deposit_amount | number }} COP</span>
-            </div>
-          </div>
-
-          <div class="space-y-2.5 pt-2">
-            <a [href]="getWhatsAppShareUrl()" target="_blank" class="w-full py-3.5 bg-[#25d366] hover:bg-[#20bd5a] text-white font-semibold rounded-xl text-xs uppercase tracking-wider block transition-colors shadow-xs">
-              Notificar a Paola por WhatsApp
-            </a>
-            <button (click)="resetBooking()" class="w-full py-2.5 text-xs text-zinc-500 hover:text-zinc-900 font-medium transition-colors cursor-pointer">
-              Agendar otro servicio
-            </button>
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- ========================================================================= -->
-      <!-- RIGHT COLUMN: LIVE STICKY SUMMARY CARD (MATCHES REFERENCE RIGHT CARD)      -->
-      <!-- ========================================================================= -->
-      <div class="hidden lg:block lg:col-span-5 sticky top-22 space-y-4">
-        
-        <div class="bg-white rounded-2xl border border-[#e2f0ea] p-6 shadow-xs space-y-5">
-          
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div class="flex items-center gap-2">
-              <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
-                ✓
-              </div>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-700">
-                Resumen de Reserva
-              </h3>
-            </div>
-            <span class="text-[10px] font-semibold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-100">
-              En Tiempo Real
-            </span>
-          </div>
-
-          <!-- Empty State When No Service Selected -->
-          <div *ngIf="!selectedService()" class="py-10 text-center space-y-2">
-            <svg class="w-8 h-8 text-zinc-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            <p class="text-xs font-semibold text-zinc-700">Selecciona un tratamiento</p>
-            <p class="text-[11px] text-zinc-400">Aquí verás el resumen y desglose de tu reserva en tiempo real.</p>
-          </div>
-
-          <!-- When Service Selected -->
-          <div *ngIf="selectedService()" class="space-y-4 text-xs">
-            
-            <!-- Service Header in Sidebar (Nested Card) -->
-            <div class="flex items-start gap-3 p-3 bg-slate-50/80 rounded-xl border border-slate-200/80">
-              <div class="w-14 h-14 rounded-lg overflow-hidden bg-slate-100 shrink-0">
-                <img [src]="getServiceImage(selectedService()!)" class="w-full h-full object-cover">
-              </div>
-              <div class="flex-1 min-w-0">
-                <h4 class="text-sm font-bold text-zinc-900 leading-snug">{{ selectedService()?.name }}</h4>
-                <p class="text-zinc-500 text-[11px] mt-0.5">{{ selectedService()?.duration_minutes }} minutos de sesión</p>
-              </div>
-            </div>
-
-            <!-- Date & Time Row -->
-            <div *ngIf="selectedSlot()" class="p-3.5 bg-[#eaf8f2] rounded-xl border border-[#a7f3d0] space-y-1">
-              <div class="flex justify-between text-emerald-950 font-medium">
-                <span>Fecha:</span>
-                <span class="font-bold">{{ selectedDate() }}</span>
-              </div>
-              <div class="flex justify-between text-emerald-950 font-medium">
-                <span>Horario:</span>
-                <span class="font-extrabold text-emerald-800">{{ selectedSlot()?.start_time?.substring(0, 5) }} — {{ selectedSlot()?.end_time?.substring(0, 5) }}</span>
-              </div>
-            </div>
-
-            <!-- Financial Breakdown -->
-            <div class="pt-3 border-t border-slate-100 space-y-2">
-              <div class="flex justify-between text-zinc-600">
-                <span>Inversión Total</span>
-                <span class="font-bold text-zinc-900">${{ (selectedService()?.price || selectedService()?.base_price || 0) | number }} COP</span>
-              </div>
-              <div class="flex justify-between text-emerald-800 font-bold text-xs">
-                <span>Abono Requerido</span>
-                <span class="bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">${{ selectedService()?.deposit_amount | number }} COP</span>
-              </div>
-              <div class="flex justify-between text-zinc-500 text-[11px]">
-                <span>Saldo en Estudio</span>
-                <span class="font-medium">${{ ((selectedService()?.price || selectedService()?.base_price || 0) - (selectedService()?.deposit_amount || 0)) | number }} COP</span>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Studio Perks in Sidebar -->
-          <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-[11px] text-zinc-600">
-            <div class="flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span>Atención 1 a 1</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span>Insumos Premium</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span>Confirmación 1-Clic</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span>Bogotá / Chía</span>
-            </div>
-          </div>
-
-        </div>
-
       </div>
 
     </div>
 
-  </div>
+    <!-- ========================================================================= -->
+    <!-- STEP 4: HYBRID PAYMENT & RECEIPT (NEQUI / BOLD)                           -->
+    <!-- ========================================================================= -->
+    <div *ngIf="currentStep() === 4 && selectedService()" class="animate-fade-in">
+      
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">4. Método de Abono</h2>
+          <p class="text-xs text-slate-500 font-medium">Asegura tu cita con el pago del anticipo</p>
+        </div>
+        <span class="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full flex items-center gap-1 shadow-2xs">
+          <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Cupo apartado por 15 min</span>
+        </span>
+      </div>
 
-  <!-- STUDIO FOOTER -->
-  <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 text-center text-xs text-zinc-400">
-    <p class="font-bold text-zinc-700">Paola Aguilera • Estudio de Belleza & Estética</p>
-    <p class="mt-1">Atención personalizada con cita previa • Cuidado profesional de alta gama</p>
+      <!-- Settlement Breakdown Card -->
+      <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs mb-6">
+        <div class="flex justify-between items-center text-xs text-slate-600 pb-2.5 border-b border-slate-100">
+          <span class="font-medium">Valor Total del Servicio</span>
+          <span class="font-bold text-slate-900 text-base">${{ formatPrice(selectedService()?.price || selectedService()?.base_price) }} COP</span>
+        </div>
+        <div class="flex justify-between items-center text-xs text-[#1e3a5f] font-bold py-2.5 border-b border-slate-100">
+          <span>Monto de Abono a Pagar Hoy</span>
+          <span class="text-lg text-[#0d9488]">${{ formatPrice(selectedService()?.deposit_amount) }} COP</span>
+        </div>
+        <div class="flex justify-between items-center text-xs text-slate-500 pt-2.5">
+          <span class="font-medium">Saldo Restante a Pagar en el Local</span>
+          <span class="font-bold text-slate-800 text-sm">${{ formatPrice((selectedService()?.price || selectedService()?.base_price || 0) - (selectedService()?.deposit_amount || 0)) }} COP</span>
+        </div>
+      </div>
+
+      <!-- Payment Method Tabs -->
+      <div class="grid grid-cols-2 gap-3 mb-6">
+        <button type="button" 
+                (click)="paymentMethod.set('NEQUI')"
+                class="p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer"
+                [ngClass]="paymentMethod() === 'NEQUI' ? 'border-[#0d9488] bg-[#e6f7f2]/50 ring-2 ring-[#0d9488]/20 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-slate-900">📲 Nequi Directo</span>
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase tracking-wider">0% Comisión</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-tight">Transferencia directa y subida de comprobante</p>
+        </button>
+
+        <button type="button" 
+                (click)="paymentMethod.set('BOLD')"
+                class="p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer"
+                [ngClass]="paymentMethod() === 'BOLD' ? 'border-[#0d9488] bg-[#e6f7f2]/50 ring-2 ring-[#0d9488]/20 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-slate-900">💳 Pago en Línea (Bold)</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-tight">PSE, Tarjetas Débito y Crédito</p>
+        </button>
+      </div>
+
+      <!-- Nequi Transfer Instructions & Receipt Upload -->
+      <div *ngIf="paymentMethod() === 'NEQUI'" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+        <div class="p-4 rounded-2xl bg-purple-50/80 border border-purple-100">
+          <h4 class="text-xs font-bold text-purple-900 mb-1">Datos para la Transferencia Nequi:</h4>
+          <p class="text-xs text-purple-800"><span class="font-semibold">Titular:</span> {{ nequiInfo().account_holder }}</p>
+          <div class="flex items-center justify-between mt-2 pt-2 border-t border-purple-200/60">
+            <span class="text-base font-bold text-purple-950 font-mono tracking-widest">{{ nequiInfo().account_number }}</span>
+            <button type="button" (click)="copyNequiNumber()"
+                    class="text-[11px] font-bold px-3 py-1 rounded-full bg-purple-200 hover:bg-purple-300 text-purple-900 transition-colors shadow-2xs cursor-pointer">
+              <span>{{ copiedNequi() ? '¡Copiado! ✓' : 'Copiar Número' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Receipt File Input -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Cargar Comprobante de Transferencia *</label>
+          <input type="file" (change)="onReceiptSelected($event)" accept="image/*"
+                 class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#e6f7f2] file:text-[#1e3a5f] hover:file:bg-[#ccfbf1] cursor-pointer border border-slate-200 rounded-2xl p-2 bg-slate-50/50">
+          
+          <div *ngIf="receiptPreview()" class="mt-3 relative w-32 h-32 rounded-xl overflow-hidden border border-emerald-300 shadow-xs">
+            <img [src]="receiptPreview()" alt="Comprobante" class="w-full h-full object-cover">
+            <button type="button" (click)="removeReceipt()" class="absolute top-1 right-1 bg-black/70 text-white rounded-full p-1 text-[10px]">✕</button>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1.5">Adjunta una foto o captura de pantalla donde se vea claramente el valor y número de aprobación.</p>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage()" class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
+          {{ errorMessage() }}
+        </div>
+
+        <!-- Submit Button -->
+        <button type="button"
+                (click)="submitBooking()"
+                [disabled]="isSubmitting() || !receiptFile"
+                class="w-full py-3.5 rounded-full text-xs font-bold bg-[#0d9488] text-white hover:bg-[#0f766e] disabled:bg-slate-200 disabled:text-slate-400 shadow-md shadow-teal-500/25 transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
+          <span *ngIf="isSubmitting()" class="flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span>Registrando y subiendo comprobante...</span>
+          </span>
+          <span *ngIf="!isSubmitting()">✓ Confirmar Cita con Comprobante</span>
+        </button>
+      </div>
+
+      <!-- Bold Payment Gateway Info -->
+      <div *ngIf="paymentMethod() === 'BOLD'" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Serás redirigido a la pasarela segura de Bold para realizar el abono mediante PSE o tarjeta débito/crédito.
+        </p>
+        <button type="button"
+                (click)="submitBooking()"
+                [disabled]="isSubmitting()"
+                class="w-full py-3.5 rounded-full text-xs font-bold bg-[#1e3a5f] text-white hover:bg-[#162d4a] shadow-md transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
+          <span *ngIf="isSubmitting()">Iniciando pasarela de pago...</span>
+          <span *ngIf="!isSubmitting()">Pagar Abono en Línea con Bold</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- STEP 5: SUCCESS / CONFIRMATION VIP PASS                                   -->
+    <!-- ========================================================================= -->
+    <div *ngIf="currentStep() === 5 && bookingResult()" class="max-w-xl mx-auto animate-fade-in text-center py-6">
+      
+      <div class="bg-white rounded-3xl border border-emerald-200 p-8 sm:p-10 shadow-lg text-center space-y-6">
+        <div class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto shadow-xs">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+
+        <div>
+          <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-md border border-emerald-200">
+            #{{ bookingResult()?.appointment_number }}
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-3">¡Cita Registrada con Éxito!</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">
+            Tu reserva ha sido enviada al equipo de Paola Aguilera.
+          </p>
+        </div>
+
+        <!-- Appointment Details Summary -->
+        <div class="bg-slate-50/90 p-5 rounded-2xl border border-slate-200 text-left space-y-2.5 text-xs sm:text-sm">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Tratamiento:</span>
+            <span class="font-bold text-slate-900">{{ bookingResult()?.service_name }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Fecha y Hora:</span>
+            <span class="font-bold text-emerald-800">{{ bookingResult()?.booking_date }} • {{ bookingResult()?.start_time }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Cliente:</span>
+            <span class="font-bold text-slate-900">{{ bookingResult()?.client_name }}</span>
+          </div>
+          <div class="flex justify-between pt-2 border-t border-slate-200">
+            <span class="text-slate-500">Abono Registrado:</span>
+            <span class="font-bold text-emerald-800">${{ formatPrice(bookingResult()?.deposit_amount) }} COP</span>
+          </div>
+        </div>
+
+        <!-- Action CTAs -->
+        <div class="space-y-3 pt-2">
+          <a [href]="getWhatsAppShareUrl()" target="_blank"
+             class="w-full py-3.5 bg-[#25d366] hover:bg-[#20bd5a] text-white font-bold rounded-full text-xs uppercase tracking-wider block transition-colors shadow-md">
+            Notificar por WhatsApp a Paola
+          </a>
+          <button type="button" (click)="resetBooking()"
+                  class="w-full py-2.5 text-xs text-slate-500 hover:text-slate-900 font-semibold transition-colors cursor-pointer">
+            Reservar otra cita
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- FOOTER (FIXED LUXURY SAAS BOTTOM BAR)                                     -->
+  <!-- ========================================================================= -->
+  <footer class="fixed bottom-0 left-0 right-0 z-30 border-t border-[#e2f0ea] bg-white/95 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
+      
+      <!-- Upper Section -->
+      <div class="flex items-center justify-between gap-4">
+        
+        <!-- Studio Identity & Location -->
+        <div class="flex items-center gap-2.5 sm:gap-3">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center text-[#0d9488] shadow-xs shrink-0">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-bold text-xs sm:text-sm text-[#1e3a5f] leading-tight truncate">
+              {{ salonProfile()?.name || 'Paola Andrea Aguilera Camacho' }}
+            </h3>
+            <p class="text-[10px] sm:text-xs text-slate-500 font-medium truncate mt-0.5">
+              {{ salonProfile()?.business_type || 'Estudio Especializado' }} · {{ salonProfile()?.city || 'Bogotá, Colombia' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Specialties & Hours (Desktop / Tablet) -->
+        <div class="hidden sm:block text-right">
+          <p class="text-[11px] sm:text-xs text-slate-500 font-medium">
+            {{ salonProfile()?.specialties || 'Pestañas · Cejas · Faciales · Micropigmentación' }}
+          </p>
+          <p class="text-[10px] sm:text-[11px] text-slate-600 font-medium mt-0.5">
+            {{ salonProfile()?.schedule_summary || 'Lunes a Sábado 8:00 AM - 6:00 PM | Almuerzo 1:00 PM - 2:00 PM' }}
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Lower Sub-footer Section -->
+      <div class="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between gap-3 text-[10px] sm:text-[11px] text-slate-400">
+        <div class="hidden xs:block">
+          <span>Agenda · Clientes · Control</span>
+        </div>
+        <div class="w-full xs:w-auto text-center xs:text-right">
+          <span>Plataforma <strong class="font-bold text-slate-600">Cita Clave</strong> — desarrollada por <strong class="font-bold text-[#1e3a5f]">Nuvex Tecnología</strong> © 2026</span>
+        </div>
+      </div>
+
+    </div>
   </footer>
 
 </div>

@@ -76,3 +76,23 @@ export interface NequiInfoResponse {
     instructions: string;
   };
 }
+
+export interface SalonProfile {
+  id?: number;
+  name: string;
+  short_name?: string;
+  display_name: string;
+  business_type: string;
+  slug: string;
+  city: string;
+  address?: string;
+  phone?: string;
+  whatsapp_number?: string;
+  whatsapp_url: string;
+  email?: string;
+  specialties: string;
+  schedule_summary: string;
+  primary_color?: string;
+  logo_path?: string;
+}
+

@@ -33,6 +33,29 @@ class BookingAvailabilityEngineTest extends TestCase
         $response->assertJson(['status' => 'ok']);
     }
 
+    public function test_tenant_profile_api(): void
+    {
+        $response = $this->getJson('/api/v1/tenant/profile');
+        $response->assertSuccessful();
+        $response->assertJson([
+            'success' => true,
+        ]);
+        $response->assertJsonStructure([
+            'success',
+            'data' => [
+                'id',
+                'name',
+                'display_name',
+                'business_type',
+                'slug',
+                'city',
+                'whatsapp_url',
+                'specialties',
+                'schedule_summary',
+            ],
+        ]);
+    }
+
     public function test_services_catalog_api(): void
     {
         $response = $this->getJson('/api/v1/services');
@@ -104,6 +127,9 @@ class BookingAvailabilityEngineTest extends TestCase
     {
         $service = Service::where('duration_minutes', 60)->first();
         $testDate = Carbon::now()->next(Carbon::THURSDAY)->toDateString();
+
+        // Clear any pre-seeded appointments on the test date to isolate anti-gaps behavior
+        Appointment::whereDate('appointment_date', $testDate)->delete();
 
         // Create an appointment from 09:00 to 10:00
         Appointment::create([

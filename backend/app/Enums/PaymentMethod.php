@@ -11,9 +11,9 @@ enum PaymentMethod: string
     public function label(): string
     {
         return match ($this) {
-            self::BOLD_ONLINE => '💳 Pago en Línea (Bold / PSE / Tarjeta)',
-            self::NEQUI_TRANSFER => '📲 Transferencia Directa Nequi / Daviplata',
-            self::CASH_AT_LOCATION => '💵 Pago en Local (Efectivo / Datáfono)',
+            self::BOLD_ONLINE => 'Pago en Línea (Bold)',
+            self::NEQUI_TRANSFER => 'Transferencia Directa Nequi',
+            self::CASH_AT_LOCATION => 'Pago en Local (Efectivo / Datáfono)',
         };
     }
 }

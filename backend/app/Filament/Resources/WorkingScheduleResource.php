@@ -24,6 +24,7 @@ class WorkingScheduleResource extends Resource
     protected static string | UnitEnum | null $navigationGroup = 'Configuración de Horarios';
     protected static ?string $modelLabel = 'Horario Laboral';
     protected static ?string $pluralModelLabel = 'Horarios Laborales Semanales';
+    protected static ?string $navigationLabel = 'Horarios Semanales';
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema

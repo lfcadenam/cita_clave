@@ -145,6 +145,10 @@ class ServiceResource extends Resource
                     ->label('Filtrar por Categoría')
                     ->options(collect(ServiceCategory::cases())->mapWithKeys(fn ($cat) => [$cat->value => $cat->label()])),
             ])
+            ->filtersTriggerAction(function ($action) {
+                return $action
+                    ->badge(fn ($table) => $table->getActiveFiltersCount() > 0 ? (string) $table->getActiveFiltersCount() : null);
+            })
             ->actions([
                 EditAction::make(),
             ])
