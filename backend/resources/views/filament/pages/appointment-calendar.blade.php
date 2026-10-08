@@ -1078,9 +1078,9 @@
                                                             $pillColors = ['pill-purple', 'pill-blue', 'pill-rose', 'pill-amber', 'pill-emerald'];
                                                             $pillClass = $pillColors[$aptIndex % count($pillColors)];
                                                         @endphp
-                                                        <div wire:click="selectAppointment({{ $apt->id }})" 
+                                                         <div wire:click="selectAppointment({{ $apt->id }})" 
                                                              class="salonesgo-event-pill {{ $pillClass }}"
-                                                             title="{{ $apt->service?->name }} â€¢ {{ $apt->client_name }}">
+                                                             title="{{ $apt->service?->name }} • {{ $apt->client_name }}">
                                                             <span style="font-size: 9px; opacity: 0.9;">{{ substr($apt->start_time, 0, 5) }}</span>
                                                             <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $apt->client_name }}</span>
                                                         </div>
@@ -1110,7 +1110,7 @@
                                         @forelse($day['appointments'] as $apt)
                                             <div wire:click="selectAppointment({{ $apt->id }})" 
                                                  class="week-appointment-card status-{{ $apt->status->value }}"
-                                                 title="{{ $apt->service?->name }} â€¢ {{ $apt->client_name }}">
+                                                 title="{{ $apt->service?->name }} • {{ $apt->client_name }}">
                                                 <div class="week-apt-time">{{ substr($apt->start_time, 0, 5) }} - {{ substr($apt->end_time, 0, 5) }}</div>
                                                 <div class="week-apt-name">{{ $apt->client_name }}</div>
                                                 <div class="week-apt-service">{{ $apt->service?->name }}</div>
@@ -1193,7 +1193,7 @@
                                                     <span style="font-size: 10px; color: #64748b; font-weight: 700;">#{{ $apt->appointment_number }}</span>
                                                 </div>
                                                 <div style="font-size: 12px; color: #64748b; font-weight: 500; margin-top: 2px;">
-                                                    {{ $apt->service?->name }} â€¢ {{ $apt->service?->duration_minutes }} min
+                                                    {{ $apt->service?->name }} • {{ $apt->service?->duration_minutes }} min
                                                 </div>
                                             </div>
                                         </div>
@@ -1219,7 +1219,7 @@
                                 @empty
                                     <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px; padding: 40px 20px; text-align: center; color: #64748b;">
                                         <p style="font-size: 13px; font-weight: 600; margin: 0;">No hay citas agendadas para esta fecha.</p>
-                                        <p style="font-size: 11px; margin-top: 4px; color: #94a3b8;">Usa el botÃ³n "Nueva Reserva" para programar una cita.</p>
+                                        <p style="font-size: 11px; margin-top: 4px; color: #94a3b8;">Usa el botón "Nueva Reserva" para programar una cita.</p>
                                     </div>
                                 @endforelse
                             </div>
@@ -1256,7 +1256,7 @@
                             <span class="cierra-header-sub">{{ $selectedApt->client_name }}</span>
                         </div>
                     </div>
-                    <button wire:click="closeModal" type="button" class="cierra-modal-close">âœ•</button>
+                    <button wire:click="closeModal" type="button" class="cierra-modal-close">✕</button>
                 </div>
 
                 <!-- Body (Concise, Ordered & Structured) -->
@@ -1275,7 +1275,7 @@
                         <div style="display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px;">
                             <div>
                                 <div style="font-weight: 800; font-size: 14px; color: #0f172a;">{{ $selectedApt->service?->name }}</div>
-                                <div style="font-size: 11px; color: #64748b; font-weight: 600;">{{ $selectedApt->service?->category ? ($selectedApt->service->category instanceof \App\Enums\ServiceCategory ? $selectedApt->service->category->label() : $selectedApt->service->category) . ' â€¢ ' : '' }}{{ $selectedApt->service?->duration_minutes }} min</div>
+                                <div style="font-size: 11px; color: #64748b; font-weight: 600;">{{ $selectedApt->service?->category ? ($selectedApt->service->category instanceof \App\Enums\ServiceCategory ? $selectedApt->service->category->label() : $selectedApt->service->category) . ' • ' : '' }}{{ $selectedApt->service?->duration_minutes }} min</div>
                             </div>
                             <div style="text-align: right;">
                                 <div style="font-size: 11px; font-weight: 700; color: #64748b;">TOTAL</div>
@@ -1284,7 +1284,7 @@
                         </div>
                     </div>
 
-                    <!-- 2. ProgramaciÃ³n (Fecha & Horario) -->
+                    <!-- 2. Programación (Fecha & Horario) -->
                     <div class="cierra-section-box">
                         <div class="cierra-section-header">
                             <span>Fecha & Horario Programado</span>
@@ -1296,7 +1296,7 @@
                                 </div>
                                 <div>
                                     <div style="font-size: 13px; font-weight: 800; color: #0f172a;">
-                                        {{ substr($selectedApt->start_time, 0, 5) }} â€” {{ substr($selectedApt->end_time, 0, 5) }}
+                                        {{ substr($selectedApt->start_time, 0, 5) }} - {{ substr($selectedApt->end_time, 0, 5) }}
                                     </div>
                                     <div style="font-size: 10px; color: #64748b;">Horario confirmado en agenda</div>
                                 </div>
@@ -1304,7 +1304,7 @@
                         </div>
                     </div>
 
-                    <!-- 3. LiquidaciÃ³n Financiera en 3 Pastillas -->
+                    <!-- 3. Liquidación Financiera en 3 Pastillas -->
                     <div class="cierra-finance-grid">
                         <div class="cierra-finance-box">
                             <div class="cierra-finance-label">Valor Servicio</div>
@@ -1324,7 +1324,7 @@
                         </div>
                     </div>
 
-                    <!-- 4. SecciÃ³n de Comprobante Nequi Directa -->
+                    <!-- 4. Sección de Comprobante Nequi Directa -->
                     @if($selectedApt->status->value === 'pending_verification' || $selectedApt->deposit_proof_image)
                         @php
                             $proofUrl = $selectedApt->deposit_proof_image ? asset('storage/' . $selectedApt->deposit_proof_image) : null;
@@ -1335,7 +1335,7 @@
                                 @if($proofUrl)
                                     <a href="{{ $proofUrl }}" target="_blank" 
                                        style="color: #7e22ce; font-weight: 700; text-decoration: none; font-size: 11px;">
-                                        Ver tamaÃ±o completo
+                                        Ver tamaño completo
                                     </a>
                                 @endif
                             </div>
@@ -1357,7 +1357,7 @@
                                 <div style="margin-top: 4px;">
                                     <input type="text" 
                                            wire:model="verificationNotes" 
-                                           placeholder="Notas de validaciÃ³n interna (opcional)..." 
+                                           placeholder="Notas de validación interna (opcional)..." 
                                            style="width: 100%; border: 1px solid #e9d5ff; border-radius: 8px; font-size: 12px; padding: 7px 10px; background: #ffffff; outline: none; color: #1e293b;">
                                 </div>
                             @endif
@@ -1366,7 +1366,7 @@
 
                 </div>
 
-                <!-- Footer (Acciones Puntuales y AprobaciÃ³n Directa) -->
+                <!-- Footer (Acciones Puntuales y Aprobación Directa) -->
                 <div class="cierra-modal-footer">
                     <button wire:click="closeModal" type="button" class="cal-nav-btn" style="border: 1px solid #cbd5e1; background: white; font-size: 12px; padding: 8px 16px;">
                         Cerrar
@@ -1411,16 +1411,16 @@
                         </div>
                         <div class="cierra-header-info">
                             <div class="cierra-header-title-row">
-                                <h3 class="cierra-header-title">ValidaciÃ³n de Abono Nequi</h3>
+                                <h3 class="cierra-header-title">Validación de Abono Nequi</h3>
                                 <span class="cierra-status-pill pending_verification">
                                     <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block;"></span>
                                     <span>Por Verificar</span>
                                 </span>
                             </div>
-                            <span class="cierra-header-sub">#{{ $selectedApt->appointment_number }} â€¢ {{ $selectedApt->client_name }}</span>
+                            <span class="cierra-header-sub">#{{ $selectedApt->appointment_number }} • {{ $selectedApt->client_name }}</span>
                         </div>
                     </div>
-                    <button wire:click="closeModal" type="button" class="cierra-modal-close">âœ•</button>
+                    <button wire:click="closeModal" type="button" class="cierra-modal-close">✕</button>
                 </div>
 
                 <!-- Body -->
@@ -1439,12 +1439,12 @@
                                  style="max-height: 260px; max-width: 100%; border-radius: 8px; margin: 0 auto; display: block; object-fit: contain;" 
                                  alt="Comprobante Nequi">
                         @else
-                            <p style="color: #94a3b8; font-size: 12px; padding: 20px;">No se encontrÃ³ archivo adjunto.</p>
+                            <p style="color: #94a3b8; font-size: 12px; padding: 20px;">No se encontró archivo adjunto.</p>
                         @endif
                     </div>
 
                     <!-- Notas -->
-                    <textarea wire:model="verificationNotes" placeholder="Notas internas de validaciÃ³n (opcional)..." 
+                    <textarea wire:model="verificationNotes" placeholder="Notas internas de validación (opcional)..." 
                               style="width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 12px; padding: 10px; outline: none;"></textarea>
                 </div>
 
