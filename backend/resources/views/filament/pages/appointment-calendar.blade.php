@@ -1667,4 +1667,17 @@
         </div>
     @endif
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Si la pantalla es móvil (< 768px) y la vista inicial es 'month', cambiar automáticamente a vista 'day'
+            if (window.innerWidth < 768 && @js($viewMode === 'month')) {
+                if (window.Livewire) {
+                    const component = Livewire.find(document.querySelector('[wire\\:id]')?.getAttribute('wire:id'));
+                    if (component) {
+                        component.call('setViewMode', 'day');
+                    }
+                }
+            }
+        });
+    </script>
 </x-filament-panels::page>
