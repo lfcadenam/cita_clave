@@ -664,22 +664,22 @@
             align-items: center;
             gap: 5px;
         }
-        .cierra-status-pill.confirmed {
+        .cierra-status-pill.confirmed, .cierra-status-pill.CONFIRMED {
             background: #e6f7f2;
             color: #0d9488;
             border: 1px solid #a7f3d0;
         }
-        .cierra-status-pill.pending_verification {
+        .cierra-status-pill.pending_verification, .cierra-status-pill.PENDING_VERIFICATION {
             background: #fffbeb;
             color: #d97706;
             border: 1px solid #fde68a;
         }
-        .cierra-status-pill.completed {
+        .cierra-status-pill.completed, .cierra-status-pill.COMPLETED {
             background: #eff6ff;
             color: #2563eb;
             border: 1px solid #bfdbfe;
         }
-        .cierra-status-pill.cancelled {
+        .cierra-status-pill.cancelled, .cierra-status-pill.CANCELLED {
             background: #fef2f2;
             color: #dc2626;
             border: 1px solid #fecaca;
@@ -1305,33 +1305,38 @@
                     </div>
 
                     <!-- 3. Liquidación Financiera en 3 Pastillas -->
+                    @php
+                        $statusVal = strtoupper($selectedApt->status instanceof \App\Enums\AppointmentStatus ? $selectedApt->status->value : (string)($selectedApt->status ?? ''));
+                        $isPendingVerif = ($statusVal === 'PENDING_VERIFICATION');
+                        $isConfirmed = ($statusVal === 'CONFIRMED');
+                    @endphp
                     <div class="cierra-finance-grid">
                         <div class="cierra-finance-box">
                             <div class="cierra-finance-label">Valor Servicio</div>
                             <div class="cierra-finance-val">${{ number_format($selectedApt->service?->price ?: $selectedApt->total_amount, 0, ',', '.') }}</div>
                         </div>
-                        <div class="cierra-finance-box {{ $selectedApt->status->value === 'pending_verification' ? 'highlight-purple' : 'highlight' }}" style="{{ $selectedApt->status->value === 'pending_verification' ? 'background: #faf5ff; border-color: #e9d5ff;' : '' }}">
-                            <div class="cierra-finance-label" style="{{ $selectedApt->status->value === 'pending_verification' ? 'color: #7e22ce;' : 'color: #0d9488;' }}">
-                                {{ $selectedApt->status->value === 'pending_verification' ? 'Abono a Validar' : 'Abono Recibido' }}
+                        <div class="cierra-finance-box {{ $isPendingVerif ? 'highlight-purple' : 'highlight' }}" style="{{ $isPendingVerif ? 'background: #faf5ff; border-color: #e9d5ff;' : '' }}">
+                            <div class="cierra-finance-label" style="{{ $isPendingVerif ? 'color: #7e22ce;' : 'color: #0d9488;' }}">
+                                {{ $isPendingVerif ? 'Abono a Validar' : 'Abono Recibido' }}
                             </div>
-                            <div class="cierra-finance-val {{ $selectedApt->status->value === 'pending_verification' ? '' : 'green' }}" style="{{ $selectedApt->status->value === 'pending_verification' ? 'color: #7e22ce;' : '' }}">
+                            <div class="cierra-finance-val {{ $isPendingVerif ? '' : 'green' }}" style="{{ $isPendingVerif ? 'color: #7e22ce;' : '' }}">
                                 ${{ number_format($selectedApt->deposit_amount ?: $selectedApt->deposit_paid, 0, ',', '.') }}
                             </div>
                         </div>
                         <div class="cierra-finance-box">
-                            <div class="cierra-finance-label">Saldo en Estudio</div>
+                            <div class="cierra-finance-label">{{ $isPendingVerif ? 'Saldo al Confirmar' : 'Saldo Pendiente' }}</div>
                             <div class="cierra-finance-val">${{ number_format($selectedApt->balance_due, 0, ',', '.') }}</div>
                         </div>
                     </div>
 
                     <!-- 4. Sección de Comprobante Nequi Directa -->
-                    @if($selectedApt->status->value === 'pending_verification' || $selectedApt->deposit_proof_image)
+                    @if($isPendingVerif || $selectedApt->deposit_proof_image)
                         @php
                             $proofUrl = $selectedApt->deposit_proof_image ? asset('storage/' . $selectedApt->deposit_proof_image) : null;
                         @endphp
                         <div class="cierra-section-box" style="background: #faf5ff; border-color: #f3e8ff;">
                             <div class="cierra-section-header">
-                                <span style="color: #7e22ce;">Comprobante de Transferencia Nequi</span>
+                                <span style="color: #7e22ce; font-weight: 700;">Comprobante de Transferencia Nequi</span>
                                 @if($proofUrl)
                                     <a href="{{ $proofUrl }}" target="_blank" 
                                        style="color: #7e22ce; font-weight: 700; text-decoration: none; font-size: 11px;">
@@ -1353,8 +1358,8 @@
                                 </div>
                             @endif
 
-                            @if($selectedApt->status->value === 'pending_verification')
-                                <div style="margin-top: 4px;">
+                            @if($isPendingVerif)
+                                <div style="margin-top: 8px;">
                                     <input type="text" 
                                            wire:model="verificationNotes" 
                                            placeholder="Notas de validación interna (opcional)..." 
@@ -1372,22 +1377,22 @@
                         Cerrar
                     </button>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        @if($selectedApt->status->value === 'pending_verification')
+                        @if($isPendingVerif)
                             <button wire:click="rejectNequiDeposit({{ $selectedApt->id }})" type="button" 
                                     style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer;">
                                 Rechazar
                             </button>
                             <button wire:click="approveNequiDeposit({{ $selectedApt->id }})" type="button" class="btn-nueva-reserva" 
-                                    style="padding: 8px 18px; font-size: 12px;">
-                                Aprobar Abono y Confirmar
+                                    style="padding: 8px 18px; font-size: 12px; background: #0d9488; color: white; border: none; font-weight: 800; border-radius: 10px; cursor: pointer;">
+                                ✓ Aprobar Abono y Confirmar
                             </button>
-                        @elseif($selectedApt->status->value === 'confirmed')
+                        @elseif($isConfirmed)
                             <button wire:click="cancelAppointment({{ $selectedApt->id }})" type="button" 
                                     style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer;">
                                 Cancelar Cita
                             </button>
                             <button wire:click="markAsCompleted({{ $selectedApt->id }})" type="button" class="btn-nueva-reserva" 
-                                    style="padding: 8px 16px; font-size: 12px;">
+                                    style="padding: 8px 16px; font-size: 12px; background: #0d9488; color: white; border: none; font-weight: 800; border-radius: 10px; cursor: pointer;">
                                 Marcar Completada
                             </button>
                         @endif
