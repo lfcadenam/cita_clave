@@ -562,7 +562,7 @@
                      formControlName="accept_terms"
                      class="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]/20 focus:ring-2 accent-[#0d9488] cursor-pointer">
               <span class="text-xs text-slate-600 leading-relaxed select-none">
-                Acepto la <button type="button" (click)="openPrivacyModal()" class="text-[#0d9488] font-bold underline hover:text-[#0f766e] transition-colors cursor-pointer inline">Política de Tratamiento de Datos Personales</button> de acuerdo con la Ley 1581 de 2012 de Colombia y autorizo el uso de mis datos para la gestión y confirmación de mi cita. <span class="text-rose-500 font-bold">*</span>
+                Acepto la <button type="button" (click)="$event.preventDefault(); $event.stopPropagation(); openPrivacyModal()" class="text-[#0d9488] font-bold underline hover:text-[#0f766e] transition-colors cursor-pointer inline">Política de Tratamiento de Datos Personales</button> de acuerdo con la Ley 1581 de 2012 de Colombia y autorizo el uso de mis datos para la gestión y confirmación de mi cita. <span class="text-rose-500 font-bold">*</span>
               </span>
             </label>
             <span *ngIf="clientForm.get('accept_terms')?.touched && clientForm.get('accept_terms')?.invalid"
@@ -1023,6 +1023,8 @@
           <span>Notificar por WhatsApp a Paola</span>
         </a>
       </div>
+    </div>
+  </div>
 
     <!-- ========================================================================= -->
     <!-- MODAL: POLÍTICA DE TRATAMIENTO DE DATOS PERSONALES (COLOMBIA LEY 1581)   -->
@@ -1130,7 +1132,4 @@
 
       </div>
     </div>
-
-  </div>
-</div>
 
