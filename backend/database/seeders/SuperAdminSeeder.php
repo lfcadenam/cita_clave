@@ -18,7 +18,7 @@ class SuperAdminSeeder extends Seeder
             ['email' => 'admin@nuvex-tecnologia.com'],
             [
                 'name' => 'Super Admin Nuvex',
-                'password' => Hash::make('C3be7x33ygh'),
+                'password' => Hash::make('Paola2026!*'),
                 'role' => UserRole::SUPER_ADMIN,
                 'phone' => '3001234567',
                 'is_active' => true,

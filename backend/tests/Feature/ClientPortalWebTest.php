@@ -114,4 +114,34 @@ class ClientPortalWebTest extends TestCase
         $this->assertStringContainsString('BEGIN:VCALENDAR', $response->getContent());
         $this->assertStringContainsString('Paola Aguilera', $response->getContent());
     }
+
+    public function test_client_can_manually_confirm_attendance(): void
+    {
+        $service = Service::first();
+        $appointment = Appointment::create([
+            'service_id' => $service->id,
+            'client_name' => 'Sara Restrepo',
+            'client_phone' => '3195556677',
+            'appointment_date' => Carbon::now()->next(Carbon::TUESDAY)->toDateString(),
+            'start_time' => '11:00:00',
+            'end_time' => '12:30:00',
+            'total_amount' => 100000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 30000,
+            'balance_due' => 70000,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+            'status' => AppointmentStatus::CONFIRMED,
+        ]);
+
+        $this->assertNull($appointment->attendance_confirmed_at);
+
+        $response = $this->post("/reserva/confirmar-asistencia/{$appointment->appointment_number}");
+        $response->assertRedirect();
+
+        $this->assertNotNull($appointment->fresh()->attendance_confirmed_at);
+
+        $citasResponse = $this->get("/citas/{$appointment->appointment_number}");
+        $citasResponse->assertSuccessful();
+        $citasResponse->assertSee('Asistencia Confirmada');
+    }
 }

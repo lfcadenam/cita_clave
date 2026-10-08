@@ -71,19 +71,58 @@
             </div>
         </div>
 
+        @if(session('status_message'))
+            <div class="mt-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-semibold text-center">
+                {{ session('status_message') }}
+            </div>
+        @endif
+
+        <!-- Manual Attendance Confirmation Section -->
+        @if($appointment->attendance_confirmed_at)
+            <div class="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
+                <div class="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                    <i data-lucide="check-check" class="w-4 h-4 text-emerald-600"></i>
+                    <span>Asistencia Confirmada</span>
+                </div>
+                <p class="text-xs text-emerald-700 mt-1">
+                    Has confirmado tu asistencia para esta cita el {{ $appointment->attendance_confirmed_at->format('d/m/Y \a \l\a\s h:i A') }}. ¡Te esperamos con gusto!
+                </p>
+            </div>
+        @elseif($appointment->status === \App\Enums\AppointmentStatus::CONFIRMED)
+            <div class="mt-6 p-4 rounded-2xl bg-[#f0fdf4] border border-[#86efac] text-center">
+                <div class="text-xs font-bold text-[#166534] uppercase tracking-wider mb-1">
+                    ¿Confirmas tu asistencia para el día de tu cita?
+                </div>
+                <p class="text-xs text-[#15803d] mb-3">
+                    Ayúdanos a preparar tu espacio confirmando tu asistencia de forma manual:
+                </p>
+                <form action="{{ route('portal.confirm-attendance', $appointment->appointment_number) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="w-full py-3 px-4 rounded-xl text-xs font-bold bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer">
+                        <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                        <span>✓ Confirmar Mi Asistencia en Línea</span>
+                    </button>
+                </form>
+            </div>
+        @endif
+
         <!-- Action Buttons: Calendar & WhatsApp -->
-        <div class="mt-8 space-y-3">
+        <div class="mt-6 space-y-3">
             <a href="{{ url('/reserva/calendar/' . $appointment->appointment_number . '.ics') }}"
                class="w-full py-3 px-4 rounded-xl text-xs font-bold bg-[#1e3a5f] text-white hover:bg-[#162d4a] shadow-md flex items-center justify-center gap-2 transition-colors">
                 <i data-lucide="calendar-plus" class="w-4 h-4"></i>
                 <span>Añadir a Google / Apple Calendar</span>
             </a>
 
-            <a href="https://wa.me/573106080402?text=Hola%20Paola,%20tengo%20la%20cita%20%23{{ $appointment->appointment_number }}%20para%20el%20{{ $appointment->appointment_date->toDateString() }}"
+            @php
+                $ownerPhone = preg_replace('/\D/', '', $appointment->tenant?->whatsapp_number ?: ($appointment->tenant?->phone ?: '3103248385'));
+                $waMsg = urlencode("Hola Paola, confirmo mi asistencia a mi cita #{$appointment->appointment_number} de {$appointment->service->name} para el día " . ($appointment->appointment_date ? $appointment->appointment_date->format('d/m/Y') : '') . " a las " . substr($appointment->start_time, 0, 5) . ". Mi nombre es {$appointment->client_name}.");
+            @endphp
+            <a href="https://wa.me/57{{ $ownerPhone }}?text={{ $waMsg }}"
                target="_blank"
-               class="w-full py-3 px-4 rounded-xl text-xs font-bold bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-md flex items-center justify-center gap-2 transition-colors">
+               class="w-full py-3 px-4 rounded-xl text-xs font-bold bg-[#25d366] text-white hover:bg-[#20bd5a] shadow-md flex items-center justify-center gap-2 transition-colors">
                 <i data-lucide="message-circle" class="w-4 h-4"></i>
-                <span>Escribir a Paola por WhatsApp</span>
+                <span>Confirmar Asistencia por WhatsApp a Paola</span>
             </a>
         </div>
     </div>

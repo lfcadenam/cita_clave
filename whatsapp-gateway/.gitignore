@@ -1,0 +1,3 @@
+# Sesiones y archivos temporales de WhatsApp
+/instances/
+*.log

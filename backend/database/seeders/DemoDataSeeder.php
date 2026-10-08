@@ -54,7 +54,7 @@ class DemoDataSeeder extends Seeder
             [
                 'tenant_id' => $tenantPaola->id,
                 'name' => 'Paola Andrea Aguilera Camacho',
-                'password' => Hash::make('Paola12345!'),
+                'password' => Hash::make('Paola2026!*'),
                 'role' => UserRole::ADMIN,
                 'phone' => '3106080402',
                 'is_active' => true,

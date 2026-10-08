@@ -396,7 +396,12 @@
             </div>
         </div>
 
-        <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            @if ($appointment->attendance_confirmed_at)
+                <span class="nuvex-status-badge emerald" style="font-size: 0.72rem;" title="Confirmada el {{ $appointment->attendance_confirmed_at->format('d/m/Y H:i') }}">
+                    ✓ Asistencia Confirmada
+                </span>
+            @endif
             <span class="nuvex-status-badge {{ $statusColor }}">
                 {{ $appointment->status->label() }}
             </span>

@@ -7,9 +7,12 @@ use App\Enums\PaymentMethod;
 use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Observers\AppointmentObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
+#[ObservedBy([AppointmentObserver::class])]
 class Appointment extends Model
 {
     use HasFactory, BelongsToTenant;
@@ -34,6 +37,8 @@ class Appointment extends Model
         'deposit_proof_image',
         'verification_notes',
         'verified_at',
+        'reminder_24h_sent_at',
+        'attendance_confirmed_at',
         'payment_gateway_reference',
         'payment_gateway_payload',
         'cancellation_reason',
@@ -53,6 +58,8 @@ class Appointment extends Model
             'deposit_paid' => 'decimal:2',
             'balance_due' => 'decimal:2',
             'verified_at' => 'datetime',
+            'reminder_24h_sent_at' => 'datetime',
+            'attendance_confirmed_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'payment_gateway_payload' => 'array',
         ];

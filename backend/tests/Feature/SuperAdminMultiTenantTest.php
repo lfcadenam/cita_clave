@@ -174,4 +174,100 @@ class SuperAdminMultiTenantTest extends TestCase
         $this->assertContains('Sofia Vergara', $glamourAppointments);
         $this->assertNotContains('Limpieza Facial Profunda con Vapor de Ozono e Hidratacion', $glamourServices);
     }
+
+    public function test_super_admin_can_access_email_templates_page(): void
+    {
+        $this->actingAs($this->superAdmin);
+
+        $response = $this->get('/superadmin/plantillas-correo');
+        $response->assertSuccessful();
+        $response->assertSee('Plantillas de Correo');
+        $response->assertSee('Recordatorio 24 Horas Antes');
+    }
+
+    public function test_email_preview_endpoint_renders_templates(): void
+    {
+        $this->actingAs($this->superAdmin);
+
+        $templates = ['reminder-24h', 'booked-admin', 'booked-client', 'payment-confirmed'];
+
+        foreach ($templates as $tpl) {
+            $response = $this->get("/superadmin/email-preview/{$tpl}");
+            $response->assertSuccessful();
+            $response->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        }
+    }
+
+    public function test_super_admin_can_update_user_password(): void
+    {
+        $this->actingAs($this->superAdmin);
+        Filament::setCurrentPanel(Filament::getPanel('superadmin'));
+
+        \Livewire\Livewire::test(
+            \App\Filament\SuperAdmin\Resources\SuperAdminUserResource\Pages\EditSuperAdminUser::class,
+            ['record' => $this->salonAdmin->getRouteKey()]
+        )
+            ->assertSchemaStateSet([
+                'password' => null, // Verified: password must be empty on load!
+            ])
+            ->fillForm([
+                'name' => 'Paola Andrea Updated',
+                'password' => 'NuevaClave2026!*',
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors()
+            ->assertRedirect(\App\Filament\SuperAdmin\Resources\SuperAdminUserResource::getUrl('index'));
+
+        $this->salonAdmin->refresh();
+        $this->assertEquals('Paola Andrea Updated', $this->salonAdmin->name);
+        $this->assertTrue(Hash::check('NuevaClave2026!*', $this->salonAdmin->password));
+    }
+
+    public function test_super_admin_updating_user_without_password_keeps_existing_password(): void
+    {
+        $this->actingAs($this->superAdmin);
+        Filament::setCurrentPanel(Filament::getPanel('superadmin'));
+        $originalHash = $this->salonAdmin->password;
+
+        \Livewire\Livewire::test(
+            \App\Filament\SuperAdmin\Resources\SuperAdminUserResource\Pages\EditSuperAdminUser::class,
+            ['record' => $this->salonAdmin->getRouteKey()]
+        )
+            ->fillForm([
+                'name' => 'Paola Name Only',
+                'password' => '',
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors()
+            ->assertRedirect(\App\Filament\SuperAdmin\Resources\SuperAdminUserResource::getUrl('index'));
+
+        $this->salonAdmin->refresh();
+        $this->assertEquals('Paola Name Only', $this->salonAdmin->name);
+        $this->assertEquals($originalHash, $this->salonAdmin->password);
+    }
+
+    public function test_super_admin_can_delete_user_from_table(): void
+    {
+        $this->actingAs($this->superAdmin);
+        Filament::setCurrentPanel(Filament::getPanel('superadmin'));
+
+        $userToDelete = User::create([
+            'tenant_id' => $this->tenantPaola->id,
+            'name' => 'Usuario Temporal',
+            'email' => 'temporal@nuvex.co',
+            'password' => Hash::make('ClaveTemp123!'),
+            'role' => UserRole::CLIENT,
+            'is_active' => true,
+        ]);
+
+        \Livewire\Livewire::test(
+            \App\Filament\SuperAdmin\Resources\SuperAdminUserResource\Pages\ListSuperAdminUsers::class
+        )
+            ->callTableAction('delete', $userToDelete)
+            ->assertHasNoTableActionErrors();
+
+        $this->assertDatabaseMissing('users', [
+            'id' => $userToDelete->id,
+        ]);
+    }
 }

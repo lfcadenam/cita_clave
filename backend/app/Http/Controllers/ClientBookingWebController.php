@@ -43,17 +43,32 @@ class ClientBookingWebController extends Controller
     public function lookup(Request $request)
     {
         $search = $request->input('search');
-        $appointment = null;
+        $appointments = collect();
 
         if (! empty($search)) {
-            $appointment = Appointment::with('service')
-                ->where('appointment_number', trim($search))
-                ->orWhere('client_phone', trim($search))
-                ->latest()
-                ->first();
+            $cleanSearch = trim($search);
+            $cleanPhone = preg_replace('/\D/', '', $cleanSearch);
+
+            $query = Appointment::with('service');
+
+            if (strlen($cleanPhone) >= 7) {
+                $query->where(function ($q) use ($cleanSearch, $cleanPhone) {
+                    $q->where('appointment_number', $cleanSearch)
+                      ->orWhere('client_phone', 'LIKE', "%{$cleanPhone}%");
+                });
+            } else {
+                $query->where('appointment_number', $cleanSearch);
+            }
+
+            $appointments = $query->orderBy('appointment_date', 'desc')
+                ->orderBy('start_time', 'desc')
+                ->limit(3)
+                ->get();
         }
 
-        return view('portal.lookup', compact('appointment', 'search'));
+        $appointment = $appointments->first();
+
+        return view('portal.lookup', compact('appointments', 'appointment', 'search'));
     }
 
     /**
@@ -95,5 +110,19 @@ class ClientBookingWebController extends Controller
             'Content-Type' => 'text/calendar; charset=utf-8',
             'Content-Disposition' => "attachment; filename=\"cita-paola-{$appointment->appointment_number}.ics\"",
         ]);
+    }
+
+    /**
+     * Permite a la clienta confirmar manualmente su asistencia a la cita desde el portal web.
+     */
+    public function confirmAttendance(string $appointmentNumber)
+    {
+        $appointment = Appointment::where('appointment_number', $appointmentNumber)->firstOrFail();
+
+        $appointment->update([
+            'attendance_confirmed_at' => now(),
+        ]);
+
+        return redirect()->back()->with('status_message', '¡Muchas gracias! Has confirmado tu asistencia para esta cita. Te esperamos puntualmente en nuestro estudio.');
     }
 }

@@ -101,6 +101,18 @@ export class BookingComponent implements OnInit {
   bookingResult = signal<AppointmentResponse['data'] | null>(null);
   summaryVisible = signal<boolean>(false);
 
+  // Lookup Modal State
+  showLookupModal = signal<boolean>(false);
+  lookupQuery = signal<string>('');
+  isLookingUp = signal<boolean>(false);
+  lookupResult = signal<any | null>(null);
+  lookupResults = signal<any[]>([]);
+  selectedLookupIndex = signal<number>(0);
+  lookupViewMode = signal<'list' | 'detail'>('detail');
+  lookupError = signal<string | null>(null);
+  isConfirmingAttendance = signal<boolean>(false);
+  attendanceConfirmedSuccess = signal<string | null>(null);
+
   toggleSummary(): void {
     this.summaryVisible.update(v => !v);
   }
@@ -535,10 +547,11 @@ export class BookingComponent implements OnInit {
   }
 
   getWhatsAppShareUrl(): string {
-    const res = this.bookingResult();
+    const res = this.bookingResult() as any;
     if (!res) return '';
     const phone = environment.paolaWhatsApp;
-    const msg = `Hola Paola, acabo de reservar mi cita #${res.appointment_number} para ${res.service_name} el día ${res.booking_date} a las ${res.start_time}. Mi nombre es ${res.client_name}.`;
+    const dateVal = res.booking_date || res.date || '';
+    const msg = `Hola Paola, acabo de reservar mi cita #${res.appointment_number} para ${res.service_name} el día ${dateVal} a las ${res.start_time}. Mi nombre es ${res.client_name}.`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   }
 
@@ -560,5 +573,135 @@ export class BookingComponent implements OnInit {
     if (c.includes('LABIOS')) return 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80';
     if (c.includes('MASAJE')) return 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80';
     return 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=800&q=80';
+  }
+
+  openLookupModal(): void {
+    this.showLookupModal.set(true);
+    this.lookupError.set(null);
+    this.attendanceConfirmedSuccess.set(null);
+  }
+
+  closeLookupModal(): void {
+    this.showLookupModal.set(false);
+    this.lookupError.set(null);
+    this.attendanceConfirmedSuccess.set(null);
+  }
+
+  onLookupQueryChange(e: Event): void {
+    const input = e.target as HTMLInputElement;
+    this.lookupQuery.set(input?.value || '');
+  }
+
+  performLookup(): void {
+    const q = this.lookupQuery().trim();
+    if (!q) {
+      this.lookupError.set('Por favor ingresa tu número de cita (ej: PA-2610...) o tu celular.');
+      return;
+    }
+
+    this.isLookingUp.set(true);
+    this.lookupError.set(null);
+    this.lookupResult.set(null);
+    this.lookupResults.set([]);
+    this.attendanceConfirmedSuccess.set(null);
+
+    this.api.checkAppointmentStatus(q).subscribe({
+      next: (res: any) => {
+        this.isLookingUp.set(false);
+        const rawList = res?.appointments && Array.isArray(res.appointments) && res.appointments.length > 0
+          ? res.appointments
+          : (res?.data ? [res.data] : []);
+        const list = rawList.slice(0, 3);
+
+        if (list.length === 1) {
+          this.lookupResults.set(list);
+          this.selectedLookupIndex.set(0);
+          this.lookupResult.set(list[0]);
+          this.lookupViewMode.set('detail');
+        } else if (list.length > 1) {
+          this.lookupResults.set(list);
+          this.selectedLookupIndex.set(0);
+          this.lookupResult.set(null);
+          this.lookupViewMode.set('list');
+        } else {
+          this.lookupResults.set([]);
+          this.lookupResult.set(null);
+          this.lookupViewMode.set('detail');
+          this.lookupError.set(res?.message || 'No se encontró ninguna cita con los datos ingresados.');
+        }
+      },
+      error: (err: any) => {
+        this.isLookingUp.set(false);
+        this.lookupResults.set([]);
+        this.lookupResult.set(null);
+        this.lookupViewMode.set('detail');
+        const msg = err?.error?.message || 'No encontramos ninguna cita con el código o número de celular ingresado.';
+        this.lookupError.set(msg);
+      }
+    });
+  }
+
+  viewAppointmentDetail(apt: any): void {
+    this.lookupResult.set(apt);
+    this.lookupViewMode.set('detail');
+    this.attendanceConfirmedSuccess.set(null);
+    this.lookupError.set(null);
+  }
+
+  backToAppointmentList(): void {
+    this.lookupViewMode.set('list');
+    this.lookupResult.set(null);
+    this.attendanceConfirmedSuccess.set(null);
+    this.lookupError.set(null);
+  }
+
+  selectLookupAppointment(index: number): void {
+    this.selectedLookupIndex.set(index);
+    const list = this.lookupResults();
+    if (list[index]) {
+      this.lookupResult.set(list[index]);
+      this.lookupViewMode.set('detail');
+      this.attendanceConfirmedSuccess.set(null);
+      this.lookupError.set(null);
+    }
+  }
+
+  confirmAttendanceInModal(): void {
+    const apt = this.lookupResult();
+    if (!apt || !apt.appointment_number) return;
+
+    this.isConfirmingAttendance.set(true);
+    this.api.confirmAttendance(apt.appointment_number).subscribe({
+      next: (res: any) => {
+        this.isConfirmingAttendance.set(false);
+        if (res && res.success) {
+          const nowIso = new Date().toISOString();
+          this.attendanceConfirmedSuccess.set(res.message || '¡Asistencia confirmada exitosamente! Te esperamos.');
+          this.lookupResult.update(cur => cur ? { ...cur, attendance_confirmed_at: nowIso } : cur);
+
+          const targetNumber = apt.appointment_number;
+          this.lookupResults.update(list => {
+            return list.map(item => {
+              if (item.appointment_number === targetNumber) {
+                return { ...item, attendance_confirmed_at: nowIso };
+              }
+              return item;
+            });
+          });
+        }
+      },
+      error: (err: any) => {
+        this.isConfirmingAttendance.set(false);
+        this.lookupError.set(err?.error?.message || 'No fue posible confirmar la asistencia en este momento.');
+      }
+    });
+  }
+
+  getLookupWhatsAppUrl(res: any): string {
+    if (!res) return '';
+    const phone = environment.paolaWhatsApp;
+    const dateVal = res.booking_date || res.date || '';
+    const msg = `Hola Paola, confirmo mi asistencia a mi cita #${res.appointment_number} de ${res.service_name || res.service?.name} para el día ${dateVal} a las ${res.start_time}. Mi nombre es ${res.client_name}.`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   }
 }

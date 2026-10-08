@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vincular WhatsApp - Paola Aguilera Estudio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4 text-slate-100">
+  <div class="max-w-md w-full bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-5">
+    
+    <!-- Logo / Header -->
+    <div>
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3 border border-emerald-500/30">
+        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.694.073-2.127-.518-1.741-.718-2.854-2.493-2.942-2.61-.088-.117-.704-.937-.704-1.787 0-.85.443-1.267.601-1.441.157-.175.343-.219.458-.219.114 0 .229.001.328.006.105.006.246-.04.385.293.144.346.49 1.196.533 1.283.043.088.072.19.014.305-.058.117-.087.19-.173.293-.086.102-.181.229-.258.308-.087.087-.177.182-.076.355.101.173.45 1.05 1.285 1.792.835.742 1.488.989 1.701 1.077.213.088.337.073.464-.073.127-.146.545-.635.69-1.071.144-.436.319-.364.603-.262.285.102 1.808.852 2.118 1.006.31.154.517.229.592.355.075.127.075.735-.069 1.14z"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-white">Vincular WhatsApp</h2>
+      <p class="text-xs text-slate-400 mt-1">Paola Aguilera Belleza & Estética</p>
+    </div>
+
+    <!-- Status Badge -->
+    <div id="statusContainer" class="p-2.5 rounded-xl bg-slate-700/60 border border-slate-600 text-xs flex items-center justify-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+      <span id="statusText" class="font-medium text-slate-300">Cargando código QR...</span>
+    </div>
+
+    <!-- QR Code Display Box -->
+    <div class="bg-white p-4 rounded-2xl shadow-inner inline-block mx-auto min-w-[240px] min-h-[240px] flex items-center justify-center">
+      <img id="qrImage" src="" alt="Código QR WhatsApp" class="w-64 h-64 mx-auto hidden object-contain">
+      <div id="qrLoading" class="text-slate-500 text-xs font-medium">Generando QR...</div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="text-left bg-slate-700/40 p-4 rounded-2xl text-xs space-y-2 border border-slate-700/80">
+      <p class="font-bold text-emerald-400 uppercase tracking-wider text-[11px]">Pasos en tu celular:</p>
+      <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
+        <li>Abre <strong class="text-white">WhatsApp</strong> en tu teléfono.</li>
+        <li>Toca los tres puntos ⋮ o <strong class="text-white">Ajustes</strong>.</li>
+        <li>Selecciona <strong class="text-white">Dispositivos vinculados</strong>.</li>
+        <li>Toca en <strong class="text-white">Vincular un dispositivo</strong> y apunta la cámara a este código QR.</li>
+      </ol>
+    </div>
+
+    <!-- Auto Refresh indicator -->
+    <button onclick="fetchQrCode()" class="text-xs text-slate-400 hover:text-white underline transition-colors cursor-pointer">
+      ↻ Recargar Código QR
+    </button>
+
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:8080';
+    const API_KEY = 'nuvex_evolution_key_2026';
+    const INSTANCE = 'paola_estudio';
+
+    async function fetchQrCode() {
+      const qrImg = document.getElementById('qrImage');
+      const qrLoading = document.getElementById('qrLoading');
+      const statusText = document.getElementById('statusText');
+
+      try {
+        const res = await fetch(`${API_URL}/instance/connect/${INSTANCE}`, {
+          headers: { 'apikey': API_KEY }
+        });
+        const data = await res.json();
+
+        if (data && (data.base64 || data.code)) {
+          const base64 = data.base64 || data.code;
+          qrImg.src = base64.startsWith('data:') ? base64 : `data:image/png;base64,${base64}`;
+          qrImg.classList.remove('hidden');
+          qrLoading.classList.add('hidden');
+          statusText.innerText = 'Código QR listo. Escanéalo ahora con WhatsApp.';
+        } else if (data && data.instance && data.instance.state === 'open') {
+          statusText.innerText = '¡WhatsApp Conectado Exitosamente! ✓';
+          qrLoading.innerText = '¡Sesión Iniciada!';
+          qrLoading.classList.remove('hidden');
+          qrImg.classList.add('hidden');
+        } else {
+          statusText.innerText = 'Esperando conexión...';
+        }
+      } catch (err) {
+        statusText.innerText = 'Error conectando con Evolution API. ¿Está corriendo Docker?';
+      }
+    }
+
+    // Check status periodically
+    async function checkState() {
+      try {
+        const res = await fetch(`${API_URL}/instance/connectionState/${INSTANCE}`, {
+          headers: { 'apikey': API_KEY }
+        });
+        const data = await res.json();
+        const state = data?.instance?.state || data?.state;
+        if (state === 'open') {
+          document.getElementById('statusText').innerText = '¡WhatsApp Conectado Exitosamente! ✓';
+          document.getElementById('qrLoading').innerText = '✓ ¡Sesión Activa en WhatsApp!';
+          document.getElementById('qrLoading').classList.remove('hidden');
+          document.getElementById('qrImage').classList.add('hidden');
+        }
+      } catch (e) {}
+    }
+
+    fetchQrCode();
+    setInterval(checkState, 5000);
+  </script>
+</body>
+</html>

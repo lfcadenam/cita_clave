@@ -9,10 +9,17 @@ return [
 
     'enabled' => env('WHATSAPP_ENABLED', true),
     
-    // Drivers: 'log' (desarrollo local / tests), 'meta' (WhatsApp Cloud API), 'custom_gateway'
-    'driver' => env('WHATSAPP_DRIVER', 'log'),
+    // Drivers: 'evolution' (Gateway QR Baileys), 'meta' (WhatsApp Cloud API), 'log' (desarrollo local / tests)
+    'driver' => env('WHATSAPP_DRIVER', 'evolution'),
 
-    'admin_phone' => env('WHATSAPP_ADMIN_PHONE', '573001234567'),
+    'admin_phone' => env('WHATSAPP_ADMIN_PHONE', '573106080402'),
+
+    // Configuración para Evolution API (Gateway QR Baileys - Sin costo)
+    'evolution' => [
+        'base_url' => rtrim(env('EVOLUTION_API_URL', 'http://localhost:8080'), '/'),
+        'api_key' => env('EVOLUTION_API_KEY', 'nuvex_evolution_key_2026'),
+        'instance_name' => env('EVOLUTION_INSTANCE_NAME', 'paola_estudio'),
+    ],
 
     // Configuración para Meta Cloud API (si se usa la API oficial de Meta)
     'meta' => [

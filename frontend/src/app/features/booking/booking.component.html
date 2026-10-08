@@ -37,12 +37,12 @@
 
       <!-- Top Right Actions -->
       <div class="flex items-center gap-2.5 shrink-0">
-        <a href="/reserva/consulta" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs">
+        <button (click)="openLookupModal()" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2 rounded-full border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer">
           <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
-          <span>Consultar Cita</span>
-        </a>
+          <span class="inline">Consultar Cita</span>
+        </button>
 
         <a [href]="salonProfile()?.whatsapp_url || 'https://wa.me/573103248385'" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-bold shadow-md shadow-teal-500/20 transition-all hover:scale-[1.02]">
           <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
@@ -671,7 +671,7 @@
           </div>
           <div class="flex justify-between">
             <span class="text-slate-500">Fecha y Hora:</span>
-            <span class="font-bold text-emerald-800">{{ bookingResult()?.booking_date }} • {{ bookingResult()?.start_time }}</span>
+            <span class="font-bold text-emerald-800">{{ bookingResult()?.booking_date || $any(bookingResult())?.date }} • {{ bookingResult()?.start_time }}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-slate-500">Cliente:</span>
@@ -751,4 +751,208 @@
     </div>
   </footer>
 
+  <!-- ========================================================================= -->
+  <!-- MODAL INTERACTIVO DE CONSULTA DE CITA & CONFIRMACIÓN DE ASISTENCIA        -->
+  <!-- ========================================================================= -->
+  <div *ngIf="showLookupModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+       (click)="closeLookupModal()">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 sm:p-7 relative max-h-[90vh] overflow-y-auto animate-scale-up"
+         (click)="$event.stopPropagation()">
+      
+      <!-- Close Button -->
+      <button (click)="closeLookupModal()" type="button"
+              class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="text-left mb-5">
+        <div class="w-10 h-10 rounded-2xl bg-[#e6f7f2] text-[#0d9488] flex items-center justify-center mb-2 shadow-xs border border-[#e2f0ea]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg sm:text-xl font-bold text-[#1e3a5f]">Consulta el Estado de tu Cita</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Ingresa tu número de cita (ej: PA-2610...) o tu celular registrado</p>
+      </div>
+
+      <!-- Search Input Form -->
+      <div class="space-y-3 mb-5">
+        <div class="flex gap-2">
+          <input type="text"
+                 [value]="lookupQuery()"
+                 (input)="onLookupQueryChange($event)"
+                 (keyup.enter)="performLookup()"
+                 placeholder="PA-261008-7KVT o 3103248385"
+                 class="flex-1 px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]">
+          <button (click)="performLookup()"
+                  [disabled]="isLookingUp()"
+                  type="button"
+                  class="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#0d9488] hover:bg-[#0f766e] text-white transition-colors shadow-sm disabled:opacity-50 cursor-pointer">
+            <span *ngIf="!isLookingUp()">Buscar</span>
+            <span *ngIf="isLookingUp()">Buscando...</span>
+          </button>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="lookupError()" class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700">
+          {{ lookupError() }}
+        </div>
+
+        <!-- Attendance Confirmed Success Alert -->
+        <div *ngIf="attendanceConfirmedSuccess()" class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-bold flex items-center gap-2">
+          <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span>{{ attendanceConfirmedSuccess() }}</span>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- VIEW 1: LIST OF APPOINTMENTS (When user has multiple appointments) -->
+      <!-- ================================================================= -->
+      <div *ngIf="lookupViewMode() === 'list' && lookupResults().length > 1" class="space-y-3 pt-2 border-t border-slate-100 text-left">
+        <div class="flex items-center justify-between pb-1">
+          <span class="text-xs font-bold text-slate-800">
+            Últimas {{ lookupResults().length }} citas agendadas
+          </span>
+          <span class="text-[11px] text-slate-500 font-medium">Selecciona una para gestionar</span>
+        </div>
+
+        <div class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+          <div *ngFor="let apt of lookupResults()"
+               class="p-4 bg-slate-50/70 hover:bg-white rounded-2xl border border-slate-200/90 hover:border-[#0d9488]/50 shadow-2xs hover:shadow-sm transition-all space-y-2.5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
+              <div>
+                <span class="text-[10px] text-slate-400 font-semibold uppercase block">Reserva</span>
+                <span class="font-mono font-bold text-xs sm:text-sm text-[#1e3a5f]">#{{ apt.appointment_number }}</span>
+              </div>
+              <div class="self-start sm:self-center shrink-0">
+                <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-2xs"
+                      [ngClass]="{
+                        'bg-[#e6f7f2] text-[#0d9488] border-[#a7f3d0]': apt.status === 'CONFIRMED',
+                        'bg-amber-50 text-amber-800 border-amber-200': apt.status === 'PENDING_VERIFICATION',
+                        'bg-slate-100 text-slate-700 border-slate-200': apt.status !== 'CONFIRMED' && apt.status !== 'PENDING_VERIFICATION'
+                      }">
+                  {{ apt.status_label || apt.status }}
+                </span>
+              </div>
+            </div>
+
+            <div class="space-y-1 text-xs">
+              <div class="font-bold text-slate-900 leading-snug">{{ apt.service_name || apt.service?.name }}</div>
+              <div class="flex items-center justify-between text-[11px] text-slate-500">
+                <span>🗓️ {{ apt.booking_date || apt.date }} • {{ apt.start_time }}</span>
+                <span class="font-semibold text-slate-700">Saldo: ${{ formatPrice(apt.balance_due) }} COP</span>
+              </div>
+            </div>
+
+            <button type="button"
+                    (click)="viewAppointmentDetail(apt)"
+                    class="w-full py-2 px-3 rounded-xl bg-white hover:bg-[#e6f7f2] text-[#1e3a5f] hover:text-[#0d9488] text-xs font-bold border border-slate-200 hover:border-[#0d9488]/40 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
+              <span>Ver Detalle de la Cita</span>
+              <span class="text-[#0d9488] font-bold">→</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- VIEW 2: APPOINTMENT DETAIL (Single result or chosen from list)     -->
+      <!-- ================================================================= -->
+      <div *ngIf="lookupViewMode() === 'detail' && lookupResult()" class="space-y-4 pt-2 border-t border-slate-100 text-left">
+        
+        <!-- Back to list button (only shown if there are multiple appointments) -->
+        <div *ngIf="lookupResults().length > 1" class="pb-1">
+          <button type="button"
+                  (click)="backToAppointmentList()"
+                  class="inline-flex items-center gap-1.5 text-xs font-bold text-[#0d9488] hover:text-[#0f766e] bg-[#e6f7f2]/70 hover:bg-[#e6f7f2] px-3 py-1.5 rounded-xl border border-[#0d9488]/20 transition-all cursor-pointer">
+            <span class="text-sm leading-none">←</span>
+            <span>Volver al listado de citas</span>
+          </button>
+        </div>
+
+        <!-- Status & Code Banner -->
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div>
+            <span class="text-[10px] text-slate-400 font-semibold uppercase block">Código de Reserva</span>
+            <span class="font-mono font-bold text-xs sm:text-sm text-[#1e3a5f]">#{{ lookupResult().appointment_number }}</span>
+          </div>
+          <div class="self-start sm:self-center shrink-0">
+            <span class="inline-block whitespace-nowrap px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider border shadow-2xs"
+                  [ngClass]="{
+                    'bg-[#e6f7f2] text-[#0d9488] border-[#a7f3d0]': lookupResult().status === 'CONFIRMED',
+                    'bg-amber-50 text-amber-800 border-amber-200': lookupResult().status === 'PENDING_VERIFICATION',
+                    'bg-slate-100 text-slate-700 border-slate-200': lookupResult().status !== 'CONFIRMED' && lookupResult().status !== 'PENDING_VERIFICATION'
+                  }">
+              {{ lookupResult().status_label || lookupResult().status }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Clienta:</span>
+            <span class="font-bold text-slate-900">{{ lookupResult().client_name }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Tratamiento:</span>
+            <span class="font-bold text-[#0d9488]">{{ lookupResult().service_name || lookupResult().service?.name }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Fecha y Hora:</span>
+            <span class="font-bold text-slate-800">{{ lookupResult().booking_date || lookupResult().date }} • {{ lookupResult().start_time }}</span>
+          </div>
+          <div class="flex justify-between pt-2 border-t border-slate-100">
+            <span class="text-slate-500">Abono Recibido:</span>
+            <span class="font-bold text-[#0d9488]">${{ formatPrice(lookupResult().deposit_paid || lookupResult().deposit_amount) }} COP</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Saldo Pendiente en Local:</span>
+            <span class="font-bold text-[#1e3a5f]">${{ formatPrice(lookupResult().balance_due) }} COP</span>
+          </div>
+        </div>
+
+        <!-- Attendance Confirmation Section -->
+        <div *ngIf="lookupResult().attendance_confirmed_at" class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
+          <div class="text-xs font-bold text-emerald-800 flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>Asistencia Confirmada por la Clienta</span>
+          </div>
+          <p class="text-[11px] text-emerald-700 mt-0.5">
+            Has confirmado tu asistencia para esta cita. ¡Te esperamos puntualmente!
+          </p>
+        </div>
+
+        <div *ngIf="lookupResult().status === 'CONFIRMED' && !lookupResult().attendance_confirmed_at"
+             class="p-4 rounded-2xl bg-[#f0fdf4] border border-[#86efac] text-center space-y-2">
+          <p class="text-xs text-[#166534] font-bold">
+            ¿Confirmas tu asistencia para el día de tu cita?
+          </p>
+          <button (click)="confirmAttendanceInModal()"
+                  [disabled]="isConfirmingAttendance()"
+                  type="button"
+                  class="w-full py-2.5 px-4 bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm">
+            <span *ngIf="!isConfirmingAttendance()">✓ Confirmar Mi Asistencia en Línea</span>
+            <span *ngIf="isConfirmingAttendance()">Confirmando...</span>
+          </button>
+        </div>
+
+        <!-- WhatsApp Action Button -->
+        <a [href]="getLookupWhatsAppUrl(lookupResult())"
+           target="_blank"
+           class="w-full py-3 px-4 bg-[#25d366] hover:bg-[#20bd5a] text-white font-bold rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-md block text-center">
+          <span>Notificar por WhatsApp a Paola</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
 </div>
+

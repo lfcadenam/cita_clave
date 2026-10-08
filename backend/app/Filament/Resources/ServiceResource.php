@@ -115,7 +115,8 @@ class ServiceResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->weight('bold')
-                    ->description(fn (Service $record): string => $record->category instanceof ServiceCategory ? $record->category->label() : (string) $record->category),
+                    ->description(fn (Service $record): string => $record->category instanceof ServiceCategory ? $record->category->label() : (string) $record->category)
+                    ->wrap(),
 
                 TextColumn::make('duration_minutes')
                     ->label('Duración')

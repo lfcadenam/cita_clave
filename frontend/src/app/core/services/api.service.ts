@@ -142,4 +142,14 @@ export class ApiService {
       })
     );
   }
+
+  checkAppointmentStatus(query: string): Observable<{ success: boolean; data?: any; message?: string }> {
+    const clean = query.trim();
+    return this.http.get<{ success: boolean; data?: any; message?: string }>(`${this.baseUrl}/appointments/status/${encodeURIComponent(clean)}`);
+  }
+
+  confirmAttendance(appointmentNumber: string): Observable<{ success: boolean; message: string; data?: any }> {
+    const clean = appointmentNumber.trim();
+    return this.http.post<{ success: boolean; message: string; data?: any }>(`${this.baseUrl}/appointments/confirm-attendance/${encodeURIComponent(clean)}`, {});
+  }
 }

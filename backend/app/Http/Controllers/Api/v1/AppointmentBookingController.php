@@ -119,6 +119,7 @@ class AppointmentBookingController extends Controller
                         'deposit_amount' => (float) $appointment->deposit_amount,
                     ],
                     'date' => $appointment->appointment_date->toDateString(),
+                    'booking_date' => $appointment->appointment_date->toDateString(),
                     'start_time' => substr($appointment->start_time, 0, 5),
                     'end_time' => substr($appointment->end_time, 0, 5),
                 ],
@@ -232,6 +233,7 @@ class AppointmentBookingController extends Controller
                     'client_name' => $appointment->client_name,
                     'service_name' => $appointment->service->name,
                     'date' => $appointment->appointment_date->toDateString(),
+                    'booking_date' => $appointment->appointment_date->toDateString(),
                     'start_time' => substr($appointment->start_time, 0, 5),
                     'end_time' => substr($appointment->end_time, 0, 5),
                     'total_amount' => (float) $appointment->total_amount,
@@ -244,14 +246,80 @@ class AppointmentBookingController extends Controller
     }
 
     /**
-     * Check appointment status by appointment number or ID.
+     * Check appointment status by appointment number, ID, or client phone.
      */
     public function status(string $appointmentNumber): JsonResponse
     {
-        $appointment = Appointment::with('service')
-            ->where('appointment_number', $appointmentNumber)
-            ->orWhere('id', $appointmentNumber)
-            ->first();
+        $cleanSearch = trim($appointmentNumber);
+        $cleanPhone = preg_replace('/\D/', '', $cleanSearch);
+
+        $query = Appointment::with(['service', 'tenant']);
+
+        if (strlen($cleanPhone) >= 7) {
+            $query->where(function ($q) use ($cleanSearch, $cleanPhone) {
+                $q->where('appointment_number', $cleanSearch)
+                  ->orWhere('id', $cleanSearch)
+                  ->orWhere('client_phone', 'LIKE', "%{$cleanPhone}%");
+            });
+        } else {
+            $query->where(function ($q) use ($cleanSearch) {
+                $q->where('appointment_number', $cleanSearch)
+                  ->orWhere('id', $cleanSearch);
+            });
+        }
+
+        $appointments = $query->orderBy('appointment_date', 'desc')
+            ->orderBy('start_time', 'desc')
+            ->limit(3)
+            ->get();
+
+        if ($appointments->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No encontramos ninguna cita con el código o número de celular ingresado.',
+            ], 404);
+        }
+
+        $items = $appointments->map(function ($apt) {
+            return [
+                'id' => $apt->id,
+                'appointment_number' => $apt->appointment_number,
+                'status' => $apt->status->value,
+                'status_label' => $apt->status->label(),
+                'service_name' => $apt->service->name,
+                'service' => [
+                    'name' => $apt->service->name,
+                    'duration_minutes' => $apt->service->duration_minutes,
+                ],
+                'client_name' => $apt->client_name,
+                'client_phone' => $apt->client_phone,
+                'date' => $apt->appointment_date->toDateString(),
+                'booking_date' => $apt->appointment_date->toDateString(),
+                'start_time' => substr($apt->start_time, 0, 5),
+                'end_time' => substr($apt->end_time, 0, 5),
+                'total_amount' => (float) $apt->total_amount,
+                'deposit_amount' => (float) $apt->deposit_amount,
+                'deposit_paid' => (float) $apt->deposit_paid,
+                'balance_due' => (float) $apt->balance_due,
+                'verified_at' => $apt->verified_at?->toIso8601String(),
+                'attendance_confirmed_at' => $apt->attendance_confirmed_at?->toIso8601String(),
+            ];
+        })->values()->all();
+
+        return response()->json([
+            'success' => true,
+            'count' => count($items),
+            'data' => $items[0],
+            'appointments' => $items,
+        ]);
+    }
+
+    /**
+     * Confirm attendance for an appointment via API.
+     */
+    public function confirmAttendanceApi(string $appointmentNumber): JsonResponse
+    {
+        $appointment = Appointment::where('appointment_number', trim($appointmentNumber))->first();
 
         if (! $appointment) {
             return response()->json([
@@ -260,25 +328,16 @@ class AppointmentBookingController extends Controller
             ], 404);
         }
 
+        $appointment->update([
+            'attendance_confirmed_at' => now(),
+        ]);
+
         return response()->json([
             'success' => true,
+            'message' => '¡Asistencia confirmada exitosamente! Te esperamos el día de tu cita.',
             'data' => [
                 'appointment_number' => $appointment->appointment_number,
-                'status' => $appointment->status->value,
-                'status_label' => $appointment->status->label(),
-                'service' => [
-                    'name' => $appointment->service->name,
-                    'duration_minutes' => $appointment->service->duration_minutes,
-                ],
-                'client_name' => $appointment->client_name,
-                'date' => $appointment->appointment_date->toDateString(),
-                'start_time' => substr($appointment->start_time, 0, 5),
-                'end_time' => substr($appointment->end_time, 0, 5),
-                'total_amount' => (float) $appointment->total_amount,
-                'deposit_amount' => (float) $appointment->deposit_amount,
-                'deposit_paid' => (float) $appointment->deposit_paid,
-                'balance_due' => (float) $appointment->balance_due,
-                'verified_at' => $appointment->verified_at?->toIso8601String(),
+                'attendance_confirmed_at' => $appointment->attendance_confirmed_at->toIso8601String(),
             ],
         ]);
     }

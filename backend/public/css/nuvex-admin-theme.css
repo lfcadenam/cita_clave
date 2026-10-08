@@ -259,6 +259,9 @@ body {
 main.fi-main {
   background-color: transparent !important;
   padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 /* ==========================================================================
@@ -361,11 +364,7 @@ main.fi-main {
 .fi-sidebar .fi-sidebar-item-button,
 .fi-sidebar a.fi-sidebar-item-btn,
 .fi-sidebar a.fi-sidebar-item-button,
-.fi-sidebar .fi-sidebar-item-label,
-.fi-sidebar .fi-sidebar-item-btn span,
-.fi-sidebar .fi-sidebar-item-button span,
-.fi-sidebar a.fi-sidebar-item-btn span,
-.fi-sidebar a.fi-sidebar-item-button span {
+.fi-sidebar .fi-sidebar-item-label {
   color: #FFFFFF !important;
   border-radius: 14px;
   font-weight: 600 !important;
@@ -389,8 +388,6 @@ main.fi-main {
   transform: translateX(3px) !important;
 }
 
-.fi-sidebar .fi-sidebar-item-btn:hover *,
-.fi-sidebar .fi-sidebar-item-button:hover *,
 .fi-sidebar .fi-sidebar-item-btn:hover .fi-sidebar-item-label,
 .fi-sidebar .fi-sidebar-item-button:hover .fi-sidebar-item-label {
   color: #FFFFFF !important;
@@ -410,11 +407,7 @@ main.fi-main {
 }
 
 .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-label,
-.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-btn *,
-.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button *,
-.fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-label,
-.fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-btn *,
-.fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-button * {
+.fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-label {
   color: #FFFFFF !important;
   font-weight: 800 !important;
   opacity: 1 !important;
@@ -426,28 +419,119 @@ main.fi-main {
 .fi-sidebar .fi-sidebar-item-btn svg,
 .fi-sidebar .fi-sidebar-item-button svg,
 .fi-sidebar .fi-sidebar-group-icon,
-.fi-sidebar svg {
+.fi-sidebar svg:not(.fi-badge svg) {
   color: #FFFFFF !important;
   stroke: currentColor !important;
   opacity: 1 !important;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15)) !important;
 }
 
-/* Badges Contadores en Sidebar (ej. Citas '9', Servicios '8') */
-.fi-sidebar .fi-badge,
-.fi-sidebar .fi-sidebar-item-badge,
-.fi-sidebar [class*="badge"] {
-  background: #FFFFFF !important;
-  color: #0d9488 !important;
-  font-weight: 800 !important;
+/* Badges Contadores en Sidebar (ej. Citas '7', Servicios '8') */
+.fi-sidebar .fi-sidebar-item-badge-ctn {
+  background: transparent !important;
   border: none !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
-.fi-sidebar .fi-badge *,
-.fi-sidebar .fi-sidebar-item-badge * {
-  color: #0d9488 !important;
+.fi-sidebar .fi-sidebar-item-badge-ctn .fi-badge {
+  background-color: #FFFFFF !important;
+  color: #115e59 !important;
+  border: none !important;
+  outline: none !important;
+  border-radius: 9999px !important;
+  min-width: 22px !important;
+  height: 22px !important;
+  padding: 0 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22) !important;
+  --tw-ring-shadow: none !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-offset-shadow: none !important;
+  text-shadow: none !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* Anular el baseline y display grid de Filament para centrar perfectamente el número */
+.fi-sidebar .fi-sidebar-item-badge-ctn .fi-badge .fi-badge-label-ctn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important; /* Neutraliza el self-baseline de Filament que subía el número */
+  justify-self: center !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  line-height: 1 !important;
+}
+
+.fi-sidebar .fi-sidebar-item-badge-ctn .fi-badge .fi-badge-label {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #115e59 !important;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
   font-weight: 800 !important;
+  font-size: 11.5px !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-shadow: none !important;
+}
+
+/* Máxima especificidad para asegurar que el número del badge se vea nítido, oscuro y perfectamente centrado */
+.fi-sidebar .fi-sidebar-item .fi-sidebar-item-badge-ctn .fi-badge,
+.fi-sidebar .fi-sidebar-item .fi-sidebar-item-badge-ctn .fi-badge *,
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-badge-ctn .fi-badge,
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-badge-ctn .fi-badge *,
+.fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-badge-ctn .fi-badge,
+.fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-badge-ctn .fi-badge *,
+.fi-sidebar .fi-sidebar-item-btn:hover .fi-sidebar-item-badge-ctn .fi-badge,
+.fi-sidebar .fi-sidebar-item-btn:hover .fi-sidebar-item-badge-ctn .fi-badge *,
+.fi-sidebar a.fi-sidebar-item-btn:hover .fi-sidebar-item-badge-ctn .fi-badge,
+.fi-sidebar a.fi-sidebar-item-btn:hover .fi-sidebar-item-badge-ctn .fi-badge * {
+  color: #115e59 !important;
+  background-color: #FFFFFF !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* Sidebar Badges en Modo Oscuro (Pizarra / Slate) */
+.dark .fi-sidebar .fi-sidebar-item-badge-ctn .fi-badge {
+  background-color: #0d9488 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item-badge-ctn .fi-badge .fi-badge-label {
+  color: #FFFFFF !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item .fi-sidebar-item-badge-ctn .fi-badge,
+.dark .fi-sidebar .fi-sidebar-item .fi-sidebar-item-badge-ctn .fi-badge *,
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-badge-ctn .fi-badge,
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-badge-ctn .fi-badge *,
+.dark .fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-badge-ctn .fi-badge,
+.dark .fi-sidebar .fi-sidebar-item.fi-sidebar-item-active .fi-sidebar-item-badge-ctn .fi-badge *,
+.dark .fi-sidebar .fi-sidebar-item-btn:hover .fi-sidebar-item-badge-ctn .fi-badge,
+.dark .fi-sidebar .fi-sidebar-item-btn:hover .fi-sidebar-item-badge-ctn .fi-badge * {
+  color: #FFFFFF !important;
+  background-color: #0d9488 !important;
+  text-shadow: none !important;
 }
 
 /* Sidebar en Modo Oscuro: Pizarra / Slate (#1E293B) */
@@ -539,6 +623,9 @@ header.fi-topbar {
    ========================================================================== */
 .fi-page {
   gap: 1rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .fi-page-header {
@@ -587,7 +674,6 @@ header.fi-topbar {
 /* ==========================================================================
    6. TARJETAS ELEVADAS SUAVES (SOFT NEUMORPHIC CARDS)
    ========================================================================== */
-.fi-section,
 .fi-ta-ctn,
 .fi-wi-stats-overview-stat,
 .fi-wi-chart,
@@ -600,7 +686,15 @@ header.fi-topbar {
   transition: all 0.25s ease !important;
 }
 
-.dark .fi-section,
+.fi-section {
+  border-radius: var(--nuvex-radius-card) !important;
+  border: 1px solid var(--nuvex-border-light) !important;
+  background-color: var(--nuvex-surface-light) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.035), 0 8px 10px -6px rgba(0, 0, 0, 0.025) !important;
+  overflow: visible !important; /* Permite que los desplegables de selección y fechas floten sin ser recortados */
+  transition: all 0.25s ease !important;
+}
+
 .dark .fi-ta-ctn,
 .dark .fi-wi-stats-overview-stat,
 .dark .fi-wi-chart,
@@ -608,6 +702,13 @@ header.fi-topbar {
   border-color: var(--nuvex-border-dark) !important;
   background-color: var(--nuvex-surface-dark) !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .fi-section {
+  border-color: var(--nuvex-border-dark) !important;
+  background-color: var(--nuvex-surface-dark) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
+  overflow: visible !important;
 }
 
 /* ==========================================================================
@@ -716,10 +817,36 @@ header.fi-topbar {
 }
 
 /* ==========================================================================
-   8. TABLAS ELEGANTES, ENCABEZADOS Y BUSCADOR
+   8. TABLAS ELEGANTES, ENCABEZADOS Y PREVENCIÓN DE SCROLL HORIZONTAL
    ========================================================================== */
 .fi-ta-ctn {
   border-radius: var(--nuvex-radius-card) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.fi-ta-content-ctn,
+.fi-ta-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  scrollbar-width: thin !important;
+}
+
+@media (min-width: 1024px) {
+  .fi-ta-ctn {
+    overflow-x: hidden !important;
+  }
+  .fi-ta-content {
+    overflow-x: hidden !important;
+  }
+}
+
+.fi-ta-table {
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: auto !important;
 }
 
 .fi-ta-header {
@@ -750,6 +877,7 @@ header.fi-topbar {
   letter-spacing: 0.06em !important;
   color: var(--nuvex-muted-light) !important;
   padding: 10px 14px !important;
+  white-space: nowrap !important;
 }
 
 .dark .fi-ta-table thead th {
@@ -776,10 +904,25 @@ header.fi-topbar {
 .fi-ta-table tbody td {
   padding: 10px 14px !important;
   font-size: 13px !important;
+  vertical-align: middle !important;
 }
 
-.fi-ta-content {
-  scrollbar-width: thin !important;
+/* Envoltura natural de textos largos (ej: Servicio, Nombres) para evitar overflow */
+.fi-ta-table tbody td .fi-ta-text,
+.fi-ta-table tbody td .fi-wrapped,
+.fi-ta-table .fi-ta-text.fi-wrapped,
+.fi-ta-table .fi-wrapped * {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Mantener compactos e indivisibles los badges y acciones */
+.fi-ta-table tbody td .fi-badge,
+.fi-ta-table tbody td .fi-ta-badge,
+.fi-ta-table td.fi-ta-actions-cell,
+.fi-ta-table .fi-ta-actions {
+  white-space: nowrap !important;
 }
 
 /* Buscador en la tabla: Píldora única y limpia */
@@ -1045,3 +1188,257 @@ button.fi-btn.fi-color-gray {
 .dark .cal-time-slot {
   border-color: rgba(255, 255, 255, 0.04) !important;
 }
+
+/* ==========================================================================
+   15. DESPLEGABLES Y SELECTORES AMPLIOS (DROPDOWN MENUS DE SERVICIOS)
+   ========================================================================== */
+.fi-section-content-ctn,
+.fi-section-content,
+.fi-input-wrp {
+  overflow: visible !important;
+}
+
+/* Forzar que el desplegable SIEMPRE abra hacia abajo con sombra limpia y scroll vertical */
+.choices__list--dropdown,
+.choices.is-flipped .choices__list--dropdown,
+.choices__list--dropdown.is-flipped,
+[role="listbox"],
+.fi-dropdown-panel {
+  top: 100% !important;
+  bottom: auto !important;
+  margin-top: 6px !important;
+  margin-bottom: 0 !important;
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--nuvex-border-light) !important;
+  background-color: #FFFFFF !important;
+  box-shadow: 0 20px 45px -5px rgba(0, 0, 0, 0.18), 0 8px 20px rgba(0, 0, 0, 0.06) !important;
+  padding: 8px !important;
+  z-index: 9999 !important;
+  position: absolute !important;
+}
+
+[role="option"],
+.choices__item--choice {
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  transition: all 0.15s ease !important;
+  margin-bottom: 2px !important;
+  color: var(--nuvex-text-light) !important;
+}
+
+[role="option"]:hover,
+[role="option"][aria-selected="true"],
+.choices__item--choice.is-highlighted {
+  background-color: var(--nuvex-emerald-light) !important;
+  color: var(--nuvex-emerald-hover) !important;
+  font-weight: 700 !important;
+}
+
+/* Encabezados de Grupos/Categorías en los Selectores */
+[role="group"] .fi-dropdown-header,
+.choices__group,
+.choices__heading {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: #0f766e !important;
+  background-color: #f0fdf4 !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  margin: 6px 0 4px 0 !important;
+}
+
+.dark .fi-dropdown-panel,
+.dark [role="listbox"],
+.dark .choices__list--dropdown {
+  background-color: var(--nuvex-surface-dark) !important;
+  border-color: var(--nuvex-border-dark) !important;
+  box-shadow: 0 25px 50px -5px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark [role="option"],
+.dark .choices__item--choice {
+  color: var(--nuvex-text-dark) !important;
+}
+
+.dark [role="option"]:hover,
+.dark [role="option"][aria-selected="true"],
+.dark .choices__item--choice.is-highlighted {
+  background-color: rgba(13, 148, 136, 0.25) !important;
+  color: #5eead4 !important;
+}
+
+.dark [role="group"] .fi-dropdown-header,
+.dark .choices__group,
+.dark .choices__heading {
+  color: #5eead4 !important;
+  background-color: rgba(13, 148, 136, 0.15) !important;
+}
+
+/* ==========================================================================
+   16. LOGO CITACLAVE — NÍTIDO, CENTRADO Y SIN DUPLICADOS
+   ========================================================================== */
+.fi-logo-dark,
+.fi-logo.hidden,
+.fi-logo-light.hidden,
+img.fi-logo-dark {
+  display: none !important;
+}
+
+.fi-logo,
+.fi-logo-light,
+img.fi-logo,
+img.fi-logo-light {
+  display: block !important;
+  margin: 0 auto !important;
+  height: 54px !important;
+  max-height: 58px !important;
+  width: auto !important;
+  object-fit: contain !important;
+  transition: all 0.2s ease !important;
+}
+
+.fi-sidebar-header .fi-logo,
+.fi-topbar-brand .fi-logo {
+  height: 44px !important;
+  max-height: 48px !important;
+  margin: 0 !important;
+}
+
+/* ==========================================================================
+   17. PANTALLA DE LOGIN: FONDO DINÁMICO Y TECNOLÓGICO + TARJETA ESTILO CLARO
+   ========================================================================== */
+/* Fondo Dinámico Cyber-Aurora Nuvex */
+.fi-simple-layout {
+  min-height: 100vh !important;
+  background-color: #0b1329 !important;
+  background-image: 
+    radial-gradient(circle at 18% 22%, rgba(0, 201, 117, 0.24) 0%, transparent 40%),
+    radial-gradient(circle at 82% 78%, rgba(6, 182, 212, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(13, 148, 136, 0.16) 0%, transparent 55%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 44px 44px, 44px 44px !important;
+  position: relative !important;
+  overflow-x: hidden !important;
+  animation: nuvexTechAurora 18s ease-in-out infinite alternate !important;
+}
+
+@keyframes nuvexTechAurora {
+  0% {
+    background-position: 0% 0%, 0% 0%, 0% 0%, 0px 0px, 0px 0px;
+  }
+  50% {
+    background-position: 4% 6%, -4% -6%, 2% -2%, 22px 22px, 22px 22px;
+  }
+  100% {
+    background-position: -3% -5%, 5% 4%, -2% 3%, 44px 44px, 44px 44px;
+  }
+}
+
+/* Tarjeta Central en Estilo Claro Puro */
+.fi-simple-main {
+  background-color: #FFFFFF !important;
+  border-radius: 28px !important;
+  border: 1px solid rgba(226, 232, 240, 0.95) !important;
+  box-shadow: 
+    0 25px 65px -12px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.9),
+    0 0 45px -8px rgba(0, 201, 117, 0.3) !important;
+  padding: 38px 34px !important;
+  color: #0f172a !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Header del Login */
+.fi-simple-header .fi-logo,
+header.fi-simple-header a {
+  display: flex !important;
+  justify-content: center !important;
+  margin-bottom: 14px !important;
+}
+
+.fi-simple-header img {
+  height: 60px !important;
+  max-height: 66px !important;
+  width: auto !important;
+  margin: 0 auto !important;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08)) !important;
+}
+
+.fi-simple-header-heading,
+header.fi-simple-header h1 {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 1.55rem !important;
+  letter-spacing: -0.025em !important;
+  text-align: center !important;
+  margin-top: 8px !important;
+  margin-bottom: 4px !important;
+}
+
+.fi-simple-header-subheading,
+header.fi-simple-header p {
+  color: #64748b !important;
+  text-align: center !important;
+  font-size: 0.9rem !important;
+}
+
+/* Labels e Inputs en Estilo Claro */
+.fi-simple-main label,
+.fi-simple-main .fi-fo-field-wrp-label {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+}
+
+.fi-simple-main input[type="text"],
+.fi-simple-main input[type="email"],
+.fi-simple-main input[type="password"] {
+  background-color: #F8FAFC !important;
+  color: #0f172a !important;
+  border: 1.5px solid #CBD5E1 !important;
+  border-radius: 14px !important;
+  font-size: 0.9rem !important;
+  padding: 11px 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.fi-simple-main input[type="text"]:focus,
+.fi-simple-main input[type="email"]:focus,
+.fi-simple-main input[type="password"]:focus {
+  background-color: #FFFFFF !important;
+  border-color: #0d9488 !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.18) !important;
+  outline: none !important;
+}
+
+/* Botón Entrar (Color Sólido Nuvex Esmeralda Sin Degradado) */
+.fi-simple-main button[type="submit"],
+.fi-simple-main .fi-btn-color-primary {
+  background: #0d9488 !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  border-radius: 14px !important;
+  padding: 12px 24px !important;
+  box-shadow: 0 4px 14px -2px rgba(13, 148, 136, 0.35) !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.fi-simple-main button[type="submit"]:hover,
+.fi-simple-main .fi-btn-color-primary:hover {
+  background: #0f766e !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px -2px rgba(13, 148, 136, 0.45) !important;
+}
+

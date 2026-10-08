@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Enums\AppointmentStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\ServiceCategory;
 use App\Filament\Resources\AppointmentResource\Pages;
 use App\Models\Appointment;
 use App\Models\Service;
@@ -102,23 +103,33 @@ class AppointmentResource extends Resource
                         ->label('Servicio Solicitado')
                         ->placeholder('Selecciona un tratamiento del catálogo...')
                         ->options(function () {
-                            return Service::where('is_active', true)
+                            $services = Service::where('is_active', true)
                                 ->orderBy('category')
                                 ->orderBy('sort_order')
-                                ->get()
-                                ->mapWithKeys(function (Service $service) {
-                                    $price = '$' . number_format($service->base_price, 0, ',', '.');
-                                    $deposit = '$' . number_format($service->deposit_amount, 0, ',', '.');
-                                    $duration = $service->formatted_duration;
+                                ->get();
 
-                                    $label = "{$service->name}  —  {$duration}  |  {$price} COP (Abono {$deposit})";
-                                    return [$service->id => $label];
-                                });
+                            $options = [];
+                            foreach ($services as $service) {
+                                $catName = $service->category instanceof ServiceCategory
+                                    ? $service->category->label()
+                                    : ($service->category?->value ?? 'Otros Servicios');
+
+                                $price = '$' . number_format($service->base_price, 0, ',', '.');
+                                $deposit = '$' . number_format($service->deposit_amount, 0, ',', '.');
+                                $duration = $service->formatted_duration;
+
+                                $label = "{$service->name}   ({$duration})   •   Total: {$price} COP   •   Abono Requerido: {$deposit}";
+
+                                $options[$catName][$service->id] = $label;
+                            }
+
+                            return $options;
                         })
                         ->searchable()
                         ->preload()
                         ->required()
                         ->reactive()
+                        ->columnSpanFull()
                         ->afterStateUpdated(function ($state, $set, $get) {
                             if ($service = Service::find($state)) {
                                 $set('total_amount', $service->base_price);
@@ -197,7 +208,7 @@ class AppointmentResource extends Resource
                         ->label('Hora de Finalización')
                         ->seconds(false)
                         ->required(),
-                ])->columns(4),
+                ])->columns(3),
 
             Section::make('Estado y Liquidación de Pagos')
                 ->description('Control de abonos recibidos y saldo pendiente por cobrar en el local')
@@ -260,32 +271,38 @@ class AppointmentResource extends Resource
                     ->label('Clienta')
                     ->weight('bold')
                     ->searchable(['client_name', 'client_phone', 'appointment_number'])
-                    ->description(fn (Appointment $record): string => ($record->client_phone ?? '') . ($record->appointment_number ? " • #{$record->appointment_number}" : '')),
+                    ->description(fn (Appointment $record): string => ($record->client_phone ?? '') . ($record->appointment_number ? " • #{$record->appointment_number}" : ''))
+                    ->wrap(),
 
                 TextColumn::make('service.name')
                     ->label('Servicio')
                     ->searchable()
-                    ->description(fn (Appointment $record): string => $record->service?->formatted_duration ?? ''),
+                    ->description(fn (Appointment $record): string => $record->service?->formatted_duration ?? '')
+                    ->wrap(),
 
                 TextColumn::make('appointment_date')
                     ->label('Fecha & Hora')
                     ->date('d/m/Y')
                     ->badge()
                     ->color('primary')
-                    ->description(fn (Appointment $record): string => substr($record->start_time, 0, 5) . ' - ' . substr($record->end_time, 0, 5)),
+                    ->description(fn (Appointment $record): string => substr($record->start_time, 0, 5) . ' - ' . substr($record->end_time, 0, 5))
+                    ->grow(false),
 
                 TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
                     ->color(fn (AppointmentStatus $state): string => $state->color())
-                    ->formatStateUsing(fn (AppointmentStatus $state): string => $state->label()),
+                    ->formatStateUsing(fn (AppointmentStatus $state): string => $state->label())
+                    ->description(fn (Appointment $record): ?string => $record->attendance_confirmed_at ? '✓ Asist. confirmada' : null)
+                    ->grow(false),
 
                 TextColumn::make('deposit_paid')
                     ->label('Abono Recibido')
                     ->money('COP', locale: 'es_CO')
                     ->weight('bold')
                     ->color('success')
-                    ->description(fn (Appointment $record): string => "Saldo: $" . number_format($record->balance_due, 0, ',', '.')),
+                    ->description(fn (Appointment $record): string => "Saldo: $" . number_format($record->balance_due, 0, ',', '.'))
+                    ->grow(false),
             ])
             ->defaultSort('appointment_date', 'desc')
             ->filters([
@@ -344,6 +361,35 @@ class AppointmentResource extends Resource
                     ->modalSubmitActionLabel('Aprobar Abono y Confirmar Cita')
                     ->modalCancelActionLabel('Cerrar')
                     ->modalWidth(\Filament\Support\Enums\Width::Large),
+
+                // 2.5. Botón Directo WhatsApp: Abrir chat con mensaje predefinido en 1 Clic
+                Action::make('sendWhatsAppDirect')
+                    ->label('Enviar Recordatorio WhatsApp')
+                    ->tooltip('Abrir WhatsApp Web con mensaje de recordatorio y enlace')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->color('success')
+                    ->iconButton()
+                    ->size('sm')
+                    ->visible(fn (Appointment $record) => !empty($record->client_phone) && $record->status !== AppointmentStatus::CANCELLED)
+                    ->url(function (Appointment $record): string {
+                        $phone = preg_replace('/\D/', '', $record->client_phone);
+                        if (strlen($phone) === 10 && str_starts_with($phone, '3')) {
+                            $phone = '57' . $phone;
+                        }
+                        $clientName = explode(' ', trim($record->client_name))[0];
+                        $date = \Carbon\Carbon::parse($record->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
+                        $time = substr($record->start_time, 0, 5);
+                        $balance = number_format($record->balance_due, 0, ',', '.');
+                        $confirmUrl = url("/reserva/confirmar/{$record->appointment_number}");
+
+                        $text = "✨ *¡Hola {$clientName}!* Te saludamos de *Paola Aguilera Belleza & Estética*.\n\n"
+                            . "Te recordamos tu cita para el *{$date}* a las *{$time}* ({$record->service?->name}).\n"
+                            . "Saldo pendiente en local: \${$balance} COP.\n\n"
+                            . "¿Nos confirmas tu asistencia? Toca aquí:\n{$confirmUrl}";
+
+                        return 'https://web.whatsapp.com/send?phone=' . $phone . '&text=' . rawurlencode($text);
+                    })
+                    ->openUrlInNewTab(),
 
                 // 3. Botón: Rechazar Comprobante Nequi
                 Action::make('rejectNequi')

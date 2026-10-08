@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
@@ -72,9 +73,13 @@ class SuperAdminUserResource extends Resource
                         Forms\Components\TextInput::make('password')
                             ->label('Contraseña')
                             ->password()
-                            ->dehydrateStateUsing(fn ($state) => !empty($state) ? Hash::make($state) : null)
-                            ->dehydrated(fn ($state) => !empty($state))
-                            ->required(fn (string $operation): bool => $operation === 'create'),
+                            ->revealable()
+                            ->autocomplete('new-password')
+                            ->placeholder(fn (string $operation): ?string => $operation === 'edit' ? 'Dejar en blanco para mantener la actual' : 'Asigna una contraseña segura')
+                            ->helperText(fn (string $operation): ?string => $operation === 'edit' ? 'Ingresa una nueva contraseña únicamente si deseas modificarla.' : null)
+                            ->dehydrated(fn (?string $state): bool => filled($state))
+                            ->required(fn (string $operation): bool => $operation === 'create')
+                            ->maxLength(255),
 
                         Forms\Components\Toggle::make('is_active')
                             ->label('Usuario Activo')
@@ -134,7 +139,25 @@ class SuperAdminUserResource extends Resource
                     ->relationship('tenant', 'name'),
             ])
             ->actions([
-                EditAction::make(),
+                EditAction::make()
+                    ->mutateRecordDataUsing(function (array $data): array {
+                        $data['password'] = null;
+                        return $data;
+                    })
+                    ->mutateFormDataUsing(function (array $data): array {
+                        if (blank($data['password'] ?? null)) {
+                            unset($data['password']);
+                        } else {
+                            $data['password'] = Hash::make($data['password']);
+                        }
+                        return $data;
+                    }),
+                DeleteAction::make()
+                    ->modalHeading(fn (User $record): string => "Eliminar Usuario: {$record->name}")
+                    ->modalDescription('¿Estás seguro de que deseas eliminar este usuario de la plataforma? Esta acción no se puede deshacer.')
+                    ->modalSubmitActionLabel('Sí, eliminar usuario')
+                    ->modalCancelActionLabel('Cancelar')
+                    ->hidden(fn (User $record): bool => $record->id === auth()->id()),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

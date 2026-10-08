@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Enums\AppointmentStatus;
+use App\Enums\PaymentMethod;
 use App\Filament\Resources\AppointmentResource;
 use App\Models\Appointment;
 use App\Models\BlockedSlot;
@@ -10,6 +11,7 @@ use App\Models\Service;
 use BackedEnum;
 use Carbon\Carbon;
 use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Enums\Width;
@@ -51,25 +53,30 @@ class AppointmentCalendarPage extends Page
                 ->color('gray')
                 ->icon('heroicon-o-table-cells'),
 
-            Action::make('newAppointment')
+            CreateAction::make('newAppointment')
+                ->model(Appointment::class)
                 ->label('+ Agendar Nueva Cita')
                 ->icon('heroicon-o-plus-circle')
                 ->color('primary')
                 ->modalHeading('Agendar Nueva Cita / Reserva')
+                ->modalSubmitActionLabel('Crear Cita / Reserva')
                 ->modalWidth(Width::SevenExtraLarge)
                 ->form(AppointmentResource::getFormComponents())
-                ->action(function (array $data): void {
-                    $appointmentNumber = 'PA-' . strtoupper(now()->format('ymd')) . '-' . strtoupper(substr(uniqid(), -4));
-                    Appointment::create(array_merge($data, [
-                        'appointment_number' => $appointmentNumber,
-                    ]));
-
-                    Notification::make()
-                        ->title('¡Cita Agendada!')
-                        ->body("Se ha creado exitosamente la cita #{$appointmentNumber}")
-                        ->success()
-                        ->send();
-                }),
+                ->fillForm(fn (): array => [
+                    'appointment_date' => $this->currentDate ?: now()->toDateString(),
+                    'status' => AppointmentStatus::CONFIRMED->value,
+                    'payment_method' => PaymentMethod::CASH_AT_LOCATION->value,
+                    'deposit_paid' => 0,
+                    'balance_due' => 0,
+                ])
+                ->mutateFormDataUsing(function (array $data): array {
+                    $data['appointment_number'] = 'PA-' . strtoupper(now()->format('ymd')) . '-' . strtoupper(substr(uniqid(), -4));
+                    if (empty($data['balance_due']) && isset($data['total_amount'])) {
+                        $data['balance_due'] = (float) $data['total_amount'] - (float) ($data['deposit_paid'] ?? 0);
+                    }
+                    return $data;
+                })
+                ->successNotificationTitle('¡Cita Agendada Exitosamente!'),
         ];
     }
 

@@ -41,6 +41,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/appointments/hold', [AppointmentBookingController::class, 'hold']);
     Route::post('/appointments/book', [AppointmentBookingController::class, 'book']);
     Route::get('/appointments/status/{appointmentNumber}', [AppointmentBookingController::class, 'status']);
+    Route::post('/appointments/confirm-attendance/{appointmentNumber}', [AppointmentBookingController::class, 'confirmAttendanceApi']);
 
     // Módulo Híbrido de Pagos (Bold & Nequi Directo)
     Route::get('/payments/nequi-info', [PaymentController::class, 'getNequiInfo']);
