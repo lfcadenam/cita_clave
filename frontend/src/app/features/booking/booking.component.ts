@@ -50,11 +50,11 @@ export class BookingComponent implements OnInit {
   private getInitialDays(): { date: string; day_short: string; day_number: number; is_open: boolean }[] {
     const days: { date: string; day_short: string; day_number: number; is_open: boolean }[] = [];
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    const today = new Date();
+    const now = new Date();
 
-    for (let i = 0; i < 14; i++) {
-      const d = new Date();
-      d.setDate(today.getDate() + i);
+    // Solo días estrictamente superiores al de hoy (a partir de mañana)
+    for (let i = 1; i <= 14; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
       const isSunday = d.getDay() === 0;
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -189,11 +189,11 @@ export class BookingComponent implements OnInit {
   generateUpcomingDays(): void {
     const days: { date: string; day_short: string; day_number: number; is_open: boolean }[] = [];
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    const today = new Date();
+    const now = new Date();
 
-    for (let i = 0; i < 14; i++) {
-      const d = new Date();
-      d.setDate(today.getDate() + i);
+    // Solo días estrictamente superiores al de hoy (a partir de mañana)
+    for (let i = 1; i <= 14; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
       const isSunday = d.getDay() === 0;
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -209,7 +209,8 @@ export class BookingComponent implements OnInit {
     }
     this.availableDays.set(days);
 
-    if (!this.selectedDate()) {
+    const isCurrentDateValid = this.selectedDate() && days.some(d => d.date === this.selectedDate() && d.is_open);
+    if (!isCurrentDateValid) {
       const firstOpen = days.find(d => d.is_open);
       if (firstOpen) {
         this.selectedDate.set(firstOpen.date);
@@ -319,7 +320,8 @@ export class BookingComponent implements OnInit {
     if (!this.availableDays().length) {
       this.generateUpcomingDays();
     }
-    if (!this.selectedDate()) {
+    const isCurrentDateValid = this.selectedDate() && this.availableDays().some(d => d.date === this.selectedDate() && d.is_open);
+    if (!isCurrentDateValid) {
       const firstOpen = this.availableDays().find(d => d.is_open);
       if (firstOpen) {
         this.selectedDate.set(firstOpen.date);
