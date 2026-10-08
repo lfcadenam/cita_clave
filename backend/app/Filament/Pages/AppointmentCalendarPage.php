@@ -317,8 +317,8 @@ class AppointmentCalendarPage extends Page
                 ->orWhere('is_recurring', true);
         })->get();
 
-        // Calculate current time indicator (Red now line)
-        $now = now();
+        // Calculate current time indicator (Red now line) in local Colombia timezone
+        $now = Carbon::now(config('app.timezone', 'America/Bogota'));
         $baseHour = 7;
         $endHour = 20;
         $hourHeight = 64; // Pixeles por cada hora en la cuadrícula vertical Google Calendar
