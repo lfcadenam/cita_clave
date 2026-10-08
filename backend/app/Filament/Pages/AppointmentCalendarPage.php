@@ -73,13 +73,35 @@ class AppointmentCalendarPage extends Page
                 ->modalSubmitActionLabel('Crear Cita / Reserva')
                 ->modalWidth(Width::SevenExtraLarge)
                 ->form(AppointmentResource::getFormComponents())
-                ->fillForm(fn (): array => [
-                    'appointment_date' => $this->currentDate ?: now()->toDateString(),
-                    'status' => AppointmentStatus::CONFIRMED->value,
-                    'payment_method' => PaymentMethod::CASH_AT_LOCATION->value,
-                    'deposit_paid' => 0,
-                    'balance_due' => 0,
-                ])
+                ->fillForm(function (): array {
+                    $date = $this->currentDate ?: now()->toDateString();
+                    $firstService = Service::where('is_active', true)->orderBy('sort_order')->first();
+
+                    $slotData = [
+                        'start_time' => '08:00',
+                        'end_time' => '09:00',
+                    ];
+
+                    if ($firstService) {
+                        $nextSlot = AppointmentResource::findNextAvailableSlot($firstService, $date);
+                        if ($nextSlot) {
+                            $slotData = $nextSlot;
+                        }
+                    }
+
+                    return [
+                        'appointment_date' => $date,
+                        'service_id' => $firstService?->id,
+                        'total_amount' => $firstService?->base_price,
+                        'deposit_amount' => $firstService?->deposit_amount,
+                        'balance_due' => $firstService ? ($firstService->base_price - $firstService->deposit_amount) : 0,
+                        'start_time' => $slotData['start_time'],
+                        'end_time' => $slotData['end_time'],
+                        'status' => AppointmentStatus::CONFIRMED->value,
+                        'payment_method' => PaymentMethod::CASH_AT_LOCATION->value,
+                        'deposit_paid' => 0,
+                    ];
+                })
                 ->before(function (CreateAction $action, array $data) {
                     if (!empty($data['appointment_date']) && !empty($data['start_time']) && !empty($data['end_time'])) {
                         $conflict = Appointment::findConflicting($data['appointment_date'], $data['start_time'], $data['end_time']);

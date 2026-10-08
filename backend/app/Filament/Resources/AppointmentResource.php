@@ -47,6 +47,64 @@ class AppointmentResource extends Resource
         return 'warning';
     }
 
+    /**
+     * Calcula de inmediato el siguiente turno disponible para una fecha y servicio determinado.
+     */
+    public static function findNextAvailableSlot(Service $service, string $date): ?array
+    {
+        try {
+            $availabilityService = app(\App\Services\BookingAvailabilityService::class);
+            $slots = $availabilityService->getAvailableSlots($service, $date, false);
+
+            if (!empty($slots)) {
+                $firstSlot = $slots[0];
+                $start = $firstSlot['start_time'] ?? (isset($firstSlot['start']) ? substr($firstSlot['start'], 0, 5) : '08:00');
+                $end = $firstSlot['end_time'] ?? (isset($firstSlot['end']) ? substr($firstSlot['end'], 0, 5) : '09:00');
+
+                return [
+                    'start_time' => substr($start, 0, 5),
+                    'end_time' => substr($end, 0, 5),
+                ];
+            }
+
+            // Fallback: si no hay slots del algoritmo, colocarse tras la última cita activa de esa fecha
+            $targetDate = \Carbon\Carbon::parse($date);
+            $lastApt = Appointment::whereDate('appointment_date', $targetDate)
+                ->whereNotIn('status', [AppointmentStatus::CANCELLED->value])
+                ->orderBy('end_time', 'desc')
+                ->first();
+
+            if ($lastApt) {
+                $startTimeStr = substr($lastApt->end_time, 0, 5);
+                $start = \Carbon\Carbon::createFromFormat('H:i', $startTimeStr);
+                $end = $start->copy()->addMinutes($service->duration_minutes);
+
+                return [
+                    'start_time' => $start->format('H:i'),
+                    'end_time' => $end->format('H:i'),
+                ];
+            }
+
+            // Si no hay citas, usar la apertura del negocio
+            $schedule = \App\Models\WorkingSchedule::where('day_of_week', $targetDate->dayOfWeek)->first();
+            $open = ($schedule && $schedule->open_time) ? substr($schedule->open_time, 0, 5) : '08:00';
+            $start = \Carbon\Carbon::createFromFormat('H:i', $open);
+            $end = $start->copy()->addMinutes($service->duration_minutes);
+
+            return [
+                'start_time' => $start->format('H:i'),
+                'end_time' => $end->format('H:i'),
+            ];
+        } catch (\Throwable $e) {
+            $start = '08:00';
+            $end = \Carbon\Carbon::createFromFormat('H:i', '08:00')->addMinutes($service->duration_minutes)->format('H:i');
+            return [
+                'start_time' => $start,
+                'end_time' => $end,
+            ];
+        }
+    }
+
     public static function getFormComponents(): array
     {
         return [
@@ -145,42 +203,25 @@ class AppointmentResource extends Resource
                                     ->required()
                                     ->reactive()
                                     ->columnSpanFull()
-                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                    ->default(fn () => Service::where('is_active', true)->orderBy('sort_order')->value('id'))
+                                    ->afterStateUpdated(function ($state, $set, $get, $record = null) {
                                         if ($service = Service::find($state)) {
                                             $set('total_amount', $service->base_price);
                                             $set('deposit_amount', $service->deposit_amount);
                                             $set('balance_due', $service->base_price - $service->deposit_amount);
 
-                                            $date = $get('appointment_date') ?: now()->toDateString();
-                                            try {
-                                                $availabilityService = app(\App\Services\BookingAvailabilityService::class);
-                                                $slots = $availabilityService->getAvailableSlots($service, $date, false);
-                                                if (!empty($slots)) {
-                                                    $firstSlot = $slots[0];
-                                                    $set('start_time', substr($firstSlot['start'], 0, 5));
-                                                    $set('end_time', substr($firstSlot['end'], 0, 5));
-                                                } else {
-                                                    $targetDate = \Carbon\Carbon::parse($date);
-                                                    $lastApt = Appointment::whereDate('appointment_date', $targetDate)
-                                                        ->whereNotIn('status', [AppointmentStatus::CANCELLED->value])
-                                                        ->orderBy('end_time', 'desc')
-                                                        ->first();
-
-                                                    if ($lastApt) {
-                                                        $startTimeStr = substr($lastApt->end_time, 0, 5);
-                                                        $start = \Carbon\Carbon::createFromFormat('H:i', $startTimeStr);
-                                                        $set('start_time', $start->format('H:i'));
-                                                        $set('end_time', $start->copy()->addMinutes($service->duration_minutes)->format('H:i'));
-                                                    } else {
-                                                        $schedule = \App\Models\WorkingSchedule::where('day_of_week', $targetDate->dayOfWeek)->first();
-                                                        $open = ($schedule && $schedule->open_time) ? substr($schedule->open_time, 0, 5) : '08:00';
-                                                        $set('start_time', $open);
-                                                        $set('end_time', \Carbon\Carbon::createFromFormat('H:i', $open)->addMinutes($service->duration_minutes)->format('H:i'));
-                                                    }
+                                            if ($record && $record->exists && $get('start_time')) {
+                                                try {
+                                                    $parsed = \Carbon\Carbon::createFromFormat('H:i', substr($get('start_time'), 0, 5));
+                                                    $set('end_time', $parsed->addMinutes($service->duration_minutes)->format('H:i'));
+                                                } catch (\Throwable $e) {}
+                                            } else {
+                                                $date = $get('appointment_date') ?: now()->toDateString();
+                                                $slot = static::findNextAvailableSlot($service, $date);
+                                                if ($slot) {
+                                                    $set('start_time', $slot['start_time']);
+                                                    $set('end_time', $slot['end_time']);
                                                 }
-                                            } catch (\Throwable $e) {
-                                                $set('start_time', '08:00');
-                                                $set('end_time', \Carbon\Carbon::createFromFormat('H:i', '08:00')->addMinutes($service->duration_minutes)->format('H:i'));
                                             }
                                         }
                                     }),
@@ -193,15 +234,11 @@ class AppointmentResource extends Resource
                                     ->afterStateUpdated(function ($state, $set, $get) {
                                         if ($state && ($serviceId = $get('service_id'))) {
                                             if ($service = Service::find($serviceId)) {
-                                                try {
-                                                    $availabilityService = app(\App\Services\BookingAvailabilityService::class);
-                                                    $slots = $availabilityService->getAvailableSlots($service, $state, false);
-                                                    if (!empty($slots)) {
-                                                        $firstSlot = $slots[0];
-                                                        $set('start_time', substr($firstSlot['start'], 0, 5));
-                                                        $set('end_time', substr($firstSlot['end'], 0, 5));
-                                                    }
-                                                } catch (\Throwable $e) {}
+                                                $slot = static::findNextAvailableSlot($service, $state);
+                                                if ($slot) {
+                                                    $set('start_time', $slot['start_time']);
+                                                    $set('end_time', $slot['end_time']);
+                                                }
                                             }
                                         }
                                     })
@@ -211,6 +248,15 @@ class AppointmentResource extends Resource
                                     ->label('Hora de Inicio')
                                     ->seconds(false)
                                     ->required()
+                                    ->default(function ($get) {
+                                        $serviceId = $get('service_id') ?: Service::where('is_active', true)->orderBy('sort_order')->value('id');
+                                        $date = $get('appointment_date') ?: now()->toDateString();
+                                        if ($serviceId && ($service = Service::find($serviceId))) {
+                                            $slot = static::findNextAvailableSlot($service, $date);
+                                            return $slot['start_time'] ?? '08:00';
+                                        }
+                                        return '08:00';
+                                    })
                                     ->reactive()
                                     ->afterStateUpdated(function ($state, $set, $get) {
                                         if ($state && ($serviceId = $get('service_id'))) {
@@ -269,6 +315,15 @@ class AppointmentResource extends Resource
                                     ->label('Hora de Finalización')
                                     ->seconds(false)
                                     ->required()
+                                    ->default(function ($get) {
+                                        $serviceId = $get('service_id') ?: Service::where('is_active', true)->orderBy('sort_order')->value('id');
+                                        $date = $get('appointment_date') ?: now()->toDateString();
+                                        if ($serviceId && ($service = Service::find($serviceId))) {
+                                            $slot = static::findNextAvailableSlot($service, $date);
+                                            return $slot['end_time'] ?? '09:00';
+                                        }
+                                        return '09:00';
+                                    })
                                     ->rules([
                                         function ($get, $record = null) {
                                             return function (string $attribute, $value, \Closure $fail) use ($get, $record) {
