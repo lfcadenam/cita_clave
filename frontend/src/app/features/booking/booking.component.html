@@ -305,24 +305,26 @@
           <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">DÍA DE TU CITA</label>
           <div class="flex items-center gap-2">
             <!-- Selector nativo de calendario discreto -->
-            <button type="button"
-                    (click)="openCalendarPicker(nativeDatePicker)"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:border-[#0d9488] hover:text-[#0d9488] text-[11px] font-semibold text-slate-600 transition-all cursor-pointer shadow-xs active:scale-95">
-              <svg class="w-3.5 h-3.5 text-[#0d9488]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Elegir en calendario</span>
-            </button>
-            <input #nativeDatePicker
-                   type="date"
-                   [min]="minDate()"
-                   [max]="maxDate()"
-                   [value]="selectedDate()"
-                   (change)="onDateChange($event)"
-                   class="fixed opacity-0 pointer-events-none -top-96 left-0">
+            <div class="relative inline-flex">
+              <button type="button"
+                      (click)="openCalendarPicker(nativeDatePicker)"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:border-[#0d9488] hover:text-[#0d9488] text-[11px] font-semibold text-slate-600 transition-all cursor-pointer shadow-xs active:scale-95">
+                <svg class="w-3.5 h-3.5 text-[#0d9488]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Elegir en calendario</span>
+              </button>
+              <input #nativeDatePicker
+                     type="date"
+                     [min]="minDate()"
+                     [max]="maxDate()"
+                     [value]="selectedDate()"
+                     (change)="onDateChange($event)"
+                     class="absolute inset-0 w-full h-full opacity-0 pointer-events-none">
+            </div>
 
             <!-- Flechas de navegación para desktop y móvil -->
             <div class="flex items-center gap-1">
@@ -551,6 +553,22 @@
             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Notas o Preferencias Especiales</label>
             <textarea formControlName="notes" rows="2" placeholder="¿Alguna condición, alergia o detalle que debamos tener en cuenta?"
                       class="w-full text-xs text-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]"></textarea>
+          </div>
+
+          <!-- Checkbox Obligatorio Tratamiento de Datos (Ley 1581 de 2012) -->
+          <div class="pt-3 border-t border-slate-100">
+            <label class="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox"
+                     formControlName="accept_terms"
+                     class="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]/20 focus:ring-2 accent-[#0d9488] cursor-pointer">
+              <span class="text-xs text-slate-600 leading-relaxed select-none">
+                Acepto la <button type="button" (click)="openPrivacyModal()" class="text-[#0d9488] font-bold underline hover:text-[#0f766e] transition-colors cursor-pointer inline">Política de Tratamiento de Datos Personales</button> de acuerdo con la Ley 1581 de 2012 de Colombia y autorizo el uso de mis datos para la gestión y confirmación de mi cita. <span class="text-rose-500 font-bold">*</span>
+              </span>
+            </label>
+            <span *ngIf="clientForm.get('accept_terms')?.touched && clientForm.get('accept_terms')?.invalid"
+                  class="text-[10px] text-rose-500 font-semibold mt-1 block pl-7">
+              Debes aceptar la política de tratamiento de datos para continuar con la reserva.
+            </span>
           </div>
         </form>
 
@@ -1006,8 +1024,113 @@
         </a>
       </div>
 
-    </div>
-  </div>
+    <!-- ========================================================================= -->
+    <!-- MODAL: POLÍTICA DE TRATAMIENTO DE DATOS PERSONALES (COLOMBIA LEY 1581)   -->
+    <!-- ========================================================================= -->
+    <div *ngIf="showPrivacyModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+         (click)="closePrivacyModal()">
+      <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative max-h-[85vh] flex flex-col"
+           (click)="$event.stopPropagation()">
+        
+        <!-- Header -->
+        <div class="flex items-start justify-between pb-4 border-b border-slate-100">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#0d9488] text-[10px] font-bold uppercase tracking-wider mb-1 border border-emerald-100">
+              <span>Habeas Data • Colombia</span>
+            </div>
+            <h3 class="font-bold text-lg sm:text-xl text-slate-900 tracking-tight">Política de Tratamiento de Datos Personales</h3>
+            <p class="text-xs text-slate-500 mt-0.5 font-medium">Ley Estatutaria 1581 de 2012 y Decreto 1377 de 2013</p>
+          </div>
+          <button type="button" (click)="closePrivacyModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
 
+        <!-- Body Scrollable -->
+        <div class="overflow-y-auto py-4 space-y-4 text-xs text-slate-600 leading-relaxed pr-2">
+          <div>
+            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">1. Responsable del Tratamiento</h4>
+            <p>
+              El establecimiento de comercio <strong>{{ salonProfile()?.display_name || salonProfile()?.name || 'La Belle Nails' }}</strong> (en adelante, "El Establecimiento"), domiciliado en Colombia, actúa como Responsable del Tratamiento de los datos personales suministrados voluntariamente por el titular con ocasión del agendamiento y reserva de servicios de belleza y cuidado estético.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">2. Marco Normativo</h4>
+            <p>
+              La presente política se fundamenta en el Artículo 15 de la Constitución Política de Colombia, la <strong>Ley Estatutaria 1581 de 2012</strong>, el <strong>Decreto Reglamentario 1377 de 2013</strong> (compilado en el Decreto Único Reglamentario 1074 de 2015) y los lineamientos de la Superintendencia de Industria y Comercio (SIC).
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">3. Datos Personales Recopilados</h4>
+            <ul class="list-disc pl-5 space-y-1">
+              <li><strong>Identificación y contacto:</strong> Nombre y apellidos completos, número de teléfono móvil / WhatsApp y correo electrónico.</li>
+              <li><strong>Datos operativos de servicio:</strong> Tratamiento seleccionado, fecha, hora del turno, número de cita y comprobantes de abono o pago.</li>
+              <li><strong>Datos de salud y bioseguridad (Sensibles):</strong> Indicaciones voluntarias sobre alergias, hipersensibilidad o condiciones dermatológicas informadas por el cliente.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">4. Finalidades del Tratamiento</h4>
+            <p class="mb-1">Los datos personales recolectados se tratarán exclusivamente para:</p>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>Gestionar, asegurar y coordinar el agendamiento del turno solicitado.</li>
+              <li>Enviar notificaciones operativas y recordatorios automáticos vía WhatsApp o correo electrónico 24 horas antes del servicio.</li>
+              <li>Generar y remitir el voucher digital de confirmación, así como la liquidación del anticipo y saldo en el local.</li>
+              <li>Contactar al cliente ante cualquier novedad, cambio de horario o caso de fuerza mayor.</li>
+              <li>Aplicar medidas de bioseguridad preventiva para evitar reacciones adversas durante el procedimiento estético.</li>
+              <li>Cumplir con las obligaciones legales, tributarias y contables en la República de Colombia.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">5. Tratamiento de Datos Sensibles</h4>
+            <p>
+              El titular no está obligado a responder preguntas sobre datos sensibles. Los datos referidos a alergias o sensibilidad cutánea tienen carácter estrictamente confidencial y se utilizarán de forma exclusiva para garantizar la salud, bienestar y bioseguridad del cliente durante la aplicación del tratamiento.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">6. Derechos del Titular (Habeas Data)</h4>
+            <p class="mb-1">De conformidad con la Ley 1581 de 2012, el titular de la información tiene derecho a:</p>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>Conocer, actualizar y rectificar sus datos personales en cualquier momento.</li>
+              <li>Solicitar prueba de la autorización otorgada para el tratamiento.</li>
+              <li>Ser informado sobre el uso que se le ha dado a sus datos.</li>
+              <li>Revocar la autorización o solicitar la supresión de sus datos cuando no exista obligación legal o contractual de conservarlos.</li>
+              <li>Presentar quejas ante la Superintendencia de Industria y Comercio (SIC) por infracciones a la ley.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">7. Canales para el Ejercicio de Derechos</h4>
+            <p>
+              El titular podrá ejercer sus derechos mediante comunicación directa al canal oficial de WhatsApp del establecimiento o al correo electrónico registrado. Las consultas serán atendidas en un plazo máximo de diez (10) días hábiles y los reclamos en un plazo máximo de quince (15) días hábiles.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">8. Seguridad y Confidencialidad</h4>
+            <p>
+              El Establecimiento implementa medidas técnicas y administrativas para impedir la adulteración, pérdida, consulta o acceso no autorizado a los datos. Los datos personales nunca serán vendidos, transferidos ni compartidos con fines comerciales no autorizados.
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <button type="button" (click)="closePrivacyModal()" class="px-5 py-2.5 rounded-full text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">
+            Cerrar
+          </button>
+          <button type="button" (click)="acceptPrivacyPolicy()" class="px-6 py-2.5 rounded-full text-xs font-bold bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-md shadow-teal-500/20 transition-all cursor-pointer">
+            Entendido y Aceptar
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
 </div>
 

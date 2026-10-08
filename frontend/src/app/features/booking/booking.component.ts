@@ -105,6 +105,7 @@ export class BookingComponent implements OnInit {
 
   // Client Profile & Payment State
   clientForm!: FormGroup;
+  showPrivacyModal = signal<boolean>(false);
   isExistingClient = signal<boolean>(false);
   existingClientName = signal<string>('');
   copiedNequi = signal<boolean>(false);
@@ -267,7 +268,8 @@ export class BookingComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(3)]],
       phone: ['', [Validators.required, Validators.minLength(10)]],
       email: ['', [Validators.email]],
-      notes: ['']
+      notes: [''],
+      accept_terms: [false, [Validators.requiredTrue]]
     });
 
     this.clientForm.valueChanges.subscribe(val => {
@@ -287,7 +289,22 @@ export class BookingComponent implements OnInit {
     const nameValid = !!(val.name && val.name.trim().length >= 3);
     const phoneClean = (val.phone || '').toString().replace(/\D/g, '');
     const phoneValid = phoneClean.length === 10;
-    return nameValid && phoneValid;
+    const termsAccepted = !!val.accept_terms;
+    return nameValid && phoneValid && termsAccepted;
+  }
+
+  openPrivacyModal(): void {
+    this.showPrivacyModal.set(true);
+  }
+
+  closePrivacyModal(): void {
+    this.showPrivacyModal.set(false);
+  }
+
+  acceptPrivacyPolicy(): void {
+    this.clientForm.get('accept_terms')?.setValue(true);
+    this.isStep3Valid.set(this.checkStep3Validity());
+    this.closePrivacyModal();
   }
 
   loadServices(): void {
@@ -548,7 +565,11 @@ export class BookingComponent implements OnInit {
 
     if (this.currentStep() === 3 && !this.isStep3Valid()) {
       this.clientForm.markAllAsTouched();
-      alert('Por favor completa tu Nombre (mínimo 3 caracteres) y tu WhatsApp (10 dígitos) para continuar.');
+      if (!this.clientForm.get('accept_terms')?.value) {
+        alert('Debes aceptar la política de tratamiento de datos personales para continuar.');
+      } else {
+        alert('Por favor completa tu Nombre (mínimo 3 caracteres) y tu WhatsApp (10 dígitos) para continuar.');
+      }
       return;
     }
 
