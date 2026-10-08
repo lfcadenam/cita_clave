@@ -218,5 +218,26 @@ class BeautyBookingAdminTest extends TestCase
             'client_name' => 'Catalina Restrepo',
             'client_phone' => '3119998877',
         ]);
+
+        // Verify cancelled appointments do not appear in calendar data
+        $cancelledApt = Appointment::create([
+            'client_name' => 'Cliente Cancelado',
+            'client_phone' => '3000000000',
+            'service_id' => $service->id,
+            'appointment_date' => now()->toDateString(),
+            'start_time' => '10:00',
+            'end_time' => '11:00',
+            'status' => AppointmentStatus::CANCELLED,
+            'payment_method' => PaymentMethod::CASH_AT_LOCATION,
+            'total_amount' => 100000,
+            'deposit_amount' => 0,
+            'balance_due' => 100000,
+        ]);
+
+        $component = Livewire::test(\App\Filament\Pages\AppointmentCalendarPage::class);
+        $calendarData = $component->instance()->getCalendarData();
+        
+        $allCalendarApts = collect($calendarData['days'])->flatMap(fn ($d) => $d['appointments']);
+        $this->assertFalse($allCalendarApts->contains('id', $cancelledApt->id));
     }
 }

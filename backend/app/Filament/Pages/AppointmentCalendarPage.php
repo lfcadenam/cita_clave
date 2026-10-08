@@ -299,7 +299,8 @@ class AppointmentCalendarPage extends Page
         }
 
         $query = Appointment::with('service')
-            ->whereBetween('appointment_date', [$startDate->toDateString(), $endDate->toDateString()]);
+            ->whereBetween('appointment_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->whereNotIn('status', [AppointmentStatus::CANCELLED->value, AppointmentStatus::CANCELLED]);
 
         if ($this->statusFilter !== 'all') {
             $query->where('status', $this->statusFilter);
