@@ -613,7 +613,41 @@ class AppointmentResource extends Resource
                         ]);
                     }),
 
-                // 5. Edición técnica si se requiere
+                // 5. Cancelar Cita (Acción Directa de Administración)
+                Action::make('cancelAppointment')
+                    ->label('Cancelar Cita')
+                    ->tooltip('Cancelar esta cita (Administrador)')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->iconButton()
+                    ->size('sm')
+                    ->visible(fn (Appointment $record) => !in_array($record->status, [AppointmentStatus::CANCELLED, AppointmentStatus::COMPLETED]))
+                    ->modalHeading(fn (Appointment $record) => "Cancelar Cita — #{$record->appointment_number}")
+                    ->modalDescription('Como administrador puedes cancelar la cita en cualquier momento ingresando el motivo.')
+                    ->form([
+                        Forms\Components\Textarea::make('cancellation_reason')
+                            ->label('Motivo de Cancelación')
+                            ->placeholder('Ej: Clienta solicitó cancelación telefónica, o fuerza mayor en el local')
+                            ->required()
+                            ->rows(3),
+                    ])
+                    ->action(function (Appointment $record, array $data): void {
+                        $record->update([
+                            'status' => AppointmentStatus::CANCELLED,
+                            'cancellation_reason' => $data['cancellation_reason'],
+                            'cancelled_at' => now(),
+                        ]);
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Cita Cancelada')
+                            ->body("La cita #{$record->appointment_number} ha sido cancelada exitosamente.")
+                            ->danger()
+                            ->send();
+                    })
+                    ->modalSubmitActionLabel('Confirmar Cancelación de la Cita')
+                    ->modalCancelActionLabel('Regresar'),
+
+                // 6. Edición técnica si se requiere
                 EditAction::make()
                     ->label('Editar cita')
                     ->tooltip('Modificar datos de la reserva')
