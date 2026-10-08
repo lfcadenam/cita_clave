@@ -94,5 +94,6 @@ export interface SalonProfile {
   schedule_summary: string;
   primary_color?: string;
   logo_path?: string;
+  is_bold_enabled?: boolean;
 }
 

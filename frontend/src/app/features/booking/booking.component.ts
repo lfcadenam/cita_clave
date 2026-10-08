@@ -89,6 +89,16 @@ export class BookingComponent implements OnInit {
   existingClientName = signal<string>('');
   copiedNequi = signal<boolean>(false);
   paymentMethod = signal<'NEQUI' | 'BOLD'>('NEQUI');
+  isBoldEnabled = computed(() => {
+    return !!this.salonProfile()?.is_bold_enabled;
+  });
+
+  selectPaymentMethod(method: 'NEQUI' | 'BOLD'): void {
+    if (method === 'BOLD' && !this.isBoldEnabled()) {
+      return;
+    }
+    this.paymentMethod.set(method);
+  }
   receiptFile: File | null = null;
   receiptPreview = signal<string | null>(null);
   nequiInfo = signal<{ account_number: string; account_holder: string; instructions: string }>({
@@ -499,6 +509,12 @@ export class BookingComponent implements OnInit {
 
     if (this.paymentMethod() === 'NEQUI' && !this.receiptFile) {
       alert('Por favor adjunta el comprobante de transferencia Nequi para apartar tu cupo.');
+      return;
+    }
+
+    if (this.paymentMethod() === 'BOLD' && !this.isBoldEnabled()) {
+      alert('La pasarela de pago en línea (Bold) no está habilitada para este salón.');
+      this.paymentMethod.set('NEQUI');
       return;
     }
 

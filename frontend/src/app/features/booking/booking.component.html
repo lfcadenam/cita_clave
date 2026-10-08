@@ -570,13 +570,19 @@
         </button>
 
         <button type="button" 
-                (click)="paymentMethod.set('BOLD')"
-                class="p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer"
-                [ngClass]="paymentMethod() === 'BOLD' ? 'border-[#0d9488] bg-[#e6f7f2]/50 ring-2 ring-[#0d9488]/20 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'">
+                [disabled]="!isBoldEnabled()"
+                (click)="selectPaymentMethod('BOLD')"
+                class="p-4 rounded-2xl border text-left transition-all duration-200"
+                [ngClass]="!isBoldEnabled() 
+                  ? 'opacity-40 cursor-not-allowed bg-slate-50 border-slate-200 select-none' 
+                  : (paymentMethod() === 'BOLD' ? 'border-[#0d9488] bg-[#e6f7f2]/50 ring-2 ring-[#0d9488]/20 shadow-xs cursor-pointer' : 'border-slate-200 bg-white hover:border-slate-300 cursor-pointer')">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-xs font-bold text-slate-900">💳 Pago en Línea (Bold)</span>
+            <span class="text-xs font-bold" [ngClass]="isBoldEnabled() ? 'text-slate-900' : 'text-slate-400'">💳 Pago en Línea (Bold)</span>
+            <span *ngIf="!isBoldEnabled()" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-500 uppercase tracking-wider">No Habilitado</span>
           </div>
-          <p class="text-[11px] text-slate-500 leading-tight">PSE, Tarjetas Débito y Crédito</p>
+          <p class="text-[11px] leading-tight" [ngClass]="isBoldEnabled() ? 'text-slate-500' : 'text-slate-400'">
+            {{ isBoldEnabled() ? 'PSE, Tarjetas Débito y Crédito' : 'Pasarela no configurada temporalmente' }}
+          </p>
         </button>
       </div>
 
@@ -626,7 +632,7 @@
       </div>
 
       <!-- Bold Payment Gateway Info -->
-      <div *ngIf="paymentMethod() === 'BOLD'" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+      <div *ngIf="paymentMethod() === 'BOLD' && isBoldEnabled()" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
         <p class="text-xs text-slate-600 leading-relaxed">
           Serás redirigido a la pasarela segura de Bold para realizar el abono mediante PSE o tarjeta débito/crédito.
         </p>
