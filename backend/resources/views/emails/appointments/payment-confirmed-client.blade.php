@@ -80,14 +80,7 @@
             </td>
         </tr>
         <tr>
-            <td align="center" style="padding-top: 10px;">
-                <a href="{{ $calendarIcsUrl }}" target="_blank" style="display: inline-block; background-color: #f1f5f9; color: #334155; text-decoration: none; font-size: 13px; font-weight: 600; padding: 8px 18px; border-radius: 10px; border: 1px solid #cbd5e1;">
-                    Añadir a mi Calendario (.ics)
-                </a>
-            </td>
-        </tr>
-        <tr>
-            <td align="center" style="padding-top: 12px;">
+            <td align="center" style="padding-top: 14px;">
                 <a href="{{ $whatsappUrl }}" target="_blank" style="display: inline-block; color: #0f766e; text-decoration: underline; font-size: 13px; font-weight: 600;">
                     Contactar al Centro de Estética por WhatsApp
                 </a>
