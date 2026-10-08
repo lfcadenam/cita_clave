@@ -217,7 +217,9 @@
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Día de tu Cita</label>
                 <div class="flex items-center gap-2">
                     <!-- Selector nativo de calendario discreto -->
-                    <label class="relative inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-slate-200 bg-white hover:border-[#0d9488] text-[11px] font-semibold text-slate-600 hover:text-[#0d9488] transition-colors cursor-pointer shadow-xs">
+                    <button type="button"
+                            @click="openCalendarPicker()"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:border-[#0d9488] hover:text-[#0d9488] text-[11px] font-semibold text-slate-600 transition-all cursor-pointer shadow-xs active:scale-95">
                         <svg class="w-3.5 h-3.5 text-[#0d9488]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                             <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -225,13 +227,14 @@
                             <line x1="3" y1="10" x2="21" y2="10"></line>
                         </svg>
                         <span>Elegir en calendario</span>
-                        <input type="date"
-                               :min="minDate"
-                               :max="maxDate"
-                               :value="selectedDate"
-                               @change="onDateChange($event)"
-                               class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
-                    </label>
+                    </button>
+                    <input id="blade-date-picker-input"
+                           type="date"
+                           :min="minDate"
+                           :max="maxDate"
+                           :value="selectedDate"
+                           @change="onDateChange($event)"
+                           class="fixed opacity-0 pointer-events-none -top-96 left-0">
 
                     <!-- Flechas de navegación para desktop y móvil -->
                     <div class="flex items-center gap-1">
@@ -261,13 +264,16 @@
                             :id="'blade-day-pill-' + day.date"
                             @click="selectDate(day.date)"
                             :disabled="!day.is_open"
-                            class="flex-shrink-0 w-20 py-3 px-2 rounded-2xl border text-center transition-all duration-200 cursor-pointer"
+                            class="flex-shrink-0 w-20 py-2.5 px-2 rounded-2xl border text-center transition-all duration-200 cursor-pointer"
                             :class="selectedDate === day.date
                                 ? 'border-[#0d9488] bg-[#0d9488] text-white shadow-md shadow-teal-500/25 ring-2 ring-[#0d9488]/20'
                                 : (day.is_open ? 'border-slate-200 bg-white hover:border-[#99f6e4] text-slate-800 shadow-sm' : 'opacity-40 bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed')">
                         <span class="block text-[11px] font-bold uppercase tracking-wider" x-text="day.day_short"></span>
-                        <span class="block text-xl font-bold leading-tight  my-0.5" x-text="day.day_number"></span>
-                        <span class="block text-[9px] font-semibold" :class="selectedDate === day.date ? 'text-teal-100' : 'text-slate-400'" x-text="day.is_open ? 'Abierto' : 'Cerrado'"></span>
+                        <span class="block text-xl font-bold leading-tight my-0.5" x-text="day.day_number"></span>
+                        <span class="block text-[10px] font-bold uppercase tracking-wider -mt-0.5"
+                              :class="selectedDate === day.date ? 'text-teal-100' : 'text-slate-400'"
+                              x-text="day.month_short"></span>
+                        <span class="block text-[9px] font-semibold mt-1" :class="selectedDate === day.date ? 'text-teal-200 font-bold' : (day.is_open ? 'text-[#0d9488]' : 'text-slate-400')" x-text="day.is_open ? 'Abierto' : 'Cerrado'"></span>
                     </button>
                 </template>
             </div>
@@ -888,6 +894,7 @@ function bookingApp() {
         generateUpcomingDays() {
             const days = [];
             const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
             const now = new Date();
 
             // Días futuros disponibles (próximos 30 días a partir de mañana)
@@ -903,10 +910,27 @@ function bookingApp() {
                     date: dateStr,
                     day_short: dayNames[d.getDay()],
                     day_number: d.getDate(),
+                    month_short: monthNames[d.getMonth()],
                     is_open: !isSunday
                 });
             }
             this.availableDays = days;
+        },
+
+        openCalendarPicker() {
+            const input = document.getElementById('blade-date-picker-input');
+            if (!input) return;
+            try {
+                if (typeof input.showPicker === 'function') {
+                    input.showPicker();
+                } else {
+                    input.focus();
+                    input.click();
+                }
+            } catch (e) {
+                input.focus();
+                input.click();
+            }
         },
 
         scrollDays(direction) {
@@ -923,6 +947,26 @@ function bookingApp() {
         onDateChange(event) {
             const val = event.target.value;
             if (!val) return;
+
+            const exists = this.availableDays.some(d => d.date === val);
+            if (!exists) {
+                const parts = val.split('-');
+                if (parts.length === 3) {
+                    const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+                    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                    const isSunday = d.getDay() === 0;
+                    this.availableDays.push({
+                        date: val,
+                        day_short: dayNames[d.getDay()],
+                        day_number: d.getDate(),
+                        month_short: monthNames[d.getMonth()],
+                        is_open: !isSunday
+                    });
+                    this.availableDays.sort((a, b) => a.date.localeCompare(b.date));
+                }
+            }
+
             this.selectDate(val);
             setTimeout(() => {
                 const el = document.getElementById('blade-day-pill-' + val);

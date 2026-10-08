@@ -47,9 +47,10 @@ export class BookingComponent implements OnInit {
   ];
 
   // Slots & Days State
-  private getInitialDays(): { date: string; day_short: string; day_number: number; is_open: boolean }[] {
-    const days: { date: string; day_short: string; day_number: number; is_open: boolean }[] = [];
+  private getInitialDays(): { date: string; day_short: string; day_number: number; month_short: string; is_open: boolean }[] {
+    const days: { date: string; day_short: string; day_number: number; month_short: string; is_open: boolean }[] = [];
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const now = new Date();
 
     // Días futuros disponibles (próximos 30 días a partir de mañana)
@@ -65,13 +66,14 @@ export class BookingComponent implements OnInit {
         date: dateStr,
         day_short: dayNames[d.getDay()],
         day_number: d.getDate(),
+        month_short: monthNames[d.getMonth()],
         is_open: !isSunday
       });
     }
     return days;
   }
 
-  availableDays = signal<{ date: string; day_short: string; day_number: number; is_open: boolean }[]>(this.getInitialDays());
+  availableDays = signal<{ date: string; day_short: string; day_number: number; month_short: string; is_open: boolean }[]>(this.getInitialDays());
   selectedDate = signal<string>(this.getInitialDays().find(d => d.is_open)?.date || '');
   availableSlots = signal<AvailableSlot[]>([]);
   selectedSlot = signal<AvailableSlot | null>(null);
@@ -205,8 +207,9 @@ export class BookingComponent implements OnInit {
   }
 
   generateUpcomingDays(): void {
-    const days: { date: string; day_short: string; day_number: number; is_open: boolean }[] = [];
+    const days: { date: string; day_short: string; day_number: number; month_short: string; is_open: boolean }[] = [];
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const now = new Date();
 
     // Días futuros disponibles (próximos 30 días a partir de mañana)
@@ -222,6 +225,7 @@ export class BookingComponent implements OnInit {
         date: dateStr,
         day_short: dayNames[d.getDay()],
         day_number: d.getDate(),
+        month_short: monthNames[d.getMonth()],
         is_open: !isSunday
       });
     }
@@ -365,6 +369,21 @@ export class BookingComponent implements OnInit {
     this.closeServiceDetail();
   }
 
+  openCalendarPicker(input: HTMLInputElement): void {
+    if (!input) return;
+    try {
+      if (typeof input.showPicker === 'function') {
+        input.showPicker();
+      } else {
+        input.focus();
+        input.click();
+      }
+    } catch (e) {
+      input.focus();
+      input.click();
+    }
+  }
+
   scrollDays(direction: 'left' | 'right'): void {
     const container = document.getElementById('days-carousel-container');
     if (container) {
@@ -380,6 +399,28 @@ export class BookingComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input || !input.value) return;
     const chosenDate = input.value;
+
+    // Si la fecha elegida no está en la lista visible, agregarla dinámicamente
+    const exists = this.availableDays().some(d => d.date === chosenDate);
+    if (!exists) {
+      const parts = chosenDate.split('-');
+      if (parts.length === 3) {
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const isSunday = d.getDay() === 0;
+        const newDay = {
+          date: chosenDate,
+          day_short: dayNames[d.getDay()],
+          day_number: d.getDate(),
+          month_short: monthNames[d.getMonth()],
+          is_open: !isSunday
+        };
+        const updated = [...this.availableDays(), newDay].sort((a, b) => a.date.localeCompare(b.date));
+        this.availableDays.set(updated);
+      }
+    }
+
     this.selectedDate.set(chosenDate);
     this.selectedSlot.set(null);
     this.loadSlotsForCurrentSelection();
