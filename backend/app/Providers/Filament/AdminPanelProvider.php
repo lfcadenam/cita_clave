@@ -66,6 +66,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 \App\Filament\Widgets\SalonSpotlightWidget::class,
                 \App\Filament\Widgets\StatsOverviewWidget::class,
+                \App\Filament\Widgets\SalonAnalyticsDashboardWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
