@@ -317,6 +317,17 @@ class AppointmentCalendarPage extends Page
                 ->orWhere('is_recurring', true);
         })->get();
 
+        // Calculate current time indicator (Red now line)
+        $now = now();
+        $baseHour = 7;
+        $endHour = 20;
+        $hourHeight = 64; // Pixeles por cada hora en la cuadrícula vertical Google Calendar
+        $nowMinutes = ($now->hour * 60) + $now->minute;
+        $nowTopPx = null;
+        if ($nowMinutes >= ($baseHour * 60) && $nowMinutes <= ($endHour * 60)) {
+            $nowTopPx = round((($nowMinutes - ($baseHour * 60)) / 60) * $hourHeight);
+        }
+
         // Build days structure
         $days = [];
         $current = $startDate->copy();
@@ -327,25 +338,79 @@ class AppointmentCalendarPage extends Page
                 return $b->is_recurring || ($b->blocked_date && $b->blocked_date->toDateString() === $dateStr);
             });
 
+            // Map appointments with Google Calendar coordinates
+            $mappedAppointments = $dayAppointments->map(function ($apt) use ($baseHour, $hourHeight) {
+                $startParts = explode(':', (string) $apt->start_time);
+                $startH = (int) ($startParts[0] ?? 8);
+                $startM = (int) ($startParts[1] ?? 0);
+                $startMinutes = ($startH * 60) + $startM;
+
+                $endParts = explode(':', (string) $apt->end_time);
+                $endH = (int) ($endParts[0] ?? ($startH + 1));
+                $endM = (int) ($endParts[1] ?? 0);
+                $endMinutes = ($endH * 60) + $endM;
+                if ($endMinutes <= $startMinutes) {
+                    $endMinutes = $startMinutes + 60;
+                }
+
+                $durationMinutes = max(30, $endMinutes - $startMinutes);
+                $topMinutes = max(0, $startMinutes - ($baseHour * 60));
+
+                $apt->calendar_top = round(($topMinutes / 60) * $hourHeight);
+                $apt->calendar_height = max(36, round(($durationMinutes / 60) * $hourHeight));
+
+                $startCarbon = Carbon::createFromTime($startH, $startM);
+                $endCarbon = Carbon::createFromTime($endH, $endM);
+                $apt->formatted_time_range = $startCarbon->format('g:i A') . ' - ' . $endCarbon->format('g:i A');
+
+                return $apt;
+            });
+
+            // Map blocked slots with coordinates
+            $mappedBlocks = $dayBlocks->map(function ($b) use ($baseHour, $hourHeight) {
+                $startParts = explode(':', (string) ($b->start_time ?: '00:00'));
+                $startH = (int) ($startParts[0] ?? 8);
+                $startM = (int) ($startParts[1] ?? 0);
+                $startMinutes = ($startH * 60) + $startM;
+
+                $endParts = explode(':', (string) ($b->end_time ?: '23:59'));
+                $endH = (int) ($endParts[0] ?? 19);
+                $endM = (int) ($endParts[1] ?? 0);
+                $endMinutes = ($endH * 60) + $endM;
+
+                $durationMinutes = max(30, $endMinutes - $startMinutes);
+                $topMinutes = max(0, $startMinutes - ($baseHour * 60));
+
+                $b->calendar_top = round(($topMinutes / 60) * $hourHeight);
+                $b->calendar_height = max(36, round(($durationMinutes / 60) * $hourHeight));
+
+                return $b;
+            });
+
             $days[] = [
                 'date' => $dateStr,
                 'dayNumber' => $current->day,
                 'dayName' => $current->locale('es')->isoFormat('ddd'),
-                'fullDayName' => $current->locale('es')->isoFormat('dddd'),
+                'fullDayName' => $current->locale('es')->isoFormat('dddd, D [de] MMMM'),
                 'isToday' => $current->isToday(),
                 'isCurrentMonth' => $current->month === $baseDate->month,
                 'isSunday' => $current->isSunday(),
-                'appointments' => $dayAppointments,
-                'blockedSlots' => $dayBlocks,
+                'appointments' => $mappedAppointments,
+                'blockedSlots' => $mappedBlocks,
             ];
 
             $current->addDay();
         }
 
-        // Available hours from 08:00 to 19:00
+        // Available hours from 07:00 to 20:00 (7 AM to 8 PM) Google Calendar style
         $hours = [];
-        for ($h = 8; $h <= 19; $h++) {
-            $hours[] = sprintf('%02d:00', $h);
+        for ($h = $baseHour; $h <= $endHour; $h++) {
+            $carbonHour = Carbon::createFromTime($h, 0);
+            $hours[] = [
+                'hour24' => sprintf('%02d:00', $h),
+                'hourNumber' => $h,
+                'label' => $carbonHour->format('g A'),
+            ];
         }
 
         return [
@@ -354,6 +419,7 @@ class AppointmentCalendarPage extends Page
             'endDate' => $endDate->toDateString(),
             'days' => $days,
             'hours' => $hours,
+            'nowTopPx' => $nowTopPx,
             'totalAppointments' => $appointments->count(),
             'confirmedCount' => $appointments->where('status', AppointmentStatus::CONFIRMED)->count(),
             'pendingCount' => $appointments->where('status', AppointmentStatus::PENDING_VERIFICATION)->count(),

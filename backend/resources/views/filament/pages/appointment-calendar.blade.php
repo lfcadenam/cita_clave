@@ -436,130 +436,305 @@
         .pill-amber { background: #d97706; color: #ffffff; }
         .pill-emerald { background: #0d9488; color: #ffffff; }
 
-        /* WEEK VIEW WRAPPER & GRID */
-        .week-scroll-wrapper {
-            width: 100%;
-            overflow-x: auto;
-            padding-bottom: 8px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .week-grid-layout {
-            display: grid;
-            grid-template-columns: repeat(7, minmax(135px, 1fr));
-            gap: 10px;
-            min-width: 680px;
-        }
-
-        .week-day-column {
+        /* ============================================================
+           GOOGLE CALENDAR TIME GRID SYSTEM (DAY & WEEK VIEWS)
+           ============================================================ */
+        .gcal-wrapper {
             background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 10px;
-            min-height: 400px;
+            border: 1px solid #E2E8F0;
+            border-radius: 18px;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            transition: all 0.15s ease;
+            box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
+            width: 100%;
         }
 
-        .week-day-column.today-col {
-            border: 2px solid #0d9488;
-            background: #f0fdf9;
+        .gcal-header-row {
+            display: flex;
+            background: #ffffff;
+            border-bottom: 1px solid #E2E8F0;
+            position: sticky;
+            top: 0;
+            z-index: 25;
         }
 
-        .week-day-header {
-            text-align: center;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #f1f5f9;
-            margin-bottom: 8px;
+        .gcal-corner-cell {
+            width: 72px;
+            min-width: 72px;
+            max-width: 72px;
+            padding: 14px 10px 8px 0;
+            text-align: right;
+            border-right: 1px solid #E2E8F0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            box-sizing: border-box;
+            background: #fafafa;
         }
 
-        .week-day-name {
-            font-size: 11px;
-            font-weight: 800;
+        .gcal-timezone-label {
+            font-size: 10px;
+            font-weight: 700;
             color: #64748b;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
         }
 
-        .week-day-num {
-            font-size: 16px;
-            font-weight: 800;
-            color: #0f172a;
-        }
-
-        .today-col .week-day-num {
-            color: #0d9488;
-        }
-
-        .week-appointment-card {
+        .gcal-days-header-container {
+            display: flex;
+            flex: 1;
+            min-width: 0;
             background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-left: 3px solid #0d9488;
-            border-radius: 10px;
-            padding: 8px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-            margin-bottom: 6px;
         }
 
-        .week-appointment-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            border-color: #cbd5e1;
+        .gcal-day-header-cell {
+            flex: 1;
+            min-width: 0;
+            padding: 12px 8px 10px 8px;
+            text-align: center;
+            border-right: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            box-sizing: border-box;
         }
 
-        .week-appointment-card.status-pending_verification {
-            border-left-color: #f59e0b;
-            background: #fffbeb;
+        .gcal-day-header-cell:last-child {
+            border-right: none;
         }
 
-        .week-appointment-card.status-cancelled {
-            border-left-color: #ef4444;
-            background: #fef2f2;
-            opacity: 0.7;
-        }
-
-        .week-appointment-card.status-completed {
-            border-left-color: #3b82f6;
-        }
-
-        .week-apt-time {
+        .gcal-day-abbr {
             font-size: 11px;
-            font-weight: 800;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gcal-day-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-top: 2px;
+            line-height: 1;
+        }
+
+        .gcal-day-header-cell.is-today .gcal-day-abbr {
             color: #0d9488;
-            margin-bottom: 2px;
         }
 
-        .status-pending_verification .week-apt-time {
-            color: #d97706;
+        .gcal-day-header-cell.is-today .gcal-day-badge {
+            background: #0d9488;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 2px 6px rgba(13, 148, 136, 0.35);
         }
 
-        .status-cancelled .week-apt-time {
-            color: #ef4444;
+        /* Time Grid Body */
+        .gcal-scroll-body {
+            display: flex;
+            overflow-y: auto;
+            max-height: 720px;
+            position: relative;
+            background: #ffffff;
         }
 
-        .status-completed .week-apt-time {
-            color: #2563eb;
+        .gcal-time-axis-col {
+            width: 72px;
+            min-width: 72px;
+            max-width: 72px;
+            border-right: 1px solid #E2E8F0;
+            background: #ffffff;
+            user-select: none;
+            box-sizing: border-box;
         }
 
-        .week-apt-name {
+        .gcal-time-axis-slot {
+            height: 64px;
+            text-align: right;
+            padding-right: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
+            transform: translateY(-8px);
+            box-sizing: border-box;
+        }
+
+        .gcal-grid-columns {
+            display: flex;
+            flex: 1;
+            min-width: 0;
+            position: relative;
+        }
+
+        .gcal-day-column {
+            flex: 1;
+            min-width: 0;
+            border-right: 1px solid #E2E8F0;
+            position: relative;
+            height: 896px; /* 14 slots (7:00 a 20:00) * 64px */
+            box-sizing: border-box;
+        }
+
+        .gcal-day-column:last-child {
+            border-right: none;
+        }
+
+        .gcal-grid-lines {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .gcal-hour-grid-row {
+            height: 64px;
+            border-top: 1px solid #E2E8F0;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .gcal-hour-grid-row:first-child {
+            border-top: none;
+        }
+
+        .gcal-half-hour-line {
+            position: absolute;
+            top: 32px;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed #f1f5f9;
+        }
+
+        /* Red Now Indicator (Google Calendar Signature) */
+        .gcal-now-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ea4335;
+            z-index: 22;
+            pointer-events: none;
+        }
+
+        .gcal-now-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ea4335;
+            position: absolute;
+            left: -5px;
+            top: -4px;
+        }
+
+        /* Blocked Slots */
+        .gcal-blocked-slot {
+            position: absolute;
+            left: 4px;
+            right: 4px;
+            border-radius: 6px;
+            background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 10px, #f1f5f9 10px, #f1f5f9 20px);
+            border-left: 3px solid #94a3b8;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 8px;
+            overflow: hidden;
+            z-index: 8;
+            box-sizing: border-box;
+        }
+
+        /* Event Cards (Google Calendar Aesthetics) */
+        .gcal-event-card {
+            position: absolute;
+            left: 6px;
+            right: 6px;
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            overflow: hidden;
+            z-index: 15;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.15s ease;
+        }
+
+        .gcal-event-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+            z-index: 30;
+        }
+
+        /* Confirmed (Matches Google Calendar screenshot!) */
+        .gcal-event-card.status-confirmed {
+            background: #f0f9ff;
+            border: 1.5px solid #0284c7;
+            color: #0369a1;
+        }
+        .gcal-event-card.status-confirmed .gcal-event-title {
+            color: #0369a1;
+        }
+        .gcal-event-card.status-confirmed .gcal-event-subtitle {
+            color: #0284c7;
+        }
+
+        /* Pending Nequi */
+        .gcal-event-card.status-pending_verification {
+            background: #faf5ff;
+            border: 1.5px solid #9333ea;
+            color: #6b21a8;
+        }
+        .gcal-event-card.status-pending_verification .gcal-event-title {
+            color: #6b21a8;
+        }
+        .gcal-event-card.status-pending_verification .gcal-event-subtitle {
+            color: #7e22ce;
+        }
+
+        /* Completed */
+        .gcal-event-card.status-completed {
+            background: #f8fafc;
+            border: 1.5px solid #64748b;
+            color: #334155;
+        }
+        .gcal-event-card.status-completed .gcal-event-title {
+            color: #1e293b;
+        }
+        .gcal-event-card.status-completed .gcal-event-subtitle {
+            color: #475569;
+        }
+
+        .gcal-event-title {
             font-size: 12px;
             font-weight: 700;
-            color: #1e293b;
+            line-height: 1.3;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .week-apt-service {
-            font-size: 10px;
+        .gcal-event-subtitle {
+            font-size: 11px;
             font-weight: 500;
-            color: #64748b;
+            line-height: 1.3;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-top: 1px;
         }
 
         /* CIERRA-STYLE MODALS */
@@ -1095,136 +1270,88 @@
                     </div>
                 @endif
 
-                <!-- WEEK VIEW -->
-                @if($viewMode === 'week')
-                    <div class="week-scroll-wrapper">
-                        <div class="week-grid-layout">
-                            @foreach($data['days'] as $day)
-                                <div class="week-day-column {{ $day['isToday'] ? 'today-col' : '' }}">
-                                    <div class="week-day-header">
-                                        <span class="week-day-name">{{ $day['dayName'] }}</span>
-                                        <div class="week-day-num">{{ $day['dayNumber'] }}</div>
+                <!-- GOOGLE CALENDAR TIME GRID (WEEK & DAY VIEWS) -->
+                @if($viewMode === 'week' || $viewMode === 'day')
+                    @php
+                        $displayDays = $viewMode === 'day' ? array_slice($data['days'], 0, 1) : $data['days'];
+                    @endphp
+                    <div class="gcal-wrapper">
+                        <!-- Top Header Row (Sticky Days) -->
+                        <div class="gcal-header-row">
+                            <div class="gcal-corner-cell">
+                                <span class="gcal-timezone-label">GMT-05</span>
+                            </div>
+                            <div class="gcal-days-header-container">
+                                @foreach($displayDays as $day)
+                                    <div class="gcal-day-header-cell {{ $day['isToday'] ? 'is-today' : '' }}">
+                                        <span class="gcal-day-abbr">{{ strtoupper($day['dayName']) }}</span>
+                                        <div class="gcal-day-badge">
+                                            <span>{{ $day['dayNumber'] }}</span>
+                                        </div>
                                     </div>
+                                @endforeach
+                            </div>
+                        </div>
 
-                                    <div style="display: flex; flex-direction: column; flex: 1;">
-                                        @forelse($day['appointments'] as $apt)
-                                            <div wire:click="selectAppointment({{ $apt->id }})" 
-                                                 class="week-appointment-card status-{{ $apt->status->value }}"
-                                                 title="{{ $apt->service?->name }} • {{ $apt->client_name }}">
-                                                <div class="week-apt-time">{{ substr($apt->start_time, 0, 5) }} - {{ substr($apt->end_time, 0, 5) }}</div>
-                                                <div class="week-apt-name">{{ $apt->client_name }}</div>
-                                                <div class="week-apt-service">{{ $apt->service?->name }}</div>
-                                            </div>
-                                        @empty
-                                            <div style="font-size: 11px; color: #94a3b8; text-align: center; margin: auto 0; padding: 20px 0;">
-                                                Sin citas
-                                            </div>
-                                        @endforelse
+                        <!-- Scrollable Time Grid Body -->
+                        <div class="gcal-scroll-body">
+                            <!-- Left Time Axis (7 AM to 8 PM) -->
+                            <div class="gcal-time-axis-col">
+                                @foreach($data['hours'] as $h)
+                                    <div class="gcal-time-axis-slot">
+                                        <span>{{ $h['label'] }}</span>
                                     </div>
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
+
+                            <!-- Day Columns -->
+                            <div class="gcal-grid-columns">
+                                @foreach($displayDays as $day)
+                                    <div class="gcal-day-column {{ $day['isToday'] ? 'today-col' : '' }}">
+                                        <!-- Horizontal Grid Lines -->
+                                        <div class="gcal-grid-lines">
+                                            @foreach($data['hours'] as $h)
+                                                <div class="gcal-hour-grid-row">
+                                                    <div class="gcal-half-hour-line"></div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+
+                                        <!-- Red Current Time Indicator (if today) -->
+                                        @if($day['isToday'] && !is_null($data['nowTopPx']))
+                                            <div class="gcal-now-line" style="top: {{ $data['nowTopPx'] }}px;">
+                                                <div class="gcal-now-dot"></div>
+                                            </div>
+                                        @endif
+
+                                        <!-- Blocked Slots -->
+                                        @foreach($day['blockedSlots'] as $block)
+                                            <div class="gcal-blocked-slot"
+                                                 style="top: {{ $block->calendar_top }}px; height: {{ $block->calendar_height }}px;"
+                                                 title="Horario bloqueado: {{ $block->reason ?: 'No disponible' }}">
+                                                <span>{{ $block->reason ?: 'Horario Bloqueado' }}</span>
+                                            </div>
+                                        @endforeach
+
+                                        <!-- Event Cards (Google Calendar Style) -->
+                                        @foreach($day['appointments'] as $apt)
+                                            <div wire:click="selectAppointment({{ $apt->id }})"
+                                                 class="gcal-event-card status-{{ $apt->status->value }}"
+                                                 style="top: {{ $apt->calendar_top }}px; height: {{ $apt->calendar_height }}px;"
+                                                 title="{{ $apt->service?->name }} • {{ $apt->client_name }} ({{ $apt->formatted_time_range }})">
+                                                <div class="gcal-event-title">
+                                                    {{ $apt->service?->name ?? 'Servicio' }}
+                                                </div>
+                                                <div class="gcal-event-subtitle">
+                                                    {{ $apt->formatted_time_range }}, {{ $apt->client_name }}
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
-                @endif
-
-                <!-- DAY VIEW -->
-                <!-- DAY VIEW (CIERRA SAAS DATA LIST STYLE) -->
-                @if($viewMode === 'day')
-                    @php 
-                        $singleDay = $data['days'][0] ?? null; 
-                        $dayAppointments = $singleDay ? $singleDay['appointments'] : collect();
-                        $confirmedDayCount = $dayAppointments->where('status', \App\Enums\AppointmentStatus::CONFIRMED)->count();
-                        $pendingDayCount = $dayAppointments->where('status', \App\Enums\AppointmentStatus::PENDING_VERIFICATION)->count();
-                    @endphp
-                    @if($singleDay)
-                        <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 24px; padding: 22px; box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.04);">
-                            <!-- Header Section Cierra Style -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #E2E8F0;">
-                                <div>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <span style="width: 4px; height: 16px; background: #0d9488; border-radius: 9999px; display: inline-block;"></span>
-                                        <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0;">
-                                            Agenda de Citas del Día
-                                        </h3>
-                                    </div>
-                                    <p style="font-size: 12px; color: #64748b; font-weight: 600; margin-top: 3px; padding-left: 12px;">
-                                        {{ $singleDay['fullDayName'] }}
-                                    </p>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                    <span style="font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
-                                        {{ $dayAppointments->count() }} Total
-                                    </span>
-                                    @if($confirmedDayCount > 0)
-                                        <span style="font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; background: #e6f7f2; color: #0d9488; border: 1px solid #a7f3d0;">
-                                            {{ $confirmedDayCount }} Confirmadas
-                                        </span>
-                                    @endif
-                                    @if($pendingDayCount > 0)
-                                        <span style="font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; background: #fdf4ff; color: #7e22ce; border: 1px solid #f0abfc;">
-                                            {{ $pendingDayCount }} Por Verificar
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- Data List Rows -->
-                            <div style="display: flex; flex-direction: column; gap: 10px;">
-                                @forelse($dayAppointments as $apt)
-                                    @php
-                                        $isPending = $apt->status->value === 'pending_verification';
-                                        $rowBg = $isPending ? '#faf5ff' : '#ffffff';
-                                        $rowBorder = $isPending ? '#e9d5ff' : '#e2e8f0';
-                                    @endphp
-                                    <div wire:click="selectAppointment({{ $apt->id }})" 
-                                         style="background: {{ $rowBg }}; border: 1px solid {{ $rowBorder }}; border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.15s ease; gap: 14px; flex-wrap: wrap;"
-                                         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.06)';"
-                                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-                                        
-                                        <!-- Left Info -->
-                                        <div style="display: flex; align-items: center; gap: 14px; min-width: 240px;">
-                                            <div style="background: {{ $isPending ? '#7e22ce' : '#0d9488' }}; color: #ffffff; font-weight: 800; padding: 8px 12px; border-radius: 10px; font-size: 12px; text-align: center; min-width: 76px; box-shadow: 0 2px 6px {{ $isPending ? 'rgba(126, 34, 206, 0.25)' : 'rgba(13, 148, 136, 0.25)' }};">
-                                                <div>{{ substr($apt->start_time, 0, 5) }}</div>
-                                                <div style="font-size: 9px; opacity: 0.85; font-weight: 600;">{{ substr($apt->end_time, 0, 5) }}</div>
-                                            </div>
-                                            <div>
-                                                <div style="font-weight: 800; font-size: 14px; color: #0f172a; display: flex; align-items: center; gap: 6px;">
-                                                    <span>{{ $apt->client_name }}</span>
-                                                    <span style="font-size: 10px; color: #64748b; font-weight: 700;">#{{ $apt->appointment_number }}</span>
-                                                </div>
-                                                <div style="font-size: 12px; color: #64748b; font-weight: 500; margin-top: 2px;">
-                                                    {{ $apt->service?->name }} • {{ $apt->service?->duration_minutes }} min
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Right Metrics & Actions -->
-                                        <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                                            <div style="text-align: right;">
-                                                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Valor</div>
-                                                <div style="font-size: 13px; font-weight: 800; color: #0f172a;">${{ number_format($apt->service?->price ?: $apt->total_amount, 0, ',', '.') }}</div>
-                                            </div>
-
-                                            <span class="cierra-status-pill {{ $apt->status->value }}">
-                                                <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block;"></span>
-                                                <span>{{ $apt->status->label() }}</span>
-                                            </span>
-
-                                            <button type="button" 
-                                                    style="background: #ffffff; border: 1px solid #cbd5e1; color: #334155; font-weight: 700; font-size: 11px; padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
-                                                Ver Ficha
-                                            </button>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px; padding: 40px 20px; text-align: center; color: #64748b;">
-                                        <p style="font-size: 13px; font-weight: 600; margin: 0;">No hay citas agendadas para esta fecha.</p>
-                                        <p style="font-size: 11px; margin-top: 4px; color: #94a3b8;">Usa el botón "Nueva Reserva" para programar una cita.</p>
-                                    </div>
-                                @endforelse
-                            </div>
-                        </div>
-                    @endif
                 @endif
 
             </div>
