@@ -603,13 +603,22 @@
                 <p class="text-[11px] text-slate-500 leading-tight">Transferencia directa y subida de comprobante</p>
             </button>
 
-            <button type="button" @click="paymentMethod = 'BOLD_ONLINE'"
-                    class="p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer"
-                    :class="paymentMethod === 'BOLD_ONLINE' ? 'border-[#0d9488] bg-[#e6f7f2]/50 ring-2 ring-[#0d9488]/20 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'">
+            <button type="button"
+                    :disabled="!boldEnabled"
+                    @click="boldEnabled ? paymentMethod = 'BOLD_ONLINE' : null"
+                    class="p-4 rounded-2xl border text-left transition-all duration-200"
+                    :class="!boldEnabled 
+                        ? 'opacity-40 cursor-not-allowed bg-slate-50 border-slate-200 select-none' 
+                        : (paymentMethod === 'BOLD_ONLINE' ? 'border-[#0d9488] bg-[#e6f7f2]/50 ring-2 ring-[#0d9488]/20 shadow-sm cursor-pointer' : 'border-slate-200 bg-white hover:border-slate-300 cursor-pointer')">
                 <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs font-bold text-slate-900">💳 Pago en Línea (Bold)</span>
+                    <span class="text-xs font-bold" :class="boldEnabled ? 'text-slate-900' : 'text-slate-400'">💳 Pago en Línea (Bold)</span>
+                    <template x-if="!boldEnabled">
+                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-500 uppercase tracking-wider">No Habilitado</span>
+                    </template>
                 </div>
-                <p class="text-[11px] text-slate-500 leading-tight">PSE, Tarjetas Débito y Crédito</p>
+                <p class="text-[11px] leading-tight" :class="boldEnabled ? 'text-slate-500' : 'text-slate-400'">
+                    <span x-text="boldEnabled ? 'PSE, Tarjetas Débito y Crédito' : 'Pasarela no configurada temporalmente'"></span>
+                </p>
             </button>
         </div>
 
@@ -720,6 +729,7 @@ function bookingApp() {
         selectedSlot: null,
         slots: [],
         loadingSlots: false,
+        boldEnabled: {{ (!empty($boldConfigured) && $boldConfigured) ? 'true' : 'false' }},
         paymentMethod: 'NEQUI_TRANSFER',
         receiptFile: null,
         copied: false,
@@ -1045,6 +1055,11 @@ function bookingApp() {
         },
 
         async submitBoldBooking() {
+            if (!this.boldEnabled) {
+                alert('La pasarela de pago en línea (Bold) no está habilitada.');
+                return;
+            }
+
             this.submittingBooking = true;
             this.saveProfileToLocalStorage();
 
@@ -1058,7 +1073,7 @@ function bookingApp() {
                 if (data.success && data.data.checkout_url) {
                     window.location.href = data.data.checkout_url;
                 } else {
-                    alert('Error al generar enlace de Bold.');
+                    alert(data.message || 'Error al generar enlace de Bold.');
                 }
             } catch (err) {
                 console.error(err);

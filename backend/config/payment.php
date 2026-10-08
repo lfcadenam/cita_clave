@@ -7,8 +7,8 @@ return [
     |--------------------------------------------------------------------------
     */
     'bold' => [
-        'api_key' => env('BOLD_API_KEY', 'sandbox_bold_api_key_sample'),
-        'secret_key' => env('BOLD_SECRET_KEY', 'sandbox_bold_secret_sample_key'),
+        'api_key' => env('BOLD_API_KEY'),
+        'secret_key' => env('BOLD_SECRET_KEY'),
         'environment' => env('BOLD_ENV', 'sandbox'), // sandbox | production
         'checkout_url' => env('BOLD_CHECKOUT_URL', 'https://payments.bold.co/v2/checkout'),
         'webhook_secret' => env('BOLD_WEBHOOK_SECRET', 'sandbox_webhook_secret_key'),

@@ -96,4 +96,18 @@ class Tenant extends Model implements HasCurrentTenantLabel
         $num = preg_replace('/\D/', '', $this->whatsapp_number ?: $this->phone ?: '3103248385');
         return 'https://wa.me/57' . $num;
     }
+
+    /**
+     * Determina si la pasarela Bold tiene API Key y Secret Key parametrizadas.
+     */
+    public function isBoldConfigured(): bool
+    {
+        $apiKey = $this->bold_api_key ?: config('payment.bold.api_key');
+        $secretKey = $this->bold_secret_key ?: config('payment.bold.secret_key');
+
+        return ! empty($apiKey)
+            && ! empty($secretKey)
+            && ! str_contains((string) $apiKey, 'sample')
+            && ! str_contains((string) $secretKey, 'sample');
+    }
 }

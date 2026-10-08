@@ -169,6 +169,14 @@ class AppointmentBookingController extends Controller
             'receipt' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,pdf|max:10240', // Max 10MB
         ]);
 
+        $tenant = app()->has('active_tenant') ? app('active_tenant') : \App\Models\Tenant::where('is_active', true)->first();
+        if ($validated['payment_method'] === 'BOLD_ONLINE' && (! $tenant || ! $tenant->isBoldConfigured())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El método de pago en línea (Bold) no está disponible temporalmente.',
+            ], 422);
+        }
+
         return DB::transaction(function () use ($request, $validated) {
             $appointment = null;
 

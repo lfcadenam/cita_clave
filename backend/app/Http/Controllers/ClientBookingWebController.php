@@ -20,7 +20,10 @@ class ClientBookingWebController extends Controller
         $categories = Service::where('is_active', true)->pluck('category')->unique()->values();
         $nequiConfig = config('payment.nequi');
 
-        return view('portal.booking', compact('services', 'categories', 'nequiConfig'));
+        $tenant = app()->has('active_tenant') ? app('active_tenant') : \App\Models\Tenant::where('is_active', true)->first();
+        $boldConfigured = $tenant ? $tenant->isBoldConfigured() : false;
+
+        return view('portal.booking', compact('services', 'categories', 'nequiConfig', 'boldConfigured'));
     }
 
     /**

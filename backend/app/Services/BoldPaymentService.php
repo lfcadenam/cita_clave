@@ -16,10 +16,22 @@ class BoldPaymentService
 
     public function __construct()
     {
-        $this->apiKey = config('payment.bold.api_key');
-        $this->secretKey = config('payment.bold.secret_key');
-        $this->webhookSecret = config('payment.bold.webhook_secret');
-        $this->checkoutUrl = config('payment.bold.checkout_url');
+        $tenant = app()->has('active_tenant') ? app('active_tenant') : \App\Models\Tenant::where('is_active', true)->first();
+        $this->apiKey = $tenant?->bold_api_key ?: (config('payment.bold.api_key') ?? '');
+        $this->secretKey = $tenant?->bold_secret_key ?: (config('payment.bold.secret_key') ?? '');
+        $this->webhookSecret = config('payment.bold.webhook_secret') ?? '';
+        $this->checkoutUrl = config('payment.bold.checkout_url') ?? 'https://payments.bold.co/v2/checkout';
+    }
+
+    /**
+     * Check if Bold API Key and Secret Key are properly configured.
+     */
+    public function isConfigured(): bool
+    {
+        return ! empty($this->apiKey)
+            && ! empty($this->secretKey)
+            && ! str_contains($this->apiKey, 'sample')
+            && ! str_contains($this->secretKey, 'sample');
     }
 
     /**

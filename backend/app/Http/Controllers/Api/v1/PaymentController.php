@@ -41,6 +41,13 @@ class PaymentController extends Controller
      */
     public function createBoldCheckout(Request $request): JsonResponse
     {
+        if (! $this->boldService->isConfigured()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La pasarela de pago en línea (Bold) no está configurada para este comercio.',
+            ], 422);
+        }
+
         $validated = $request->validate([
             'appointment_id' => 'required_without:appointment_number|integer|exists:appointments,id',
             'appointment_number' => 'required_without:appointment_id|string|exists:appointments,appointment_number',

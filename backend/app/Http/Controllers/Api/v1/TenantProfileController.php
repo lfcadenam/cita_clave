@@ -44,6 +44,7 @@ class TenantProfileController extends Controller
                 'schedule_summary' => $tenant->schedule_summary ?: 'Lunes a Sábado 8:00 AM - 6:00 PM | Almuerzo 1:00 PM - 2:00 PM',
                 'primary_color' => $tenant->primary_color ?: '#0d9488',
                 'logo_path' => $tenant->logo_path ? asset('storage/' . $tenant->logo_path) : null,
+                'is_bold_enabled' => $tenant->isBoldConfigured(),
             ],
         ]);
     }

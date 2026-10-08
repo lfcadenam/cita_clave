@@ -189,4 +189,56 @@ class HybridPaymentSystemTest extends TestCase
             'message' => 'Firma de webhook inválida.',
         ]);
     }
+
+    public function test_bold_checkout_fails_when_bold_not_configured(): void
+    {
+        // Force keys to empty
+        config(['payment.bold.api_key' => '']);
+        config(['payment.bold.secret_key' => '']);
+
+        $service = Service::first();
+        $appointment = Appointment::create([
+            'service_id' => $service->id,
+            'client_name' => 'Maria Deshabilitada',
+            'client_phone' => '3140001122',
+            'client_email' => 'maria@gmail.com',
+            'appointment_date' => Carbon::now()->next(Carbon::MONDAY)->toDateString(),
+            'start_time' => '11:30:00',
+            'end_time' => '12:30:00',
+            'total_amount' => $service->base_price,
+            'deposit_amount' => $service->deposit_amount,
+            'deposit_paid' => 0,
+            'balance_due' => $service->base_price,
+            'payment_method' => PaymentMethod::BOLD_ONLINE,
+            'status' => AppointmentStatus::PENDING_DEPOSIT,
+        ]);
+
+        $response = $this->postJson('/api/v1/payments/bold/checkout', [
+            'appointment_id' => $appointment->id,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'success' => false,
+            'message' => 'La pasarela de pago en línea (Bold) no está configurada para este comercio.',
+        ]);
+    }
+
+    public function test_tenant_is_bold_configured_method(): void
+    {
+        $tenant = \App\Models\Tenant::first();
+
+        // 1. When tenant has no keys and config is empty
+        config(['payment.bold.api_key' => null, 'payment.bold.secret_key' => null]);
+        $tenant->update(['bold_api_key' => null, 'bold_secret_key' => null]);
+        $this->assertFalse($tenant->isBoldConfigured());
+
+        // 2. When keys are sample placeholders
+        config(['payment.bold.api_key' => 'sandbox_sample_key', 'payment.bold.secret_key' => 'sample_secret']);
+        $this->assertFalse($tenant->isBoldConfigured());
+
+        // 3. When valid keys are set in tenant or config
+        $tenant->update(['bold_api_key' => 'live_bold_api_key_123', 'bold_secret_key' => 'live_bold_secret_key_456']);
+        $this->assertTrue($tenant->isBoldConfigured());
+    }
 }

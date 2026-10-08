@@ -33,5 +33,7 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="WHATSAPP_DRIVER" value="log" force="true"/>
+        <env name="BOLD_API_KEY" value="test_bold_api_key_valid"/>
+        <env name="BOLD_SECRET_KEY" value="test_bold_secret_key_valid"/>
     </php>
 </phpunit>
