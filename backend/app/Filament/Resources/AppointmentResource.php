@@ -29,6 +29,7 @@ use UnitEnum;
 class AppointmentResource extends Resource
 {
     protected static ?string $model = Appointment::class;
+    protected static bool $shouldRegisterNavigation = false;
     protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-calendar-days';
     protected static string | UnitEnum | null $navigationGroup = 'Agenda & Citas';
     protected static ?string $modelLabel = 'Cita / Reserva';
@@ -220,12 +221,93 @@ class AppointmentResource extends Resource
                                                 } catch (\Exception $e) {}
                                             }
                                         }
-                                    }),
+                                    })
+                                    ->rules([
+                                        function ($get, $record = null) {
+                                            return function (string $attribute, $value, \Closure $fail) use ($get, $record) {
+                                                if (!$value) {
+                                                    return;
+                                                }
+
+                                                $status = $get('status');
+                                                if ($status === AppointmentStatus::CANCELLED->value || $status === AppointmentStatus::CANCELLED) {
+                                                    return;
+                                                }
+
+                                                $date = $get('appointment_date');
+                                                if (!$date) {
+                                                    return;
+                                                }
+
+                                                $endTime = $get('end_time');
+                                                if (!$endTime && ($serviceId = $get('service_id'))) {
+                                                    if ($service = Service::find($serviceId)) {
+                                                        try {
+                                                            $endTime = \Carbon\Carbon::parse($value)->addMinutes($service->duration_minutes)->format('H:i');
+                                                        } catch (\Throwable $e) {}
+                                                    }
+                                                }
+
+                                                if (!$endTime) {
+                                                    return;
+                                                }
+
+                                                $conflict = Appointment::findConflicting($date, $value, $endTime, $record?->id);
+
+                                                if ($conflict) {
+                                                    $conflictStart = substr($conflict->start_time, 0, 5);
+                                                    $conflictEnd = substr($conflict->end_time, 0, 5);
+                                                    $conflictClient = $conflict->client_name ?: 'otra clienta';
+                                                    $conflictStatus = $conflict->status instanceof AppointmentStatus ? $conflict->status->label() : ($conflict->status ?? 'activa');
+                                                    $fail("Horario no disponible: ya existe una cita en este horario ({$conflictStart} - {$conflictEnd}) para {$conflictClient} [{$conflictStatus}]. Por favor selecciona otro horario o fecha.");
+                                                }
+                                            };
+                                        },
+                                    ]),
 
                                 Forms\Components\TimePicker::make('end_time')
                                     ->label('Hora de Finalización')
                                     ->seconds(false)
-                                    ->required(),
+                                    ->required()
+                                    ->rules([
+                                        function ($get, $record = null) {
+                                            return function (string $attribute, $value, \Closure $fail) use ($get, $record) {
+                                                if (!$value) {
+                                                    return;
+                                                }
+
+                                                $startTime = $get('start_time');
+                                                if ($startTime) {
+                                                    try {
+                                                        $start = \Carbon\Carbon::parse($startTime);
+                                                        $end = \Carbon\Carbon::parse($value);
+                                                        if ($end->lte($start)) {
+                                                            $fail('La hora de finalización debe ser posterior a la hora de inicio.');
+                                                            return;
+                                                        }
+                                                    } catch (\Throwable $e) {}
+                                                }
+
+                                                $status = $get('status');
+                                                if ($status === AppointmentStatus::CANCELLED->value || $status === AppointmentStatus::CANCELLED) {
+                                                    return;
+                                                }
+
+                                                $date = $get('appointment_date');
+                                                if (!$date || !$startTime) {
+                                                    return;
+                                                }
+
+                                                $conflict = Appointment::findConflicting($date, $startTime, $value, $record?->id);
+                                                if ($conflict) {
+                                                    $conflictStart = substr($conflict->start_time, 0, 5);
+                                                    $conflictEnd = substr($conflict->end_time, 0, 5);
+                                                    $conflictClient = $conflict->client_name ?: 'otra clienta';
+                                                    $fail("Horario en conflicto: la duración seleccionada colisiona con la cita de {$conflictClient} ({$conflictStart} - {$conflictEnd}).");
+                                                }
+                                            };
+                                        },
+                                    ]),
                             ])->columns(2),
                     ])->columnSpan(7),
 

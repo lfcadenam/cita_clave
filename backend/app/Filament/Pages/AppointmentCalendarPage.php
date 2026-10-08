@@ -26,6 +26,17 @@ class AppointmentCalendarPage extends Page
     protected static ?int $navigationSort = 0;
     protected static ?string $slug = 'calendario-citas';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Appointment::where('status', AppointmentStatus::PENDING_VERIFICATION)->count();
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     protected string $view = 'filament.pages.appointment-calendar';
 
     public string $currentDate = '';
@@ -69,6 +80,21 @@ class AppointmentCalendarPage extends Page
                     'deposit_paid' => 0,
                     'balance_due' => 0,
                 ])
+                ->before(function (CreateAction $action, array $data) {
+                    if (!empty($data['appointment_date']) && !empty($data['start_time']) && !empty($data['end_time'])) {
+                        $conflict = Appointment::findConflicting($data['appointment_date'], $data['start_time'], $data['end_time']);
+                        if ($conflict) {
+                            $conflictStart = substr($conflict->start_time, 0, 5);
+                            $conflictEnd = substr($conflict->end_time, 0, 5);
+                            Notification::make()
+                                ->title('Horario no disponible')
+                                ->body("Ya existe una cita programada en este horario ({$conflictStart} - {$conflictEnd}) para {$conflict->client_name}.")
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                    }
+                })
                 ->mutateFormDataUsing(function (array $data): array {
                     $data['appointment_number'] = 'PA-' . strtoupper(now()->format('ymd')) . '-' . strtoupper(substr(uniqid(), -4));
                     if (empty($data['balance_due']) && isset($data['total_amount'])) {

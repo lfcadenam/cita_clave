@@ -8,9 +8,11 @@ use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Observers\AppointmentObserver;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 #[ObservedBy([AppointmentObserver::class])]
 class Appointment extends Model
@@ -68,6 +70,7 @@ class Appointment extends Model
     protected static function boot()
     {
         parent::boot();
+
         static::creating(function ($appointment) {
             if (empty($appointment->appointment_number)) {
                 $appointment->appointment_number = 'PA-' . now()->format('ymd') . '-' . strtoupper(Str::random(4));
@@ -76,6 +79,62 @@ class Appointment extends Model
                 $appointment->balance_due = $appointment->total_amount - $appointment->deposit_paid;
             }
         });
+    }
+
+    /**
+     * Buscar si existe una cita activa que se solape con el intervalo horario dado.
+     */
+    public static function findConflicting(
+        string|Carbon $date,
+        string $startTime,
+        string $endTime,
+        ?int $excludeAppointmentId = null,
+        ?int $tenantId = null
+    ): ?self {
+        $dateString = is_string($date) ? Carbon::parse($date)->toDateString() : $date->toDateString();
+        $startFormatted = Carbon::parse($startTime)->format('H:i:s');
+        $endFormatted = Carbon::parse($endTime)->format('H:i:s');
+
+        $query = static::query()
+            ->whereDate('appointment_date', $dateString)
+            ->whereNotIn('status', [AppointmentStatus::CANCELLED->value])
+            ->where(function ($q) {
+                $q->whereIn('status', [
+                    AppointmentStatus::CONFIRMED->value,
+                    AppointmentStatus::PENDING_VERIFICATION->value,
+                    AppointmentStatus::IN_PROGRESS->value,
+                    AppointmentStatus::COMPLETED->value,
+                ])
+                ->orWhere(function ($sub) {
+                    $sub->where('status', AppointmentStatus::PENDING_DEPOSIT->value)
+                        ->where('created_at', '>=', Carbon::now()->subMinutes(15));
+                });
+            })
+            ->where('start_time', '<', $endFormatted)
+            ->where('end_time', '>', $startFormatted);
+
+        if ($excludeAppointmentId) {
+            $query->where('id', '!=', $excludeAppointmentId);
+        }
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        return $query->first();
+    }
+
+    /**
+     * Determina si existe una cita conflictiva en el intervalo.
+     */
+    public static function hasConflict(
+        string|Carbon $date,
+        string $startTime,
+        string $endTime,
+        ?int $excludeAppointmentId = null,
+        ?int $tenantId = null
+    ): bool {
+        return static::findConflicting($date, $startTime, $endTime, $excludeAppointmentId, $tenantId) !== null;
     }
 
     public function user(): BelongsTo

@@ -90,6 +90,7 @@ class BookingAvailabilityService
                     AppointmentStatus::CONFIRMED->value,
                     AppointmentStatus::PENDING_VERIFICATION->value,
                     AppointmentStatus::IN_PROGRESS->value,
+                    AppointmentStatus::COMPLETED->value,
                 ])
                 ->orWhere(function ($q) {
                     $q->where('status', AppointmentStatus::PENDING_DEPOSIT->value)

@@ -89,6 +89,13 @@ class AppointmentBookingController extends Controller
                 ->addMinutes($service->duration_minutes)
                 ->format('H:i:s');
 
+            if (Appointment::hasConflict($date, $startTime, $endTime)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El horario seleccionado ya se encuentra ocupado por otra cita. Por favor elige otro horario.',
+                ], 422);
+            }
+
             $appointment = Appointment::create([
                 'service_id' => $service->id,
                 'client_name' => $validated['client_name'],
@@ -187,6 +194,13 @@ class AppointmentBookingController extends Controller
                     ->addMinutes($service->duration_minutes)
                     ->format('H:i:s');
 
+                if (Appointment::hasConflict($date, $startTime, $endTime)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'El horario seleccionado ya se encuentra ocupado por otra cita.',
+                    ], 422);
+                }
+
                 $appointment = new Appointment([
                     'service_id' => $service->id,
                     'client_name' => $validated['client_name'],
@@ -200,6 +214,13 @@ class AppointmentBookingController extends Controller
                     'deposit_paid' => 0,
                     'balance_due' => $service->base_price,
                 ]);
+            } else {
+                if (Appointment::hasConflict($appointment->appointment_date, $appointment->start_time, $appointment->end_time, $appointment->id)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'El horario seleccionado ya no se encuentra disponible o fue ocupado por otra persona.',
+                    ], 422);
+                }
             }
 
             $appointment->client_name = $validated['client_name'];
