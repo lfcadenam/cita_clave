@@ -22,9 +22,12 @@ Route::get('/citas/{appointmentNumber}', [ClientBookingWebController::class, 'co
 
 // Confirmación Manual de Asistencia por la Clienta
 Route::post('/reserva/confirmar-asistencia/{appointmentNumber}', [ClientBookingWebController::class, 'confirmAttendance'])->name('portal.confirm-attendance');
+Route::post('/citas/confirmar-asistencia/{appointmentNumber}', [ClientBookingWebController::class, 'confirmAttendance']);
 
 // Descarga de Calendario (.ics)
 Route::get('/reserva/calendar/{appointmentNumber}.ics', [ClientBookingWebController::class, 'downloadCalendar'])->name('portal.calendar');
+Route::get('/citas/{appointmentNumber}/calendar', [ClientBookingWebController::class, 'downloadCalendar']);
+Route::get('/citas/{appointmentNumber}/calendar.ics', [ClientBookingWebController::class, 'downloadCalendar']);
 
 // SuperAdmin - Previsualización de Plantillas de Correo Electrónico
 Route::get('/superadmin/email-preview/{key}', [\App\Filament\SuperAdmin\Pages\EmailTemplatesPage::class, 'renderStandalonePreview'])
