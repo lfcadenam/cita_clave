@@ -40,7 +40,7 @@ class AppointmentCalendarPage extends Page
     protected string $view = 'filament.pages.appointment-calendar';
 
     public string $currentDate = '';
-    public string $viewMode = 'week'; // 'month', 'week', 'day'
+    public string $viewMode = 'month'; // 'month', 'week', 'day'
     public string $statusFilter = 'all';
     public string $serviceFilter = 'all';
     
