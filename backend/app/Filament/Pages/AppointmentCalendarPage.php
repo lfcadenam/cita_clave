@@ -356,12 +356,14 @@ class AppointmentCalendarPage extends Page
                 $durationMinutes = max(30, $endMinutes - $startMinutes);
                 $topMinutes = max(0, $startMinutes - ($baseHour * 60));
 
-                $apt->calendar_top = round(($topMinutes / 60) * $hourHeight);
-                $apt->calendar_height = max(36, round(($durationMinutes / 60) * $hourHeight));
+                $rawHeight = round(($durationMinutes / 60) * $hourHeight);
+                $apt->calendar_top = round(($topMinutes / 60) * $hourHeight) + 1;
+                $apt->calendar_height = max(36, $rawHeight - 3); // Separación de 3px para distinguir cajas contiguas
 
                 $startCarbon = Carbon::createFromTime($startH, $startM);
                 $endCarbon = Carbon::createFromTime($endH, $endM);
                 $apt->formatted_time_range = $startCarbon->format('g:i A') . ' - ' . $endCarbon->format('g:i A');
+                $apt->service_theme = self::getServiceTheme($apt->service, $apt->service_id);
 
                 return $apt;
             });
@@ -425,5 +427,81 @@ class AppointmentCalendarPage extends Page
             'pendingCount' => $appointments->where('status', AppointmentStatus::PENDING_VERIFICATION)->count(),
             'completedCount' => $appointments->where('status', AppointmentStatus::COMPLETED)->count(),
         ];
+    }
+
+    /**
+     * Retorna la paleta de color distintiva para cada categoría y servicio (Estilo Google Calendar).
+     */
+    public static function getServiceTheme(?Service $service, ?int $serviceId = null): array
+    {
+        $category = $service?->category?->value ?? ($service?->category ?? '');
+
+        return match ($category) {
+            'DEPILACION' => [
+                'theme' => 'theme-amber',
+                'bg' => '#fffbeb',
+                'border' => '#f59e0b',
+                'stripe' => '#d97706',
+                'text_title' => '#92400e',
+                'text_sub' => '#b45309',
+                'badge_bg' => '#fef3c7',
+                'badge_text' => '#78350f',
+                'category_name' => 'Depilación',
+            ],
+            'FACIAL' => [
+                'theme' => 'theme-emerald',
+                'bg' => '#ecfdf5',
+                'border' => '#10b981',
+                'stripe' => '#059669',
+                'text_title' => '#065f46',
+                'text_sub' => '#047857',
+                'badge_bg' => '#d1fae5',
+                'badge_text' => '#064e3b',
+                'category_name' => 'Facial',
+            ],
+            'PESTANAS_CEJAS' => [
+                'theme' => 'theme-purple',
+                'bg' => '#faf5ff',
+                'border' => '#a855f7',
+                'stripe' => '#7e22ce',
+                'text_title' => '#581c87',
+                'text_sub' => '#6b21a8',
+                'badge_bg' => '#f3e8ff',
+                'badge_text' => '#4a044e',
+                'category_name' => 'Pestañas & Cejas',
+            ],
+            'LABIOS' => [
+                'theme' => 'theme-rose',
+                'bg' => '#fff1f2',
+                'border' => '#f43f5e',
+                'stripe' => '#e11d48',
+                'text_title' => '#881337',
+                'text_sub' => '#be123c',
+                'badge_bg' => '#ffe4e6',
+                'badge_text' => '#4c0519',
+                'category_name' => 'Labios',
+            ],
+            'CORPORAL_MASAJES' => [
+                'theme' => 'theme-cyan',
+                'bg' => '#f0fdfa',
+                'border' => '#06b6d4',
+                'stripe' => '#0891b2',
+                'text_title' => '#155e75',
+                'text_sub' => '#0e7490',
+                'badge_bg' => '#cffafe',
+                'badge_text' => '#164e63',
+                'category_name' => 'Corporal',
+            ],
+            default => (function () use ($serviceId, $service) {
+                $id = $serviceId ?? ($service?->id ?? 1);
+                $palettes = [
+                    ['theme' => 'theme-blue', 'bg' => '#eff6ff', 'border' => '#3b82f6', 'stripe' => '#1d4ed8', 'text_title' => '#1e40af', 'text_sub' => '#2563eb', 'badge_bg' => '#dbeafe', 'badge_text' => '#172554', 'category_name' => 'Servicio'],
+                    ['theme' => 'theme-violet', 'bg' => '#f5f3ff', 'border' => '#8b5cf6', 'stripe' => '#6d28d9', 'text_title' => '#4c1d95', 'text_sub' => '#5b21b6', 'badge_bg' => '#ede9fe', 'badge_text' => '#2e1065', 'category_name' => 'Servicio'],
+                    ['theme' => 'theme-teal', 'bg' => '#f0fdfa', 'border' => '#14b8a6', 'stripe' => '#0f766e', 'text_title' => '#115e59', 'text_sub' => '#134e4a', 'badge_bg' => '#ccfbf1', 'badge_text' => '#042f2e', 'category_name' => 'Servicio'],
+                    ['theme' => 'theme-orange', 'bg' => '#fff7ed', 'border' => '#f97316', 'stripe' => '#ea580c', 'text_title' => '#9a3412', 'text_sub' => '#c2410c', 'badge_bg' => '#ffedd5', 'badge_text' => '#7c2d12', 'category_name' => 'Servicio'],
+                ];
+                return $palettes[$id % count($palettes)];
+            })(),
+        };
     }
 }

@@ -656,85 +656,82 @@
             box-sizing: border-box;
         }
 
-        /* Event Cards (Google Calendar Aesthetics) */
+        /* Event Cards (Google Calendar Distinctive Service Cards) */
         .gcal-event-card {
             position: absolute;
             left: 6px;
             right: 6px;
             border-radius: 8px;
-            padding: 6px 10px;
+            padding: 6px 12px;
             cursor: pointer;
             overflow: hidden;
             z-index: 15;
             display: flex;
             flex-direction: column;
+            justify-content: flex-start;
             gap: 2px;
             box-sizing: border-box;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1.5px solid transparent;
+            border-left: 5px solid transparent !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
             transition: all 0.15s ease;
         }
 
         .gcal-event-card:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
             z-index: 30;
         }
 
-        /* Confirmed (Matches Google Calendar screenshot!) */
-        .gcal-event-card.status-confirmed {
-            background: #f0f9ff;
-            border: 1.5px solid #0284c7;
-            color: #0369a1;
-        }
-        .gcal-event-card.status-confirmed .gcal-event-title {
-            color: #0369a1;
-        }
-        .gcal-event-card.status-confirmed .gcal-event-subtitle {
-            color: #0284c7;
-        }
-
-        /* Pending Nequi */
-        .gcal-event-card.status-pending_verification {
-            background: #faf5ff;
-            border: 1.5px solid #9333ea;
-            color: #6b21a8;
-        }
-        .gcal-event-card.status-pending_verification .gcal-event-title {
-            color: #6b21a8;
-        }
-        .gcal-event-card.status-pending_verification .gcal-event-subtitle {
-            color: #7e22ce;
-        }
-
-        /* Completed */
-        .gcal-event-card.status-completed {
-            background: #f8fafc;
-            border: 1.5px solid #64748b;
-            color: #334155;
-        }
-        .gcal-event-card.status-completed .gcal-event-title {
-            color: #1e293b;
-        }
-        .gcal-event-card.status-completed .gcal-event-subtitle {
-            color: #475569;
+        .gcal-event-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            min-width: 0;
+            line-height: 1.25;
         }
 
         .gcal-event-title {
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 800;
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .gcal-service-badge {
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            flex-shrink: 0;
             line-height: 1.3;
+        }
+
+        .gcal-event-subtitle {
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.25;
+            display: flex;
+            align-items: center;
+            gap: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .gcal-event-subtitle {
-            font-size: 11px;
-            font-weight: 500;
-            line-height: 1.3;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .gcal-time-pill {
+            font-weight: 700;
+        }
+
+        .gcal-client-name {
+            font-weight: 600;
+            opacity: 0.9;
         }
 
         /* CIERRA-STYLE MODALS */
@@ -1333,18 +1330,40 @@
                                             </div>
                                         @endforeach
 
-                                        <!-- Event Cards (Google Calendar Style) -->
+                                        <!-- Event Cards (Google Calendar Distinctive Service Themes) -->
                                         @foreach($day['appointments'] as $apt)
+                                            @php
+                                                $theme = $apt->service_theme ?? \App\Filament\Pages\AppointmentCalendarPage::getServiceTheme($apt->service, $apt->service_id);
+                                            @endphp
                                             <div wire:click="selectAppointment({{ $apt->id }})"
-                                                 class="gcal-event-card status-{{ $apt->status->value }}"
-                                                 style="top: {{ $apt->calendar_top }}px; height: {{ $apt->calendar_height }}px;"
+                                                 class="gcal-event-card {{ $theme['theme'] }} status-{{ $apt->status->value }}"
+                                                 style="top: {{ $apt->calendar_top }}px; height: {{ $apt->calendar_height }}px; background-color: {{ $theme['bg'] }}; border-color: {{ $theme['border'] }}; border-left-color: {{ $theme['stripe'] }} !important;"
                                                  title="{{ $apt->service?->name }} • {{ $apt->client_name }} ({{ $apt->formatted_time_range }})">
-                                                <div class="gcal-event-title">
-                                                    {{ $apt->service?->name ?? 'Servicio' }}
+                                                
+                                                <div class="gcal-event-header">
+                                                    <span class="gcal-event-title" style="color: {{ $theme['text_title'] }};">
+                                                        {{ $apt->service?->name ?? 'Servicio' }}
+                                                    </span>
+                                                    @if($apt->calendar_height >= 48)
+                                                        <span class="gcal-service-badge" style="background-color: {{ $theme['badge_bg'] }}; color: {{ $theme['badge_text'] }};">
+                                                            {{ $theme['category_name'] }}
+                                                        </span>
+                                                    @endif
                                                 </div>
-                                                <div class="gcal-event-subtitle">
-                                                    {{ $apt->formatted_time_range }}, {{ $apt->client_name }}
+
+                                                <div class="gcal-event-subtitle" style="color: {{ $theme['text_sub'] }};">
+                                                    <span class="gcal-time-pill">{{ $apt->formatted_time_range }}</span>
+                                                    <span class="gcal-client-name">• {{ $apt->client_name }}</span>
                                                 </div>
+
+                                                @if($apt->calendar_height >= 75 && !empty($apt->deposit_amount))
+                                                    <div style="color: {{ $theme['text_sub'] }}; opacity: 0.85; font-size: 10px; font-weight: 700; margin-top: 1px;">
+                                                        <span>Abono: ${{ number_format($apt->deposit_amount, 0, ',', '.') }}</span>
+                                                        @if($apt->status->value === 'pending_verification')
+                                                            <span style="color: #d97706; font-weight: 800;"> • Validar Nequi</span>
+                                                        @endif
+                                                    </div>
+                                                @endif
                                             </div>
                                         @endforeach
                                     </div>
