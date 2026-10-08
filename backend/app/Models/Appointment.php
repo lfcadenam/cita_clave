@@ -156,4 +156,35 @@ class Appointment extends Model
     {
         return $query->where('status', AppointmentStatus::PENDING_VERIFICATION);
     }
+
+    /**
+     * Determina si la cita puede ser autocancelada por la clienta.
+     * Reglas de negocio:
+     * 1. La cita no puede estar ya cancelada, completada o marcada como no asistió.
+     * 2. Debe faltar estrictamente más de 24 horas para el inicio de la cita.
+     */
+    public function canBeCancelledByClient(): bool
+    {
+        if (in_array($this->status, [
+            AppointmentStatus::CANCELLED,
+            AppointmentStatus::COMPLETED,
+            AppointmentStatus::NO_SHOW,
+        ])) {
+            return false;
+        }
+
+        $startDateTime = Carbon::parse($this->appointment_date->toDateString() . ' ' . $this->start_time);
+
+        return now()->diffInSeconds($startDateTime, false) > (24 * 3600);
+    }
+
+    /**
+     * Retorna las horas restantes para el inicio de la cita.
+     */
+    public function hoursUntilStart(): float
+    {
+        $startDateTime = Carbon::parse($this->appointment_date->toDateString() . ' ' . $this->start_time);
+
+        return round(now()->diffInMinutes($startDateTime, false) / 60, 1);
+    }
 }

@@ -128,4 +128,36 @@ class ClientBookingWebController extends Controller
 
         return redirect()->back()->with('status_message', '¡Muchas gracias! Has confirmado tu asistencia para esta cita. Te esperamos puntualmente en nuestro estudio.');
     }
+
+    /**
+     * Permite a la clienta autocancelar su cita bajo las reglas:
+     * 1. Observación / motivo de cancelación es obligatorio.
+     * 2. Debe faltar más de 24 horas para el inicio de la cita.
+     */
+    public function cancelAppointment(Request $request, string $appointmentNumber)
+    {
+        $appointment = Appointment::where('appointment_number', trim($appointmentNumber))->firstOrFail();
+
+        $validated = $request->validate([
+            'cancellation_reason' => 'required|string|min:5|max:500',
+        ], [
+            'cancellation_reason.required' => 'Debes ingresar el motivo de la cancelación.',
+            'cancellation_reason.min' => 'El motivo debe tener al menos 5 caracteres.',
+            'cancellation_reason.max' => 'El motivo no puede exceder 500 caracteres.',
+        ]);
+
+        if (! $appointment->canBeCancelledByClient()) {
+            return redirect()->back()->withErrors([
+                'cancellation_error' => 'No es posible autocancelar la cita. Por políticas del salón, si faltan menos de 24 horas para el inicio, la cancelación solo puede ser gestionada directamente por la administración.',
+            ]);
+        }
+
+        $appointment->update([
+            'status' => AppointmentStatus::CANCELLED,
+            'cancellation_reason' => strip_tags(trim($validated['cancellation_reason'])),
+            'cancelled_at' => now(),
+        ]);
+
+        return redirect()->back()->with('status_message', 'Tu cita ha sido cancelada exitosamente.');
+    }
 }

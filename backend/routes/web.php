@@ -24,6 +24,11 @@ Route::get('/citas/{appointmentNumber}', [ClientBookingWebController::class, 'co
 Route::post('/reserva/confirmar-asistencia/{appointmentNumber}', [ClientBookingWebController::class, 'confirmAttendance'])->name('portal.confirm-attendance');
 Route::post('/citas/confirmar-asistencia/{appointmentNumber}', [ClientBookingWebController::class, 'confirmAttendance']);
 
+// Cancelación de Cita por la Clienta (>24h y motivo obligatorio)
+Route::post('/reserva/cancelar/{appointmentNumber}', [ClientBookingWebController::class, 'cancelAppointment'])->name('portal.cancel-appointment');
+Route::post('/citas/cancelar/{appointmentNumber}', [ClientBookingWebController::class, 'cancelAppointment']);
+Route::post('/citas/{appointmentNumber}/cancel', [ClientBookingWebController::class, 'cancelAppointment']);
+
 // Descarga de Calendario (.ics)
 Route::get('/reserva/calendar/{appointmentNumber}.ics', [ClientBookingWebController::class, 'downloadCalendar'])->name('portal.calendar');
 Route::get('/citas/{appointmentNumber}/calendar', [ClientBookingWebController::class, 'downloadCalendar']);

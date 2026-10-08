@@ -332,6 +332,9 @@ class AppointmentBookingController extends Controller
                 'balance_due' => (float) $apt->balance_due,
                 'verified_at' => $apt->verified_at?->toIso8601String(),
                 'attendance_confirmed_at' => $apt->attendance_confirmed_at?->toIso8601String(),
+                'can_self_cancel' => $apt->canBeCancelledByClient(),
+                'cancellation_reason' => $apt->cancellation_reason,
+                'cancelled_at' => $apt->cancelled_at?->toIso8601String(),
             ];
         })->values()->all();
 
@@ -367,6 +370,66 @@ class AppointmentBookingController extends Controller
             'data' => [
                 'appointment_number' => $appointment->appointment_number,
                 'attendance_confirmed_at' => $appointment->attendance_confirmed_at->toIso8601String(),
+            ],
+        ]);
+    }
+
+    /**
+     * Cancel appointment by client via API.
+     * Reglas:
+     * 1. Observación / motivo de cancelación obligatorio.
+     * 2. Debe faltar más de 24 horas para el inicio de la cita.
+     */
+    public function cancelAppointmentApi(Request $request, string $appointmentNumber): JsonResponse
+    {
+        $appointment = Appointment::where('appointment_number', trim($appointmentNumber))->first();
+
+        if (! $appointment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cita no encontrada.',
+            ], 404);
+        }
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'cancellation_reason' => 'required|string|min:5|max:500',
+        ], [
+            'cancellation_reason.required' => 'Debes ingresar el motivo de la cancelación.',
+            'cancellation_reason.min' => 'El motivo debe tener al menos 5 caracteres.',
+            'cancellation_reason.max' => 'El motivo no puede exceder 500 caracteres.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first('cancellation_reason'),
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        if (! $appointment->canBeCancelledByClient()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No es posible autocancelar la cita. Por políticas del salón, si faltan menos de 24 horas para el inicio, la cancelación solo puede ser gestionada directamente por la administración.',
+                'can_self_cancel' => false,
+            ], 422);
+        }
+
+        $appointment->update([
+            'status' => AppointmentStatus::CANCELLED,
+            'cancellation_reason' => strip_tags(trim($request->input('cancellation_reason'))),
+            'cancelled_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tu cita ha sido cancelada exitosamente.',
+            'data' => [
+                'appointment_number' => $appointment->appointment_number,
+                'status' => $appointment->status->value,
+                'status_label' => $appointment->status->label(),
+                'cancellation_reason' => $appointment->cancellation_reason,
+                'cancelled_at' => $appointment->cancelled_at->toIso8601String(),
             ],
         ]);
     }

@@ -144,4 +144,154 @@ class ClientPortalWebTest extends TestCase
         $citasResponse->assertSuccessful();
         $citasResponse->assertSee('Asistencia Confirmada');
     }
+
+    public function test_client_can_self_cancel_appointment_when_more_than_24h_with_mandatory_reason(): void
+    {
+        $service = Service::first();
+        // Appointment in 3 days (> 24 hours)
+        $appointment = Appointment::create([
+            'service_id' => $service->id,
+            'client_name' => 'Valentina Gomez',
+            'client_phone' => '3128889900',
+            'appointment_date' => Carbon::now()->addDays(3)->toDateString(),
+            'start_time' => '14:00:00',
+            'end_time' => '15:30:00',
+            'total_amount' => 120000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 30000,
+            'balance_due' => 90000,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+            'status' => AppointmentStatus::CONFIRMED,
+        ]);
+
+        $this->assertTrue($appointment->canBeCancelledByClient());
+
+        // Cancel with mandatory reason
+        $response = $this->post("/citas/{$appointment->appointment_number}/cancel", [
+            'cancellation_reason' => 'Tengo un viaje imprevisto de trabajo ese fin de semana.',
+        ]);
+
+        $response->assertRedirect();
+        $fresh = $appointment->fresh();
+        $this->assertEquals(AppointmentStatus::CANCELLED, $fresh->status);
+        $this->assertEquals('Tengo un viaje imprevisto de trabajo ese fin de semana.', $fresh->cancellation_reason);
+        $this->assertNotNull($fresh->cancelled_at);
+
+        // Verify that the slot is now free and no conflicts occur
+        $this->assertFalse(Appointment::hasConflict(
+            $fresh->appointment_date,
+            $fresh->start_time,
+            $fresh->end_time
+        ));
+
+        // View confirmation page shows cancelled state
+        $pageResponse = $this->get("/citas/{$appointment->appointment_number}");
+        $pageResponse->assertSuccessful();
+        $pageResponse->assertSee('Cita Cancelada');
+        $pageResponse->assertSee('Tengo un viaje imprevisto de trabajo ese fin de semana.');
+    }
+
+    public function test_client_cannot_cancel_without_reason(): void
+    {
+        $service = Service::first();
+        $appointment = Appointment::create([
+            'service_id' => $service->id,
+            'client_name' => 'Camila Duque',
+            'client_phone' => '3131112233',
+            'appointment_date' => Carbon::now()->addDays(2)->toDateString(),
+            'start_time' => '10:00:00',
+            'end_time' => '11:30:00',
+            'total_amount' => 100000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 30000,
+            'balance_due' => 70000,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+            'status' => AppointmentStatus::CONFIRMED,
+        ]);
+
+        // Missing reason
+        $response = $this->post("/citas/{$appointment->appointment_number}/cancel", [
+            'cancellation_reason' => '',
+        ]);
+        $response->assertSessionHasErrors(['cancellation_reason']);
+        $this->assertEquals(AppointmentStatus::CONFIRMED, $appointment->fresh()->status);
+
+        // Reason too short (< 5 chars)
+        $shortResponse = $this->post("/citas/{$appointment->appointment_number}/cancel", [
+            'cancellation_reason' => 'No',
+        ]);
+        $shortResponse->assertSessionHasErrors(['cancellation_reason']);
+        $this->assertEquals(AppointmentStatus::CONFIRMED, $appointment->fresh()->status);
+    }
+
+    public function test_client_cannot_self_cancel_when_less_than_24h_remaining(): void
+    {
+        $service = Service::first();
+        // Appointment is today in 3 hours (strictly < 24 hours)
+        $appointment = Appointment::create([
+            'service_id' => $service->id,
+            'client_name' => 'Daniela Morales',
+            'client_phone' => '3142223344',
+            'appointment_date' => Carbon::now()->toDateString(),
+            'start_time' => Carbon::now()->addHours(3)->format('H:i:s'),
+            'end_time' => Carbon::now()->addHours(4)->format('H:i:s'),
+            'total_amount' => 100000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 30000,
+            'balance_due' => 70000,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+            'status' => AppointmentStatus::CONFIRMED,
+        ]);
+
+        $this->assertFalse($appointment->canBeCancelledByClient());
+
+        // Attempting to cancel should fail
+        $response = $this->post("/citas/{$appointment->appointment_number}/cancel", [
+            'cancellation_reason' => 'Me surgió un imprevisto esta misma tarde.',
+        ]);
+
+        $response->assertSessionHasErrors(['cancellation_error']);
+        $this->assertEquals(AppointmentStatus::CONFIRMED, $appointment->fresh()->status);
+
+        // View confirmation page shows the <24h warning and disables self-cancel form
+        $pageResponse = $this->get("/citas/{$appointment->appointment_number}");
+        $pageResponse->assertSuccessful();
+        $pageResponse->assertSee('Menos de 24 horas');
+        $pageResponse->assertSee('solo puede ser gestionada directamente por la administración');
+    }
+
+    public function test_api_client_cancellation_flow(): void
+    {
+        $service = Service::first();
+        $appointment = Appointment::create([
+            'service_id' => $service->id,
+            'client_name' => 'Laura Rios',
+            'client_phone' => '3153334455',
+            'appointment_date' => Carbon::now()->addDays(5)->toDateString(),
+            'start_time' => '15:00:00',
+            'end_time' => '16:30:00',
+            'total_amount' => 120000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 30000,
+            'balance_due' => 90000,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+            'status' => AppointmentStatus::CONFIRMED,
+        ]);
+
+        // API Cancel with reason
+        $response = $this->postJson("/api/v1/appointments/{$appointment->appointment_number}/cancel", [
+            'cancellation_reason' => 'Cambio de horario de vuelo internacional.',
+        ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'success' => true,
+            'data' => [
+                'status' => AppointmentStatus::CANCELLED->value,
+                'cancellation_reason' => 'Cambio de horario de vuelo internacional.',
+            ],
+        ]);
+
+        $this->assertEquals(AppointmentStatus::CANCELLED, $appointment->fresh()->status);
+    }
 }
