@@ -16,6 +16,8 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -47,214 +49,255 @@ class AppointmentResource extends Resource
     public static function getFormComponents(): array
     {
         return [
-            Section::make('Datos de la Clienta')
-                ->description('Información de contacto para confirmaciones y recordatorios')
-                ->icon('heroicon-o-user')
+            Grid::make(12)
                 ->schema([
-                    Forms\Components\Select::make('existing_client_selector')
-                        ->label('Buscar Clienta Frecuente')
-                        ->placeholder('Escribe nombre o celular para autocompletar...')
-                        ->searchable()
-                        ->options(function () {
-                            return Appointment::query()
-                                ->whereNotNull('client_phone')
-                                ->where('client_phone', '!=', '')
-                                ->select('client_name', 'client_phone', 'client_email')
-                                ->distinct()
-                                ->orderBy('client_name')
-                                ->get()
-                                ->mapWithKeys(function ($item) {
-                                    $email = $item->client_email ?? '';
-                                    $key = "{$item->client_name}|{$item->client_phone}|{$email}";
-                                    return [$key => "{$item->client_name} (+57 {$item->client_phone})"];
-                                });
-                        })
-                        ->reactive()
-                        ->afterStateUpdated(function ($state, $set) {
-                            if ($state) {
-                                $parts = explode('|', $state);
-                                $set('client_name', $parts[0] ?? '');
-                                $set('client_phone', $parts[1] ?? '');
-                                $set('client_email', $parts[2] ?? '');
-                            }
-                        })
-                        ->dehydrated(false)
-                        ->columnSpanFull()
-                        ->helperText('Puedes seleccionar una clienta registrada para autocompletar sus datos, o ingresar una clienta nueva.'),
-
-                    Forms\Components\TextInput::make('client_name')
-                        ->label('Nombre Completo')
-                        ->required(),
-                    Forms\Components\TextInput::make('client_phone')
-                        ->label('Celular WhatsApp')
-                        ->tel()
-                        ->prefix('+57')
-                        ->required(),
-                    Forms\Components\TextInput::make('client_email')
-                        ->label('Correo Electrónico')
-                        ->email(),
-                ])->columns(3),
-
-            Section::make('Programación del Servicio')
-                ->description('Fecha, horario y servicio de belleza seleccionado')
-                ->icon('heroicon-o-clock')
-                ->schema([
-                    Forms\Components\Select::make('service_id')
-                        ->label('Servicio Solicitado')
-                        ->placeholder('Selecciona un tratamiento del catálogo...')
-                        ->options(function () {
-                            $services = Service::where('is_active', true)
-                                ->orderBy('category')
-                                ->orderBy('sort_order')
-                                ->get();
-
-                            $options = [];
-                            foreach ($services as $service) {
-                                $catName = $service->category instanceof ServiceCategory
-                                    ? $service->category->label()
-                                    : ($service->category?->value ?? 'Otros Servicios');
-
-                                $price = '$' . number_format($service->base_price, 0, ',', '.');
-                                $deposit = '$' . number_format($service->deposit_amount, 0, ',', '.');
-                                $duration = $service->formatted_duration;
-
-                                $label = "{$service->name}   ({$duration})   •   Total: {$price} COP   •   Abono Requerido: {$deposit}";
-
-                                $options[$catName][$service->id] = $label;
-                            }
-
-                            return $options;
-                        })
-                        ->searchable()
-                        ->preload()
-                        ->required()
-                        ->reactive()
-                        ->columnSpanFull()
-                        ->afterStateUpdated(function ($state, $set, $get) {
-                            if ($service = Service::find($state)) {
-                                $set('total_amount', $service->base_price);
-                                $set('deposit_amount', $service->deposit_amount);
-                                $set('balance_due', $service->base_price - $service->deposit_amount);
-
-                                $date = $get('appointment_date') ?: now()->toDateString();
-                                try {
-                                    $availabilityService = app(\App\Services\BookingAvailabilityService::class);
-                                    $slots = $availabilityService->getAvailableSlots($service, $date, false);
-                                    if (!empty($slots)) {
-                                        $firstSlot = $slots[0];
-                                        $set('start_time', substr($firstSlot['start'], 0, 5));
-                                        $set('end_time', substr($firstSlot['end'], 0, 5));
-                                    } else {
-                                        $targetDate = \Carbon\Carbon::parse($date);
-                                        $lastApt = Appointment::whereDate('appointment_date', $targetDate)
-                                            ->whereNotIn('status', [AppointmentStatus::CANCELLED->value])
-                                            ->orderBy('end_time', 'desc')
-                                            ->first();
-
-                                        if ($lastApt) {
-                                            $startTimeStr = substr($lastApt->end_time, 0, 5);
-                                            $start = \Carbon\Carbon::createFromFormat('H:i', $startTimeStr);
-                                            $set('start_time', $start->format('H:i'));
-                                            $set('end_time', $start->copy()->addMinutes($service->duration_minutes)->format('H:i'));
-                                        } else {
-                                            $schedule = \App\Models\WorkingSchedule::where('day_of_week', $targetDate->dayOfWeek)->first();
-                                            $open = ($schedule && $schedule->open_time) ? substr($schedule->open_time, 0, 5) : '08:00';
-                                            $set('start_time', $open);
-                                            $set('end_time', \Carbon\Carbon::createFromFormat('H:i', $open)->addMinutes($service->duration_minutes)->format('H:i'));
+                    // Columna Izquierda: Clienta & Servicio (7 columnas)
+                    Group::make([
+                        Section::make('Datos de la Clienta')
+                            ->description('Información de contacto para confirmaciones y recordatorios')
+                            ->icon('heroicon-o-user')
+                            ->compact()
+                            ->schema([
+                                Forms\Components\Select::make('existing_client_selector')
+                                    ->label('Buscar Clienta Frecuente')
+                                    ->placeholder('Escribe nombre o celular para autocompletar...')
+                                    ->searchable()
+                                    ->options(function () {
+                                        return Appointment::query()
+                                            ->whereNotNull('client_phone')
+                                            ->where('client_phone', '!=', '')
+                                            ->select('client_name', 'client_phone', 'client_email')
+                                            ->distinct()
+                                            ->orderBy('client_name')
+                                            ->get()
+                                            ->mapWithKeys(function ($item) {
+                                                $email = $item->client_email ?? '';
+                                                $key = "{$item->client_name}|{$item->client_phone}|{$email}";
+                                                return [$key => "{$item->client_name} (+57 {$item->client_phone})"];
+                                            });
+                                    })
+                                    ->reactive()
+                                    ->afterStateUpdated(function ($state, $set) {
+                                        if ($state) {
+                                            $parts = explode('|', $state);
+                                            $set('client_name', $parts[0] ?? '');
+                                            $set('client_phone', $parts[1] ?? '');
+                                            $set('client_email', $parts[2] ?? '');
                                         }
-                                    }
-                                } catch (\Throwable $e) {
-                                    $set('start_time', '08:00');
-                                    $set('end_time', \Carbon\Carbon::createFromFormat('H:i', '08:00')->addMinutes($service->duration_minutes)->format('H:i'));
-                                }
-                            }
-                        }),
-                    Forms\Components\DatePicker::make('appointment_date')
-                        ->label('Fecha de la Cita')
-                        ->default(now()->toDateString())
-                        ->required()
-                        ->reactive()
-                        ->afterStateUpdated(function ($state, $set, $get) {
-                            if ($state && ($serviceId = $get('service_id'))) {
-                                if ($service = Service::find($serviceId)) {
-                                    try {
-                                        $availabilityService = app(\App\Services\BookingAvailabilityService::class);
-                                        $slots = $availabilityService->getAvailableSlots($service, $state, false);
-                                        if (!empty($slots)) {
-                                            $firstSlot = $slots[0];
-                                            $set('start_time', substr($firstSlot['start'], 0, 5));
-                                            $set('end_time', substr($firstSlot['end'], 0, 5));
-                                        }
-                                    } catch (\Throwable $e) {}
-                                }
-                            }
-                        }),
-                    Forms\Components\TimePicker::make('start_time')
-                        ->label('Hora de Inicio')
-                        ->seconds(false)
-                        ->required()
-                        ->reactive()
-                        ->afterStateUpdated(function ($state, $set, $get) {
-                            if ($state && ($serviceId = $get('service_id'))) {
-                                if ($service = Service::find($serviceId)) {
-                                    try {
-                                        $parsed = \Carbon\Carbon::createFromFormat('H:i', substr($state, 0, 5));
-                                        $set('end_time', $parsed->addMinutes($service->duration_minutes)->format('H:i'));
-                                    } catch (\Exception $e) {}
-                                }
-                            }
-                        }),
-                    Forms\Components\TimePicker::make('end_time')
-                        ->label('Hora de Finalización')
-                        ->seconds(false)
-                        ->required(),
-                ])->columns(3),
+                                    })
+                                    ->dehydrated(false)
+                                    ->columnSpanFull()
+                                    ->helperText('Selecciona para autocompletar o ingresa los datos abajo.'),
 
-            Section::make('Estado y Liquidación de Pagos')
-                ->description('Control de abonos recibidos y saldo pendiente por cobrar en el local')
-                ->icon('heroicon-o-banknotes')
-                ->schema([
-                    Forms\Components\Select::make('status')
-                        ->label('Estado de la Cita')
-                        ->options(collect(AppointmentStatus::cases())->mapWithKeys(fn ($st) => [$st->value => $st->label()]))
-                        ->default(AppointmentStatus::CONFIRMED->value)
-                        ->required(),
-                    Forms\Components\Select::make('payment_method')
-                        ->label('Método de Abono')
-                        ->options(collect(PaymentMethod::cases())->mapWithKeys(fn ($pm) => [$pm->value => $pm->label()]))
-                        ->default(PaymentMethod::CASH_AT_LOCATION->value),
-                    Forms\Components\TextInput::make('total_amount')
-                        ->label('Total del Servicio (COP)')
-                        ->numeric()
-                        ->prefix('$')
-                        ->required(),
-                    Forms\Components\TextInput::make('deposit_amount')
-                        ->label('Monto de Abono (COP)')
-                        ->numeric()
-                        ->prefix('$')
-                        ->required(),
-                    Forms\Components\TextInput::make('deposit_paid')
-                        ->label('Abono Pagado (COP)')
-                        ->numeric()
-                        ->prefix('$')
-                        ->default(0),
-                    Forms\Components\TextInput::make('balance_due')
-                        ->label('Saldo Restante en Local (COP)')
-                        ->numeric()
-                        ->prefix('$')
-                        ->default(0),
-                    Forms\Components\FileUpload::make('deposit_proof_image')
-                        ->label('Comprobante de Transferencia Nequi')
-                        ->image()
-                        ->directory('receipts')
-                        ->disk('public')
-                        ->visibility('public')
-                        ->columnSpanFull(),
-                    Forms\Components\Textarea::make('verification_notes')
-                        ->label('Notas de Verificación de Paola')
-                        ->rows(2)
-                        ->columnSpanFull(),
-                ])->columns(3),
+                                Forms\Components\TextInput::make('client_name')
+                                    ->label('Nombre Completo')
+                                    ->placeholder('Ej: Mariana Gómez')
+                                    ->required(),
+
+                                Forms\Components\TextInput::make('client_phone')
+                                    ->label('Celular WhatsApp')
+                                    ->placeholder('310 123 4567')
+                                    ->tel()
+                                    ->prefix('+57')
+                                    ->required(),
+
+                                Forms\Components\TextInput::make('client_email')
+                                    ->label('Correo Electrónico (Opcional)')
+                                    ->placeholder('ejemplo@correo.com')
+                                    ->email()
+                                    ->columnSpanFull(),
+                            ])->columns(2),
+
+                        Section::make('Programación del Servicio')
+                            ->description('Fecha, horario y tratamiento de belleza')
+                            ->icon('heroicon-o-clock')
+                            ->compact()
+                            ->schema([
+                                Forms\Components\Select::make('service_id')
+                                    ->label('Servicio Solicitado')
+                                    ->placeholder('Selecciona un tratamiento del catálogo...')
+                                    ->options(function () {
+                                        $services = Service::where('is_active', true)
+                                            ->orderBy('category')
+                                            ->orderBy('sort_order')
+                                            ->get();
+
+                                        $options = [];
+                                        foreach ($services as $service) {
+                                            $catName = $service->category instanceof ServiceCategory
+                                                ? $service->category->label()
+                                                : ($service->category?->value ?? 'Otros Servicios');
+
+                                            $price = '$' . number_format($service->base_price, 0, ',', '.');
+                                            $deposit = '$' . number_format($service->deposit_amount, 0, ',', '.');
+                                            $duration = $service->formatted_duration;
+
+                                            $label = "{$service->name}   ({$duration})   •   Total: {$price} COP   •   Abono: {$deposit}";
+
+                                            $options[$catName][$service->id] = $label;
+                                        }
+
+                                        return $options;
+                                    })
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->reactive()
+                                    ->columnSpanFull()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        if ($service = Service::find($state)) {
+                                            $set('total_amount', $service->base_price);
+                                            $set('deposit_amount', $service->deposit_amount);
+                                            $set('balance_due', $service->base_price - $service->deposit_amount);
+
+                                            $date = $get('appointment_date') ?: now()->toDateString();
+                                            try {
+                                                $availabilityService = app(\App\Services\BookingAvailabilityService::class);
+                                                $slots = $availabilityService->getAvailableSlots($service, $date, false);
+                                                if (!empty($slots)) {
+                                                    $firstSlot = $slots[0];
+                                                    $set('start_time', substr($firstSlot['start'], 0, 5));
+                                                    $set('end_time', substr($firstSlot['end'], 0, 5));
+                                                } else {
+                                                    $targetDate = \Carbon\Carbon::parse($date);
+                                                    $lastApt = Appointment::whereDate('appointment_date', $targetDate)
+                                                        ->whereNotIn('status', [AppointmentStatus::CANCELLED->value])
+                                                        ->orderBy('end_time', 'desc')
+                                                        ->first();
+
+                                                    if ($lastApt) {
+                                                        $startTimeStr = substr($lastApt->end_time, 0, 5);
+                                                        $start = \Carbon\Carbon::createFromFormat('H:i', $startTimeStr);
+                                                        $set('start_time', $start->format('H:i'));
+                                                        $set('end_time', $start->copy()->addMinutes($service->duration_minutes)->format('H:i'));
+                                                    } else {
+                                                        $schedule = \App\Models\WorkingSchedule::where('day_of_week', $targetDate->dayOfWeek)->first();
+                                                        $open = ($schedule && $schedule->open_time) ? substr($schedule->open_time, 0, 5) : '08:00';
+                                                        $set('start_time', $open);
+                                                        $set('end_time', \Carbon\Carbon::createFromFormat('H:i', $open)->addMinutes($service->duration_minutes)->format('H:i'));
+                                                    }
+                                                }
+                                            } catch (\Throwable $e) {
+                                                $set('start_time', '08:00');
+                                                $set('end_time', \Carbon\Carbon::createFromFormat('H:i', '08:00')->addMinutes($service->duration_minutes)->format('H:i'));
+                                            }
+                                        }
+                                    }),
+
+                                Forms\Components\DatePicker::make('appointment_date')
+                                    ->label('Fecha de la Cita')
+                                    ->default(now()->toDateString())
+                                    ->required()
+                                    ->reactive()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        if ($state && ($serviceId = $get('service_id'))) {
+                                            if ($service = Service::find($serviceId)) {
+                                                try {
+                                                    $availabilityService = app(\App\Services\BookingAvailabilityService::class);
+                                                    $slots = $availabilityService->getAvailableSlots($service, $state, false);
+                                                    if (!empty($slots)) {
+                                                        $firstSlot = $slots[0];
+                                                        $set('start_time', substr($firstSlot['start'], 0, 5));
+                                                        $set('end_time', substr($firstSlot['end'], 0, 5));
+                                                    }
+                                                } catch (\Throwable $e) {}
+                                            }
+                                        }
+                                    })
+                                    ->columnSpanFull(),
+
+                                Forms\Components\TimePicker::make('start_time')
+                                    ->label('Hora de Inicio')
+                                    ->seconds(false)
+                                    ->required()
+                                    ->reactive()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        if ($state && ($serviceId = $get('service_id'))) {
+                                            if ($service = Service::find($serviceId)) {
+                                                try {
+                                                    $parsed = \Carbon\Carbon::createFromFormat('H:i', substr($state, 0, 5));
+                                                    $set('end_time', $parsed->addMinutes($service->duration_minutes)->format('H:i'));
+                                                } catch (\Exception $e) {}
+                                            }
+                                        }
+                                    }),
+
+                                Forms\Components\TimePicker::make('end_time')
+                                    ->label('Hora de Finalización')
+                                    ->seconds(false)
+                                    ->required(),
+                            ])->columns(2),
+                    ])->columnSpan(7),
+
+                    // Columna Derecha: Estado, Finanzas y Comprobante (5 columnas)
+                    Group::make([
+                        Section::make('Estado y Liquidación de Pagos')
+                            ->description('Control financiero y abonos')
+                            ->icon('heroicon-o-banknotes')
+                            ->compact()
+                            ->schema([
+                                Forms\Components\Select::make('status')
+                                    ->label('Estado de la Cita')
+                                    ->options(collect(AppointmentStatus::cases())->mapWithKeys(fn ($st) => [$st->value => $st->label()]))
+                                    ->default(AppointmentStatus::CONFIRMED->value)
+                                    ->required(),
+
+                                Forms\Components\Select::make('payment_method')
+                                    ->label('Método de Abono')
+                                    ->options(collect(PaymentMethod::cases())->mapWithKeys(fn ($pm) => [$pm->value => $pm->label()]))
+                                    ->default(PaymentMethod::CASH_AT_LOCATION->value),
+
+                                Forms\Components\TextInput::make('total_amount')
+                                    ->label('Total del Servicio')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->required()
+                                    ->reactive()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        $paid = (float) ($get('deposit_paid') ?: 0);
+                                        $set('balance_due', max(0, (float) $state - $paid));
+                                    }),
+
+                                Forms\Components\TextInput::make('deposit_amount')
+                                    ->label('Abono Requerido')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->required(),
+
+                                Forms\Components\TextInput::make('deposit_paid')
+                                    ->label('Abono Recibido')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->default(0)
+                                    ->reactive()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        $total = (float) ($get('total_amount') ?: 0);
+                                        $set('balance_due', max(0, $total - (float) $state));
+                                    }),
+
+                                Forms\Components\TextInput::make('balance_due')
+                                    ->label('Saldo Pendiente')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->default(0)
+                                    ->extraInputAttributes(['class' => 'font-bold text-teal-700']),
+
+                                Forms\Components\FileUpload::make('deposit_proof_image')
+                                    ->label('Comprobante Nequi (Opcional)')
+                                    ->image()
+                                    ->directory('receipts')
+                                    ->disk('public')
+                                    ->visibility('public')
+                                    ->columnSpanFull(),
+
+                                Forms\Components\Textarea::make('verification_notes')
+                                    ->label('Notas de Verificación (Opcional)')
+                                    ->placeholder('Ej: Abono registrado en caja o cuenta Nequi')
+                                    ->rows(2)
+                                    ->columnSpanFull(),
+                            ])->columns(2),
+                    ])->columnSpan(5),
+                ]),
         ];
     }
 
