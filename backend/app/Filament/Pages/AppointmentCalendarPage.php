@@ -135,6 +135,12 @@ class AppointmentCalendarPage extends Page
         }
     }
 
+    public function selectDate(string $date, string $mode = 'day'): void
+    {
+        $this->currentDate = $date;
+        $this->viewMode = $mode;
+    }
+
     public function goToToday(): void
     {
         $this->currentDate = now()->toDateString();

@@ -315,6 +315,24 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
+        .cal-date-picker-input {
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+        .cal-date-picker-input:hover, .cal-date-picker-input:focus {
+            border-color: #0d9488;
+            box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+        }
+
         .cal-month-title {
             font-size: 18px;
             font-weight: 800;
@@ -401,12 +419,23 @@
             font-size: 12px;
             font-weight: 800;
             color: #475569;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .day-num-text:hover {
+            background: #e2e8f0;
+            color: #0f172a;
         }
         .today-cell .day-num-text {
             color: #0d9488;
             background: #ccfbf1;
-            padding: 1px 6px;
+            padding: 2px 6px;
             border-radius: 6px;
+        }
+        .today-cell .day-num-text:hover {
+            background: #99f6e4;
         }
 
         /* Event Pill inside Cell */
@@ -500,6 +529,17 @@
             justify-content: center;
             gap: 2px;
             box-sizing: border-box;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .gcal-day-header-cell:hover {
+            background-color: #f8fafc;
+        }
+
+        .gcal-day-header-cell:hover .gcal-day-badge:not(.is-today *) {
+            background-color: #e2e8f0;
+            color: #0f172a;
         }
 
         .gcal-day-header-cell:last-child {
@@ -521,11 +561,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 600;
             color: #1e293b;
             margin-top: 2px;
             line-height: 1;
+            transition: all 0.15s ease;
         }
 
         .gcal-day-header-cell.is-today .gcal-day-abbr {
@@ -547,6 +588,7 @@
             max-height: 720px;
             position: relative;
             background: #ffffff;
+            padding-top: 4px;
         }
 
         .gcal-time-axis-col {
@@ -571,6 +613,11 @@
             justify-content: flex-end;
             transform: translateY(-8px);
             box-sizing: border-box;
+        }
+
+        .gcal-time-axis-slot:first-child {
+            transform: translateY(0);
+            padding-top: 2px;
         }
 
         .gcal-grid-columns {
@@ -607,7 +654,7 @@
         }
 
         .gcal-hour-grid-row:first-child {
-            border-top: none;
+            border-top: 1px solid #E2E8F0;
         }
 
         .gcal-half-hour-line {
@@ -1193,10 +1240,18 @@
                 
                 <!-- Toolbar: Nav, Title, Views -->
                 <div class="cal-header-bar">
-                    <div class="cal-nav-group">
-                        <button wire:click="previousPeriod" type="button" class="cal-nav-btn">&lt;</button>
-                        <button wire:click="nextPeriod" type="button" class="cal-nav-btn">&gt;</button>
-                        <button wire:click="goToToday" type="button" class="cal-nav-btn" style="color: #0d9488; font-weight: 800;">Hoy</button>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <div class="cal-nav-group">
+                            <button wire:click="previousPeriod" type="button" class="cal-nav-btn" title="Período anterior">&lt;</button>
+                            <button wire:click="nextPeriod" type="button" class="cal-nav-btn" title="Período siguiente">&gt;</button>
+                            <button wire:click="goToToday" type="button" class="cal-nav-btn" style="color: #0d9488; font-weight: 800;">Hoy</button>
+                        </div>
+
+                        <!-- Selector rápido de fecha específica -->
+                        <input type="date" 
+                               wire:model.live="currentDate" 
+                               class="cal-date-picker-input"
+                               title="Seleccionar un día específico">
                     </div>
 
                     <h2 class="cal-month-title">
@@ -1240,7 +1295,11 @@
                                         @foreach($week as $day)
                                             <td class="{{ !$day['isCurrentMonth'] ? 'out-month' : '' }} {{ $day['isToday'] ? 'today-cell' : '' }}">
                                                 <div class="day-header-num">
-                                                    <span class="day-num-text">{{ $day['dayNumber'] }}</span>
+                                                    <span wire:click="selectDate('{{ $day['date'] }}', 'day')" 
+                                                          class="day-num-text"
+                                                          title="Ver agenda detallada del {{ $day['fullDayName'] }}">
+                                                        {{ $day['dayNumber'] }}
+                                                    </span>
                                                 </div>
 
                                                 <!-- Appointment Chips -->
@@ -1280,7 +1339,9 @@
                             </div>
                             <div class="gcal-days-header-container">
                                 @foreach($displayDays as $day)
-                                    <div class="gcal-day-header-cell {{ $day['isToday'] ? 'is-today' : '' }}">
+                                    <div wire:click="selectDate('{{ $day['date'] }}', 'day')"
+                                         class="gcal-day-header-cell {{ $day['isToday'] ? 'is-today' : '' }}"
+                                         title="Clic para ver agenda detallada del {{ $day['fullDayName'] }}">
                                         <span class="gcal-day-abbr">{{ strtoupper($day['dayName']) }}</span>
                                         <div class="gcal-day-badge">
                                             <span>{{ $day['dayNumber'] }}</span>
