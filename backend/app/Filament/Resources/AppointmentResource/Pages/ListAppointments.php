@@ -20,15 +20,6 @@ class ListAppointments extends ListRecords
                 ->url(AppointmentCalendarPage::getUrl())
                 ->color('gray')
                 ->icon('heroicon-o-calendar-days'),
-
-            CreateAction::make()
-                ->label('Crear Cita / Reserva')
-                ->modalHeading('Agendar Nueva Cita / Reserva')
-                ->modalWidth(\Filament\Support\Enums\Width::SevenExtraLarge)
-                ->mutateFormDataUsing(function (array $data): array {
-                    $data['appointment_number'] = 'PA-' . strtoupper(now()->format('ymd')) . '-' . strtoupper(substr(uniqid(), -4));
-                    return $data;
-                }),
         ];
     }
 }
