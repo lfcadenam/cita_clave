@@ -106,14 +106,8 @@
             </div>
         @endif
 
-        <!-- Action Buttons: Calendar & WhatsApp -->
+        <!-- Action Buttons: WhatsApp -->
         <div class="mt-6 space-y-3">
-            <a href="{{ url('/reserva/calendar/' . $appointment->appointment_number . '.ics') }}"
-               class="w-full py-3 px-4 rounded-xl text-xs font-bold bg-[#1e3a5f] text-white hover:bg-[#162d4a] shadow-md flex items-center justify-center gap-2 transition-colors">
-                <i data-lucide="calendar-plus" class="w-4 h-4"></i>
-                <span>Añadir a Google / Apple Calendar</span>
-            </a>
-
             @php
                 $ownerPhone = preg_replace('/\D/', '', $appointment->tenant?->whatsapp_number ?: ($appointment->tenant?->phone ?: '3103248385'));
                 $waMsg = urlencode("Hola Paola, confirmo mi asistencia a mi cita #{$appointment->appointment_number} de {$appointment->service->name} para el día " . ($appointment->appointment_date ? $appointment->appointment_date->format('d/m/Y') : '') . " a las " . substr($appointment->start_time, 0, 5) . ". Mi nombre es {$appointment->client_name}.");
