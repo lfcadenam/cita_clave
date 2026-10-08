@@ -301,10 +301,52 @@
 
       <!-- Date Picker Pills Carousel -->
       <div class="mb-6">
-        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">DÍA DE TU CITA</label>
-        <div class="flex items-center gap-2.5 overflow-x-auto pb-2.5 no-scrollbar scroll-smooth">
+        <div class="flex items-center justify-between mb-2.5">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">DÍA DE TU CITA</label>
+          <div class="flex items-center gap-2">
+            <!-- Selector nativo de calendario discreto -->
+            <label class="relative inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-slate-200 bg-white hover:border-[#0d9488] text-[11px] font-semibold text-slate-600 hover:text-[#0d9488] transition-colors cursor-pointer shadow-xs">
+              <svg class="w-3.5 h-3.5 text-[#0d9488]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Elegir en calendario</span>
+              <input type="date"
+                     [min]="minDate()"
+                     [max]="maxDate()"
+                     [value]="selectedDate()"
+                     (change)="onDateChange($event)"
+                     class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+            </label>
+
+            <!-- Flechas de navegación para desktop y móvil -->
+            <div class="flex items-center gap-1">
+              <button type="button"
+                      (click)="scrollDays('left')"
+                      aria-label="Ver días anteriores"
+                      class="w-7 h-7 rounded-full border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors shadow-xs cursor-pointer">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <button type="button"
+                      (click)="scrollDays('right')"
+                      aria-label="Ver días siguientes"
+                      class="w-7 h-7 rounded-full border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors shadow-xs cursor-pointer">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="days-carousel-container" class="flex items-center gap-2.5 overflow-x-auto pb-2.5 no-scrollbar scroll-smooth">
           <button type="button"
                   *ngFor="let day of availableDays()"
+                  [id]="'day-pill-' + day.date"
                   (click)="day.is_open ? selectDate(day.date) : null"
                   [disabled]="!day.is_open"
                   class="shrink-0 w-20 py-3 px-2 rounded-2xl border text-center transition-all duration-200 cursor-pointer"

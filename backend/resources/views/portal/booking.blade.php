@@ -213,10 +213,52 @@
 
         <!-- Date Picker Pills -->
         <div class="mb-6">
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">Día de tu Cita</label>
-            <div class="flex items-center gap-2.5 overflow-x-auto pb-2.5 scrollbar-none">
+            <div class="flex items-center justify-between mb-2.5">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Día de tu Cita</label>
+                <div class="flex items-center gap-2">
+                    <!-- Selector nativo de calendario discreto -->
+                    <label class="relative inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-slate-200 bg-white hover:border-[#0d9488] text-[11px] font-semibold text-slate-600 hover:text-[#0d9488] transition-colors cursor-pointer shadow-xs">
+                        <svg class="w-3.5 h-3.5 text-[#0d9488]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span>Elegir en calendario</span>
+                        <input type="date"
+                               :min="minDate"
+                               :max="maxDate"
+                               :value="selectedDate"
+                               @change="onDateChange($event)"
+                               class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                    </label>
+
+                    <!-- Flechas de navegación para desktop y móvil -->
+                    <div class="flex items-center gap-1">
+                        <button type="button"
+                                @click="scrollDays('left')"
+                                aria-label="Ver días anteriores"
+                                class="w-7 h-7 rounded-full border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors shadow-xs cursor-pointer">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <button type="button"
+                                @click="scrollDays('right')"
+                                aria-label="Ver días siguientes"
+                                class="w-7 h-7 rounded-full border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors shadow-xs cursor-pointer">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="blade-days-container" class="flex items-center gap-2.5 overflow-x-auto pb-2.5 scrollbar-none scroll-smooth">
                 <template x-for="day in availableDays" :key="day.date">
                     <button type="button"
+                            :id="'blade-day-pill-' + day.date"
                             @click="selectDate(day.date)"
                             :disabled="!day.is_open"
                             class="flex-shrink-0 w-20 py-3 px-2 rounded-2xl border text-center transition-all duration-200 cursor-pointer"
@@ -738,6 +780,8 @@ function bookingApp() {
         appointmentId: null,
         showWaitlistModal: false,
         availableDays: [],
+        minDate: '',
+        maxDate: '',
         isReturningClient: false,
         hasSavedDeviceProfile: false,
         rememberMe: true,
@@ -756,11 +800,27 @@ function bookingApp() {
         },
 
         init() {
+            this.computeDateLimits();
             this.generateUpcomingDays();
             this.loadProfileFromLocalStorage();
             this.$nextTick(() => {
                 if (window.lucide) window.lucide.createIcons();
             });
+        },
+
+        computeDateLimits() {
+            const now = new Date();
+            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            const future = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60);
+
+            const format = (d) => {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            };
+            this.minDate = format(tomorrow);
+            this.maxDate = format(future);
         },
 
         loadProfileFromLocalStorage() {
@@ -830,8 +890,8 @@ function bookingApp() {
             const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
             const now = new Date();
 
-            // Solo mostrar días estrictamente superiores al de hoy (a partir de mañana)
-            for (let i = 1; i <= 14; i++) {
+            // Días futuros disponibles (próximos 30 días a partir de mañana)
+            for (let i = 1; i <= 30; i++) {
                 const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
                 const isSunday = d.getDay() === 0;
                 const year = d.getFullYear();
@@ -847,6 +907,29 @@ function bookingApp() {
                 });
             }
             this.availableDays = days;
+        },
+
+        scrollDays(direction) {
+            const container = document.getElementById('blade-days-container');
+            if (container) {
+                const amount = 280;
+                container.scrollBy({
+                    left: direction === 'left' ? -amount : amount,
+                    behavior: 'smooth'
+                });
+            }
+        },
+
+        onDateChange(event) {
+            const val = event.target.value;
+            if (!val) return;
+            this.selectDate(val);
+            setTimeout(() => {
+                const el = document.getElementById('blade-day-pill-' + val);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
+            }, 100);
         },
 
         selectService(service) {

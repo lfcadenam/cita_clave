@@ -52,8 +52,8 @@ export class BookingComponent implements OnInit {
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     const now = new Date();
 
-    // Solo días estrictamente superiores al de hoy (a partir de mañana)
-    for (let i = 1; i <= 14; i++) {
+    // Días futuros disponibles (próximos 30 días a partir de mañana)
+    for (let i = 1; i <= 30; i++) {
       const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
       const isSunday = d.getDay() === 0;
       const year = d.getFullYear();
@@ -76,6 +76,24 @@ export class BookingComponent implements OnInit {
   availableSlots = signal<AvailableSlot[]>([]);
   selectedSlot = signal<AvailableSlot | null>(null);
   loadingSlots = signal<boolean>(false);
+
+  minDate = computed(() => {
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const y = tomorrow.getFullYear();
+    const m = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const d = String(tomorrow.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  });
+
+  maxDate = computed(() => {
+    const now = new Date();
+    const future = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60);
+    const y = future.getFullYear();
+    const m = String(future.getMonth() + 1).padStart(2, '0');
+    const d = String(future.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  });
 
   // Step Completion Guards
   isStep2Valid = computed(() => {
@@ -191,8 +209,8 @@ export class BookingComponent implements OnInit {
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     const now = new Date();
 
-    // Solo días estrictamente superiores al de hoy (a partir de mañana)
-    for (let i = 1; i <= 14; i++) {
+    // Días futuros disponibles (próximos 30 días a partir de mañana)
+    for (let i = 1; i <= 30; i++) {
       const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
       const isSunday = d.getDay() === 0;
       const year = d.getFullYear();
@@ -347,10 +365,31 @@ export class BookingComponent implements OnInit {
     this.closeServiceDetail();
   }
 
+  scrollDays(direction: 'left' | 'right'): void {
+    const container = document.getElementById('days-carousel-container');
+    if (container) {
+      const scrollAmount = 280;
+      container.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  }
+
   onDateChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.selectedDate.set(input.value);
+    if (!input || !input.value) return;
+    const chosenDate = input.value;
+    this.selectedDate.set(chosenDate);
+    this.selectedSlot.set(null);
     this.loadSlotsForCurrentSelection();
+
+    setTimeout(() => {
+      const el = document.getElementById('day-pill-' + chosenDate);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }, 100);
   }
 
   loadSlotsForCurrentSelection(): void {
