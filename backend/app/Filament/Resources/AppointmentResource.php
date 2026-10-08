@@ -304,7 +304,7 @@ class AppointmentResource extends Resource
                     ->description(fn (Appointment $record): string => "Saldo: $" . number_format($record->balance_due, 0, ',', '.'))
                     ->grow(false),
             ])
-            ->defaultSort('appointment_date', 'desc')
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('status')
                     ->label('Filtrar por Estado')
