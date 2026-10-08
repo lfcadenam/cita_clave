@@ -588,7 +588,6 @@
             max-height: 720px;
             position: relative;
             background: #ffffff;
-            padding-top: 4px;
         }
 
         .gcal-time-axis-col {
@@ -609,15 +608,10 @@
             font-weight: 600;
             color: #64748b;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: flex-end;
-            transform: translateY(-8px);
             box-sizing: border-box;
-        }
-
-        .gcal-time-axis-slot:first-child {
-            transform: translateY(0);
-            padding-top: 2px;
+            border-bottom: 1px solid #E2E8F0;
         }
 
         .gcal-grid-columns {
@@ -648,13 +642,9 @@
 
         .gcal-hour-grid-row {
             height: 64px;
-            border-top: 1px solid #E2E8F0;
+            border-bottom: 1px solid #E2E8F0;
             box-sizing: border-box;
             position: relative;
-        }
-
-        .gcal-hour-grid-row:first-child {
-            border-top: 1px solid #E2E8F0;
         }
 
         .gcal-half-hour-line {
