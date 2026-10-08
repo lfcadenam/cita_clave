@@ -344,8 +344,14 @@ class AppointmentCalendarPage extends Page
                 return $b->is_recurring || ($b->blocked_date && $b->blocked_date->toDateString() === $dateStr);
             });
 
-            // Map appointments with Google Calendar coordinates
-            $mappedAppointments = $dayAppointments->map(function ($apt) use ($baseHour, $hourHeight) {
+            // Sort day appointments by start time, then duration descending
+            $sortedApts = $dayAppointments->sortBy([
+                ['start_time', 'asc'],
+            ])->values();
+
+            // Calculate overlapping groups to assign horizontal columns (like Google Calendar)
+            $aptIntervals = [];
+            foreach ($sortedApts as $idx => $apt) {
                 $startParts = explode(':', (string) $apt->start_time);
                 $startH = (int) ($startParts[0] ?? 8);
                 $startM = (int) ($startParts[1] ?? 0);
@@ -359,15 +365,81 @@ class AppointmentCalendarPage extends Page
                     $endMinutes = $startMinutes + 60;
                 }
 
+                $aptIntervals[] = [
+                    'index' => $idx,
+                    'start' => $startMinutes,
+                    'end' => $endMinutes,
+                    'col' => 0,
+                    'totalCols' => 1,
+                ];
+            }
+
+            // Assign columns
+            $n = count($aptIntervals);
+            for ($i = 0; $i < $n; $i++) {
+                // Find conflicting appointments before this one
+                $usedCols = [];
+                for ($j = 0; $j < $i; $j++) {
+                    if ($aptIntervals[$j]['end'] > $aptIntervals[$i]['start'] && $aptIntervals[$j]['start'] < $aptIntervals[$i]['end']) {
+                        $usedCols[$aptIntervals[$j]['col']] = true;
+                    }
+                }
+                // Smallest free col
+                $c = 0;
+                while (isset($usedCols[$c])) {
+                    $c++;
+                }
+                $aptIntervals[$i]['col'] = $c;
+            }
+
+            // Calculate totalCols per connected overlap component
+            for ($i = 0; $i < $n; $i++) {
+                $maxCol = $aptIntervals[$i]['col'];
+                // Check all overlapping neighbors
+                for ($j = 0; $j < $n; $j++) {
+                    if ($i !== $j && $aptIntervals[$j]['end'] > $aptIntervals[$i]['start'] && $aptIntervals[$j]['start'] < $aptIntervals[$i]['end']) {
+                        $maxCol = max($maxCol, $aptIntervals[$j]['col']);
+                    }
+                }
+                $aptIntervals[$i]['totalCols'] = $maxCol + 1;
+            }
+
+            // Propagate max totalCols across mutual overlaps
+            for ($i = 0; $i < $n; $i++) {
+                for ($j = 0; $j < $n; $j++) {
+                    if ($i !== $j && $aptIntervals[$j]['end'] > $aptIntervals[$i]['start'] && $aptIntervals[$j]['start'] < $aptIntervals[$i]['end']) {
+                        $maxShared = max($aptIntervals[$i]['totalCols'], $aptIntervals[$j]['totalCols']);
+                        $aptIntervals[$i]['totalCols'] = $maxShared;
+                        $aptIntervals[$j]['totalCols'] = $maxShared;
+                    }
+                }
+            }
+
+            // Map appointments with Google Calendar coordinates and columns
+            $mappedAppointments = $sortedApts->map(function ($apt, $idx) use ($baseHour, $hourHeight, $aptIntervals) {
+                $interval = $aptIntervals[$idx];
+                $startMinutes = $interval['start'];
+                $endMinutes = $interval['end'];
+                $col = $interval['col'];
+                $totalCols = max(1, $interval['totalCols']);
+
                 $durationMinutes = max(30, $endMinutes - $startMinutes);
                 $topMinutes = max(0, $startMinutes - ($baseHour * 60));
 
                 $rawHeight = round(($durationMinutes / 60) * $hourHeight);
                 $apt->calendar_top = round(($topMinutes / 60) * $hourHeight) + 1;
-                $apt->calendar_height = max(36, $rawHeight - 3); // Separación de 3px para distinguir cajas contiguas
+                $apt->calendar_height = max(38, $rawHeight - 3);
 
-                $startCarbon = Carbon::createFromTime($startH, $startM);
-                $endCarbon = Carbon::createFromTime($endH, $endM);
+                // Google Calendar multi-column distribution
+                $widthPct = (100 / $totalCols);
+                $leftPct = ($col * $widthPct);
+                $apt->calendar_left_pct = round($leftPct, 1);
+                $apt->calendar_width_pct = round($widthPct, 1);
+                $apt->calendar_col = $col;
+                $apt->calendar_total_cols = $totalCols;
+
+                $startCarbon = Carbon::createFromTime((int) ($startMinutes / 60), $startMinutes % 60);
+                $endCarbon = Carbon::createFromTime((int) ($endMinutes / 60), $endMinutes % 60);
                 $apt->formatted_time_range = $startCarbon->format('g:i A') . ' - ' . $endCarbon->format('g:i A');
                 $apt->service_theme = self::getServiceTheme($apt->service, $apt->service_id);
 

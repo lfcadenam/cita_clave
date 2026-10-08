@@ -486,13 +486,14 @@
             position: sticky;
             top: 0;
             z-index: 25;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
         }
 
         .gcal-corner-cell {
             width: 72px;
             min-width: 72px;
             max-width: 72px;
-            padding: 14px 10px 8px 0;
+            padding: 10px 10px 6px 0;
             text-align: right;
             border-right: 1px solid #E2E8F0;
             display: flex;
@@ -508,6 +509,8 @@
             color: #64748b;
             letter-spacing: 0.5px;
             text-transform: uppercase;
+            line-height: 1;
+            margin-bottom: 2px;
         }
 
         .gcal-days-header-container {
@@ -520,7 +523,7 @@
         .gcal-day-header-cell {
             flex: 1;
             min-width: 0;
-            padding: 12px 8px 10px 8px;
+            padding: 8px 6px 6px 6px;
             text-align: center;
             border-right: 1px solid #E2E8F0;
             display: flex;
@@ -555,16 +558,15 @@
         }
 
         .gcal-day-badge {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 600;
             color: #1e293b;
-            margin-top: 2px;
             line-height: 1;
             transition: all 0.15s ease;
         }
@@ -577,8 +579,8 @@
             background: #0d9488;
             color: #ffffff;
             font-weight: 700;
-            font-size: 18px;
-            box-shadow: 0 2px 6px rgba(13, 148, 136, 0.35);
+            font-size: 16px;
+            box-shadow: 0 1px 4px rgba(13, 148, 136, 0.25);
         }
 
         /* Time Grid Body */
@@ -696,10 +698,8 @@
         /* Event Cards (Google Calendar Distinctive Service Cards) */
         .gcal-event-card {
             position: absolute;
-            left: 6px;
-            right: 6px;
             border-radius: 8px;
-            padding: 6px 12px;
+            padding: 6px 10px;
             cursor: pointer;
             overflow: hidden;
             z-index: 15;
@@ -1385,10 +1385,12 @@
                                         @foreach($day['appointments'] as $apt)
                                             @php
                                                 $theme = $apt->service_theme ?? \App\Filament\Pages\AppointmentCalendarPage::getServiceTheme($apt->service, $apt->service_id);
+                                                $leftPct = $apt->calendar_left_pct ?? 0;
+                                                $widthPct = $apt->calendar_width_pct ?? 100;
                                             @endphp
                                             <div wire:click="selectAppointment({{ $apt->id }})"
                                                  class="gcal-event-card {{ $theme['theme'] }} status-{{ $apt->status->value }}"
-                                                 style="top: {{ $apt->calendar_top }}px; height: {{ $apt->calendar_height }}px; background-color: {{ $theme['bg'] }}; border-color: {{ $theme['border'] }}; border-left-color: {{ $theme['stripe'] }} !important;"
+                                                 style="top: {{ $apt->calendar_top }}px; height: {{ $apt->calendar_height }}px; left: calc({{ $leftPct }}% + 2px); width: calc({{ $widthPct }}% - 4px); background-color: {{ $theme['bg'] }}; border-color: {{ $theme['border'] }}; border-left-color: {{ $theme['stripe'] }} !important;"
                                                  title="{{ $apt->service?->name }} • {{ $apt->client_name }} ({{ $apt->formatted_time_range }})">
                                                 
                                                 <div class="gcal-event-header">
