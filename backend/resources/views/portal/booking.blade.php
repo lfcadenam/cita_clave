@@ -828,11 +828,11 @@ function bookingApp() {
         generateUpcomingDays() {
             const days = [];
             const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-            const today = new Date();
+            const now = new Date();
 
-            for (let i = 0; i < 14; i++) {
-                const d = new Date();
-                d.setDate(today.getDate() + i);
+            // Solo mostrar días estrictamente superiores al de hoy (a partir de mañana)
+            for (let i = 1; i <= 14; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
                 const isSunday = d.getDay() === 0;
                 const year = d.getFullYear();
                 const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -852,7 +852,8 @@ function bookingApp() {
         selectService(service) {
             this.selectedService = service;
             this.goToStep(2);
-            if (!this.selectedDate) {
+            const isValidSelectedDate = this.selectedDate && this.availableDays.some(d => d.date === this.selectedDate && d.is_open);
+            if (!isValidSelectedDate) {
                 const firstOpen = this.availableDays.find(d => d.is_open);
                 if (firstOpen) this.selectDate(firstOpen.date);
             } else {
