@@ -8,9 +8,10 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Cron programado para enviar recordatorios de citas 24h antes a clientas
+// Cron programado para enviar recordatorios de citas 24h antes a clientas a las 08:00 AM hora de Colombia
 Schedule::command('appointments:send-reminders')
     ->dailyAt('08:00')
+    ->timezone('America/Bogota')
     ->name('appointments-reminders-24h')
     ->withoutOverlapping();
 
