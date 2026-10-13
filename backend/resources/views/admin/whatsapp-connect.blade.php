@@ -98,21 +98,32 @@
                 </div>
 
                 <!-- Recuadro del Código QR -->
-                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200/80 inline-block shadow-inner relative">
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200/80 inline-block shadow-inner relative text-center">
                     <div class="w-64 h-64 mx-auto bg-white rounded-2xl p-3 border border-slate-200/60 flex items-center justify-center shadow-sm">
                         <img id="qrImage" src="{{ $qrBase64 ?? '' }}" alt="Código QR WhatsApp" class="{{ !empty($qrBase64) ? '' : 'hidden' }} w-full h-full object-contain">
-                        <div id="qrLoading" class="{{ !empty($qrBase64) ? 'hidden' : '' }} text-xs text-slate-400 font-medium flex flex-col items-center gap-2">
-                            <svg class="w-6 h-6 animate-spin text-teal-600" fill="none" viewBox="0 0 24 24">
+                        <div id="qrLoading" class="{{ !empty($qrBase64) ? 'hidden' : '' }} text-xs text-slate-400 font-medium flex flex-col items-center gap-2 px-4 text-center">
+                            <svg class="w-7 h-7 animate-spin text-teal-600" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                             </svg>
-                            <span>Generando código QR...</span>
+                            <span id="qrLoadingText" class="font-semibold text-slate-600">Generando código QR...</span>
+                            <span class="text-[10px] text-slate-400">Si tarda más de 5 segundos, haz clic en el botón rojo de abajo para generar uno nuevo de inmediato.</span>
                         </div>
                     </div>
 
                     <div class="mt-3 flex items-center justify-center gap-2 text-[11px] text-slate-400">
                         <span class="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></span>
                         <span>Se actualiza automáticamente en vivo</span>
+                    </div>
+
+                    <!-- Botón directo para reiniciar sesión cuando está cargando -->
+                    <div class="mt-4 pt-3 border-t border-slate-200/60">
+                        <button onclick="resetWhatsAppInstance()" class="btn-reset-instance text-xs font-bold text-rose-600 hover:text-rose-700 bg-white hover:bg-rose-50 border border-rose-200 px-4 py-2 rounded-xl transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            <span>Reiniciar Conexión y Forzar Nuevo QR</span>
+                        </button>
                     </div>
                 </div>
 
@@ -197,6 +208,11 @@
                         img.src = data.qr.startsWith('data:') ? data.qr : `data:image/png;base64,${data.qr}`;
                         img.classList.remove('hidden');
                         document.getElementById('qrLoading').classList.add('hidden');
+                    } else if (data.state === 'connecting') {
+                        const loadingText = document.getElementById('qrLoadingText');
+                        if (loadingText) {
+                            loadingText.innerHTML = 'Reconectando con WhatsApp... Si no abre, presiona el botón rojo.';
+                        }
                     }
                 }
             } catch (e) {
@@ -206,8 +222,8 @@
             }
         }
 
-        // Consultar cada 4 segundos para actualización instantánea
-        setInterval(pollStatus, 4000);
+        // Consultar cada 3.5 segundos para actualización instantánea
+        setInterval(pollStatus, 3500);
 
         function togglePairingCode() {
             const sec = document.getElementById('pairingCodeSection');
@@ -251,12 +267,22 @@
         }
 
         async function resetWhatsAppInstance() {
-            if (!confirm('¿Deseas desvincular la sesión actual y generar un nuevo código QR limpio?')) {
+            if (!confirm('¿Deseas reiniciar la instancia para generar un nuevo código QR limpio?')) {
                 return;
             }
-            const btn = document.getElementById('btnResetInstance');
-            btn.disabled = true;
-            btn.innerHTML = 'Reiniciando instancia...';
+            const btns = document.querySelectorAll('.btn-reset-instance, #btnResetInstance');
+            btns.forEach(b => {
+                b.disabled = true;
+                b.setAttribute('data-orig-text', b.innerHTML);
+                b.innerHTML = '<span>Reiniciando instancia...</span>';
+            });
+
+            const loading = document.getElementById('qrLoading');
+            const loadingText = document.getElementById('qrLoadingText');
+            if (loading) loading.classList.remove('hidden');
+            if (loadingText) loadingText.innerHTML = 'Generando nuevo código QR...';
+            const img = document.getElementById('qrImage');
+            if (img) img.classList.add('hidden');
 
             try {
                 const res = await fetch("{{ route('admin.whatsapp.reset') }}", {
@@ -268,17 +294,22 @@
                 });
                 const data = await res.json();
                 if (data.qr) {
-                    document.getElementById('qrImage').src = data.qr;
-                    document.getElementById('qrImage').classList.remove('hidden');
-                    document.getElementById('qrLoading').classList.add('hidden');
+                    if (img) {
+                        img.src = data.qr.startsWith('data:') ? data.qr : `data:image/png;base64,${data.qr}`;
+                        img.classList.remove('hidden');
+                    }
+                    if (loading) loading.classList.add('hidden');
                 }
                 document.getElementById('stateConnected').classList.add('hidden');
                 document.getElementById('stateDisconnected').classList.remove('hidden');
             } catch (err) {
-                alert('Error al reiniciar la instancia. Intenta de nuevo.');
+                alert('Hubo un error al reiniciar. Por favor intenta nuevamente.');
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'Desvincular y Generar Nuevo Código QR';
+                btns.forEach(b => {
+                    b.disabled = false;
+                    const orig = b.getAttribute('data-orig-text');
+                    if (orig) b.innerHTML = orig;
+                });
             }
         }
     </script>

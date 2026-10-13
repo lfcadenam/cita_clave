@@ -16,8 +16,17 @@ echo "  📲 Vinculador Oficial de WhatsApp — La Belle Nails"
 echo "========================================================"
 echo ""
 
+# 0. Si se solicitó reset explícito, borrar instancia previa
+if [ "$1" = "reset" ] || [ "$1" = "--reset" ]; then
+    echo "🔄 Purgando y reseteando sesión previa de '${INSTANCE}'..."
+    curl -s -X DELETE "${BASE_URL}/instance/logout/${INSTANCE}" -H "apikey: ${API_KEY}" > /dev/null 2>&1 || true
+    curl -s -X DELETE "${BASE_URL}/instance/delete/${INSTANCE}" -H "apikey: ${API_KEY}" > /dev/null 2>&1 || true
+    echo "Instancia anterior eliminada limpiamente."
+    shift || true
+fi
+
 # 1. Asegurar que la instancia existe en Evolution API
-echo "1. Verificando estado de la instancia '${INSTANCE}'..."
+echo "1. Verificando/creando la instancia '${INSTANCE}'..."
 curl -s -X POST "${BASE_URL}/instance/create" \
   -H "apikey: ${API_KEY}" \
   -H "Content-Type: application/json" \

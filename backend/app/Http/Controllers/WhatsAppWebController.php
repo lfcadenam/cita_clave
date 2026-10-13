@@ -31,7 +31,15 @@ class WhatsAppWebController extends Controller
 
         if (!$isConnected) {
             // Asegurar que la instancia existe
-            $this->whatsAppService->createEvolutionInstance();
+            $createRes = $this->whatsAppService->createEvolutionInstance();
+
+            $qrBase64 = $createRes['qrcode']['base64'] 
+                ?? $createRes['base64'] 
+                ?? (is_string($createRes['qrcode'] ?? null) ? $createRes['qrcode'] : null);
+
+            if ($qrBase64 && !str_starts_with($qrBase64, 'data:image')) {
+                $qrBase64 = 'data:image/png;base64,' . $qrBase64;
+            }
 
             // Si el usuario solicitó vincular por número de teléfono
             $phoneInput = $request->input('phone');
@@ -39,8 +47,10 @@ class WhatsAppWebController extends Controller
                 $pairingCode = $this->whatsAppService->getPairingCode($phoneInput);
             }
 
-            // Obtener el QR fresco
-            $qrBase64 = $this->whatsAppService->getEvolutionQrCode();
+            // Si create no trajo QR, consultarlo directamente
+            if (!$qrBase64) {
+                $qrBase64 = $this->whatsAppService->getEvolutionQrCode();
+            }
         }
 
         return view('admin.whatsapp-connect', [
@@ -93,8 +103,19 @@ class WhatsAppWebController extends Controller
     {
         $this->whatsAppService->logoutEvolutionInstance();
         $this->whatsAppService->deleteEvolutionInstance();
-        $this->whatsAppService->createEvolutionInstance();
-        $qr = $this->whatsAppService->getEvolutionQrCode();
+        $createRes = $this->whatsAppService->createEvolutionInstance();
+
+        $qr = $createRes['qrcode']['base64'] 
+            ?? $createRes['base64'] 
+            ?? (is_string($createRes['qrcode'] ?? null) ? $createRes['qrcode'] : null);
+
+        if ($qr && !str_starts_with($qr, 'data:image')) {
+            $qr = 'data:image/png;base64,' . $qr;
+        }
+
+        if (!$qr) {
+            $qr = $this->whatsAppService->getEvolutionQrCode();
+        }
 
         return response()->json([
             'success' => true,

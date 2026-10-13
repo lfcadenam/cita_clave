@@ -662,7 +662,15 @@ class WhatsAppNotificationService
 
                 if ($response->successful()) {
                     $json = $response->json();
-                    return $json['base64'] ?? $json['code'] ?? null;
+                    $base64 = $json['base64'] 
+                        ?? $json['qrcode']['base64'] 
+                        ?? (is_string($json['qrcode'] ?? null) ? $json['qrcode'] : null);
+
+                    if (!empty($base64)) {
+                        return str_starts_with($base64, 'data:image')
+                            ? $base64
+                            : 'data:image/png;base64,' . $base64;
+                    }
                 }
             } catch (\Throwable $e) {
                 // Siguiente candidato
