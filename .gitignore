@@ -5,6 +5,8 @@
 # Dependencies
 **/node_modules/
 **/vendor/
+!**/resources/views/vendor/
+!**/resources/views/vendor/**
 
 # Environment Variables & Secrets
 **/.env
