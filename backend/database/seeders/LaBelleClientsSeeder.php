@@ -14,12 +14,23 @@ class LaBelleClientsSeeder extends Seeder
      */
     public function run(): void
     {
-        $tenant = Tenant::first() ?? Tenant::create([
-            'name' => 'Paola Andrea Aguilera Camacho',
-            'slug' => 'labellenails',
-            'domain' => 'labellenailsbog.com',
-            'is_active' => true,
-        ]);
+        $tenants = Tenant::where('slug', 'labellenails')->get();
+        if ($tenants->isEmpty()) {
+            $tenants = Tenant::where('domain', 'like', '%labellenails%')->get();
+        }
+        if ($tenants->isEmpty()) {
+            $tenants = Tenant::all();
+        }
+        if ($tenants->isEmpty()) {
+            $tenants = collect([
+                Tenant::create([
+                    'name' => 'La Belle Nails Bogotá • Paola Aguilera',
+                    'slug' => 'labellenails',
+                    'domain' => 'labellenailsbog.com',
+                    'is_active' => true,
+                ])
+            ]);
+        }
 
         $clients = [
             ['name' => 'Alexandra Bueno', 'phone' => '+573112512847'],
@@ -91,21 +102,23 @@ class LaBelleClientsSeeder extends Seeder
             ['name' => 'Vivian Mohnblatt', 'phone' => '+573138537263'],
         ];
 
-        foreach ($clients as $clientData) {
-            $cleanPhone = preg_replace('/[^0-9]/', '', (string) $clientData['phone']);
+        foreach ($tenants as $tenant) {
+            foreach ($clients as $clientData) {
+                $cleanPhone = preg_replace('/[^0-9]/', '', (string) $clientData['phone']);
 
-            Customer::updateOrCreate(
-                [
-                    'tenant_id' => $tenant->id,
-                    'phone' => $cleanPhone,
-                ],
-                [
-                    'name' => trim($clientData['name']),
-                    'is_legacy' => true,
-                    'notes' => 'Clienta habitual histórica de La Belle Nails Bogotá',
-                    'registered_at' => Carbon::parse('2026-01-01 09:00:00'),
-                ]
-            );
+                Customer::updateOrCreate(
+                    [
+                        'tenant_id' => $tenant->id,
+                        'phone' => $cleanPhone,
+                    ],
+                    [
+                        'name' => trim($clientData['name']),
+                        'is_legacy' => true,
+                        'notes' => 'Clienta habitual histórica de La Belle Nails Bogotá',
+                        'registered_at' => Carbon::parse('2026-01-01 09:00:00'),
+                    ]
+                );
+            }
         }
     }
 }

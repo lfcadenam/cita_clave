@@ -15,12 +15,23 @@ class LaBelleServicesSeeder extends Seeder
      */
     public function run(): void
     {
-        $tenant = Tenant::first() ?? Tenant::create([
-            'name' => 'Paola Andrea Aguilera Camacho',
-            'slug' => 'labellenails',
-            'domain' => 'labellenailsbog.com',
-            'is_active' => true,
-        ]);
+        $tenants = Tenant::where('slug', 'labellenails')->get();
+        if ($tenants->isEmpty()) {
+            $tenants = Tenant::where('domain', 'like', '%labellenails%')->get();
+        }
+        if ($tenants->isEmpty()) {
+            $tenants = Tenant::all();
+        }
+        if ($tenants->isEmpty()) {
+            $tenants = collect([
+                Tenant::create([
+                    'name' => 'La Belle Nails Bogotá • Paola Aguilera',
+                    'slug' => 'labellenails',
+                    'domain' => 'labellenailsbog.com',
+                    'is_active' => true,
+                ])
+            ]);
+        }
 
         $services = [
             [
@@ -135,26 +146,28 @@ class LaBelleServicesSeeder extends Seeder
             ],
         ];
 
-        $validSlugs = [];
-        foreach ($services as $srv) {
-            $slug = Str::slug($srv['name']);
-            $validSlugs[] = $slug;
-            Service::updateOrCreate(
-                [
-                    'tenant_id' => $tenant->id,
-                    'slug' => $slug,
-                ],
-                array_merge($srv, [
-                    'tenant_id' => $tenant->id,
-                    'slug' => $slug,
-                    'is_active' => true,
-                ])
-            );
-        }
+        $validSlugs = array_map(fn($srv) => Str::slug($srv['name']), $services);
 
-        // Eliminar del tenant cualquier servicio anterior que no pertenezca al catálogo oficial de 11
-        Service::where('tenant_id', $tenant->id)
-            ->whereNotIn('slug', $validSlugs)
-            ->delete();
+        foreach ($tenants as $tenant) {
+            foreach ($services as $srv) {
+                $slug = Str::slug($srv['name']);
+                Service::updateOrCreate(
+                    [
+                        'tenant_id' => $tenant->id,
+                        'slug' => $slug,
+                    ],
+                    array_merge($srv, [
+                        'tenant_id' => $tenant->id,
+                        'slug' => $slug,
+                        'is_active' => true,
+                    ])
+                );
+            }
+
+            // Eliminar del tenant cualquier servicio anterior que no pertenezca al catálogo oficial de 11
+            Service::where('tenant_id', $tenant->id)
+                ->whereNotIn('slug', $validSlugs)
+                ->delete();
+        }
     }
 }
