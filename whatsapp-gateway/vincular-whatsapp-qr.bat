@@ -5,7 +5,7 @@ echo   Vinculando Instancia WhatsApp: paola_estudio
 echo ========================================================
 echo.
 echo 1. Solicitando conexion de instancia en Evolution API...
-curl.exe -s -X POST "http://localhost:8080/instance/create" ^
+curl.exe -s -X POST "http://localhost:8085/instance/create" ^
   -H "apikey: nuvex_evolution_key_2026" ^
   -H "Content-Type: application/json" ^
   -d "{\"instanceName\": \"paola_estudio\", \"qrcode\": true, \"integration\": \"WHATSAPP-BAILEYS\"}" > nul 2>&1

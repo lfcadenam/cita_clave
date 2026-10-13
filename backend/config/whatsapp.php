@@ -16,7 +16,7 @@ return [
 
     // Configuración para Evolution API (Gateway QR Baileys - Sin costo)
     'evolution' => [
-        'base_url' => rtrim(env('EVOLUTION_API_URL', 'http://localhost:8080'), '/'),
+        'base_url' => rtrim(env('EVOLUTION_API_URL', 'http://localhost:8085'), '/'),
         'api_key' => env('EVOLUTION_API_KEY', 'nuvex_evolution_key_2026'),
         'instance_name' => env('EVOLUTION_INSTANCE_NAME', 'paola_estudio'),
     ],

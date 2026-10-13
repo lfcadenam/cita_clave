@@ -54,7 +54,9 @@
   </div>
 
   <script>
-    const API_URL = 'http://localhost:8080';
+    const API_URL = (typeof window !== 'undefined' && window.location.hostname) 
+      ? `${window.location.protocol}//${window.location.hostname}:8085` 
+      : 'http://localhost:8085';
     const API_KEY = 'nuvex_evolution_key_2026';
     const INSTANCE = 'paola_estudio';
 

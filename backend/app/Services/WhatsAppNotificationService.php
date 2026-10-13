@@ -377,14 +377,19 @@ class WhatsAppNotificationService
      */
     protected function sendViaEvolution(string $phone, string $message): bool
     {
-        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8080';
+        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8085';
         $apiKey = $this->evolutionConfig['api_key'] ?? '';
         $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
 
         $candidateUrls = array_unique(array_filter([
             $baseUrl,
+            str_replace([':8080', ':8085'], ':8085', $baseUrl),
             str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
-            str_contains($baseUrl, 'localhost') ? str_replace('localhost:8080', 'nuvex_evolution_whatsapp:8080', $baseUrl) : null,
+            'http://host.docker.internal:8085',
+            'http://localhost:8085',
+            'http://host.docker.internal:8080',
+            'http://localhost:8080',
+            'http://nuvex_evolution_whatsapp:8080',
         ]));
 
         foreach ($candidateUrls as $url) {
@@ -479,23 +484,36 @@ class WhatsAppNotificationService
      */
     public function getEvolutionInstanceStatus(): array
     {
-        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8080';
+        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8085';
         $apiKey = $this->evolutionConfig['api_key'] ?? '';
         $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
 
-        try {
-            $response = Http::withHeaders([
-                'apikey' => $apiKey,
-            ])->timeout(4)->get("{$baseUrl}/instance/connectionState/{$instance}");
+        $candidateUrls = array_unique(array_filter([
+            $baseUrl,
+            str_replace([':8080', ':8085'], ':8085', $baseUrl),
+            str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
+            'http://host.docker.internal:8085',
+            'http://localhost:8085',
+            'http://host.docker.internal:8080',
+            'http://localhost:8080',
+            'http://nuvex_evolution_whatsapp:8080',
+        ]));
 
-            if ($response->successful()) {
-                return $response->json();
+        foreach ($candidateUrls as $url) {
+            try {
+                $response = Http::withHeaders([
+                    'apikey' => $apiKey,
+                ])->timeout(4)->get("{$url}/instance/connectionState/{$instance}");
+
+                if ($response->successful()) {
+                    return $response->json();
+                }
+            } catch (\Throwable $e) {
+                // Continuar probando los demás candidatos
             }
-
-            return ['state' => 'disconnected', 'message' => $response->body()];
-        } catch (\Throwable $e) {
-            return ['state' => 'unreachable', 'message' => $e->getMessage()];
         }
+
+        return ['state' => 'unreachable', 'message' => 'No se pudo conectar a Evolution API en ningún endpoint'];
     }
 
     /**
