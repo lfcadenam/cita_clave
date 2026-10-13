@@ -459,11 +459,10 @@ class WhatsAppNotificationService
 
         // 2. Variantes de payload aceptadas por Evolution API v2 y Baileys
         $payloadVariants = [
-            // Variante 1: Estándar Evolution API v2 (número + texto plano con opciones)
+            // Variante 1: Formato directo sin delay artificial (rápido e inmediato)
             [
                 'number' => $sanitizedPhone,
                 'text' => $message,
-                'delay' => 1200,
                 'linkPreview' => false,
             ],
             // Variante 2: Anidado textMessage Evolution API v2
@@ -472,18 +471,13 @@ class WhatsAppNotificationService
                 'textMessage' => [
                     'text' => $message,
                 ],
-                'options' => [
-                    'delay' => 1200,
-                    'presence' => 'composing',
-                    'linkPreview' => false,
-                ],
             ],
-            // Variante 3: Texto plano directo
+            // Variante 3: Texto plano mínimo
             [
                 'number' => $sanitizedPhone,
                 'text' => $message,
             ],
-            // Variante 4: Con JID explícito de WhatsApp
+            // Variante 4: Con sufijo WhatsApp JID
             [
                 'number' => "{$sanitizedPhone}@s.whatsapp.net",
                 'text' => $message,
@@ -498,7 +492,7 @@ class WhatsAppNotificationService
                 $response = Http::withHeaders([
                     'apikey' => $apiKey,
                     'Content-Type' => 'application/json',
-                ])->timeout(10)->post($endpoint, $payload);
+                ])->timeout(25)->post($endpoint, $payload);
 
                 if ($response->successful()) {
                     Log::info("[WhatsApp Evolution] Mensaje enviado a {$sanitizedPhone} vía {$targetUrl} (variante {$idx}): " . substr($message, 0, 50) . "...");
