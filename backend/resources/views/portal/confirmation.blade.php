@@ -114,11 +114,16 @@
                 @endif
             </div>
 
-            <div class="mt-6">
+            <div class="mt-6 space-y-2">
+                <a href="{{ route('portal.reschedule-form', $appointment->appointment_number) }}"
+                   class="w-full py-3 px-4 rounded-xl text-xs font-bold bg-[#00C975] hover:bg-[#00A862] text-white shadow-md flex items-center justify-center gap-2 transition-colors">
+                    <i data-lucide="calendar-sync" class="w-4 h-4"></i>
+                    <span>Reagendar esta Cita para Otra Fecha</span>
+                </a>
                 <a href="{{ route('portal.booking') }}"
-                   class="w-full py-3 px-4 rounded-xl text-xs font-bold bg-[#1e3a5f] text-white hover:bg-[#162d4a] shadow-md flex items-center justify-center gap-2 transition-colors">
-                    <i data-lucide="calendar-plus" class="w-4 h-4"></i>
-                    <span>Agendar una Nueva Cita</span>
+                   class="w-full py-2.5 px-4 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center gap-2 transition-colors">
+                    <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
+                    <span>Agendar un Servicio Nuevo</span>
                 </a>
             </div>
         @else
@@ -167,17 +172,38 @@
                 </a>
             </div>
 
-            <!-- Client Cancellation Module -->
+            <!-- Client Cancellation & Reschedule Module -->
             @if($appointment->canBeCancelledByClient())
-                <!-- More than 24 hours remaining: Self-cancellation is permitted with mandatory observation -->
+                <!-- More than 24 hours remaining: Self-cancellation & Rescheduling permitted -->
                 <div x-data="{ openCancelModal: false, reason: '' }" class="mt-6 pt-5 border-t border-[#e2f0ea]">
-                    <div x-show="!openCancelModal" class="text-center">
-                        <button type="button" 
-                                @click="openCancelModal = true"
-                                class="text-xs text-slate-400 hover:text-rose-600 font-medium transition-colors inline-flex items-center gap-1.5 cursor-pointer">
-                            <i data-lucide="calendar-x" class="w-3.5 h-3.5"></i>
-                            <span>¿No podrás asistir? Cancelar cita</span>
-                        </button>
+                    <div x-show="!openCancelModal" class="space-y-3">
+                        <!-- Card Destacada de Reagendamiento -->
+                        <div class="p-4 rounded-2xl bg-[#e6f7f2] border border-[#bbf0df] text-left">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold text-[#0d9488] uppercase tracking-wider flex items-center gap-1.5">
+                                    <i data-lucide="calendar-sync" class="w-4 h-4 text-[#00C975]"></i>
+                                    ¿Necesitas cambiar la fecha u hora?
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-600 mb-3 leading-relaxed">
+                                No necesitas cancelar tu cita ni perder tu abono. Puedes reagendar tu turno para otro día fácilmente.
+                            </p>
+                            <a href="{{ route('portal.reschedule-form', $appointment->appointment_number) }}"
+                               class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#00C975] hover:bg-[#00A862] text-white shadow-sm flex items-center justify-center gap-2 transition-all">
+                                <i data-lucide="calendar-clock" class="w-3.5 h-3.5"></i>
+                                <span>Reagendar Mi Cita (Cambiar Fecha y Hora)</span>
+                            </a>
+                        </div>
+
+                        <!-- Opción secundaria para cancelar si de verdad no puede asistir -->
+                        <div class="text-center pt-1">
+                            <button type="button" 
+                                    @click="openCancelModal = true"
+                                    class="text-xs text-slate-400 hover:text-rose-600 font-medium transition-colors inline-flex items-center gap-1.5 cursor-pointer">
+                                <i data-lucide="calendar-x" class="w-3.5 h-3.5"></i>
+                                <span>No podré asistir y no deseo reagendar (Cancelar cita)</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Collapsible Cancellation Box -->
@@ -190,8 +216,12 @@
                                 Cerrar
                             </button>
                         </div>
-                        <p class="text-xs text-slate-600 mb-3 leading-relaxed">
-                            Para confirmar la cancelación de tu cita, es obligatorio ingresar el motivo. Al enviar este formulario, tu turno será liberado de inmediato.
+                        <p class="text-xs text-slate-600 mb-2 leading-relaxed">
+                            Para confirmar la cancelación de tu cita, es obligatorio ingresar el motivo. Al enviar este formulario, tu turno será liberado.
+                        </p>
+                        <p class="text-[11px] text-[#0d9488] font-semibold mb-3 flex items-center gap-1">
+                            <i data-lucide="info" class="w-3.5 h-3.5 text-[#00C975]"></i>
+                            <span>¿Prefieres conservar tu abono? Puedes <a href="{{ route('portal.reschedule-form', $appointment->appointment_number) }}" class="underline font-bold text-[#00C975] hover:text-[#0d9488]">reagendar tu cita aquí</a>.</span>
                         </p>
 
                         <form action="{{ route('portal.cancel-appointment', $appointment->appointment_number) }}" method="POST" class="space-y-3">

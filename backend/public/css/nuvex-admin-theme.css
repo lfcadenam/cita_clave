@@ -1198,12 +1198,11 @@ button.fi-btn.fi-color-gray {
   overflow: visible !important;
 }
 
-/* Forzar que el desplegable SIEMPRE abra hacia abajo con sombra limpia y scroll vertical */
+/* Forzar que el desplegable Choices SIEMPRE abra hacia abajo con sombra limpia y scroll vertical */
 .choices__list--dropdown,
 .choices.is-flipped .choices__list--dropdown,
 .choices__list--dropdown.is-flipped,
-[role="listbox"],
-.fi-dropdown-panel {
+[role="listbox"] {
   top: 100% !important;
   bottom: auto !important;
   margin-top: 6px !important;
@@ -1217,6 +1216,16 @@ button.fi-btn.fi-color-gray {
   padding: 8px !important;
   z-index: 9999 !important;
   position: absolute !important;
+}
+
+/* Paneles desplegables flotantes de Filament (Bulk actions, Menús de acciones, Filtros) */
+.fi-dropdown-panel {
+  border-radius: 16px !important;
+  border: 1px solid var(--nuvex-border-light) !important;
+  background-color: #FFFFFF !important;
+  box-shadow: 0 20px 45px -5px rgba(0, 0, 0, 0.18), 0 8px 20px rgba(0, 0, 0, 0.06) !important;
+  padding: 8px !important;
+  z-index: 9999 !important;
 }
 
 [role="option"],

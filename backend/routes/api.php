@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes - Nuvex Agendamiento Belleza & Estética (Paola Aguilera)
+| API Routes - Nuvex Agendamiento Belleza & Estética
 |--------------------------------------------------------------------------
 */
 
@@ -22,7 +22,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/health', function () {
         return response()->json([
             'status' => 'ok',
-            'service' => 'Nuvex Agendamiento Belleza (Paola Aguilera)',
+            'service' => 'Nuvex Agendamiento Belleza',
             'version' => '1.0.0',
             'timestamp' => now()->toIso8601String(),
         ]);
@@ -43,6 +43,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/appointments/status/{appointmentNumber}', [AppointmentBookingController::class, 'status']);
     Route::post('/appointments/confirm-attendance/{appointmentNumber}', [AppointmentBookingController::class, 'confirmAttendanceApi']);
     Route::post('/appointments/{appointmentNumber}/cancel', [AppointmentBookingController::class, 'cancelAppointmentApi']);
+    Route::post('/appointments/{appointmentNumber}/reschedule', [AppointmentBookingController::class, 'rescheduleAppointmentApi']);
 
     // Módulo Híbrido de Pagos (Bold & Nequi Directo)
     Route::get('/payments/nequi-info', [PaymentController::class, 'getNequiInfo']);

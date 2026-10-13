@@ -426,7 +426,20 @@
 
             <div class="nuvex-field-row">
                 <span class="nuvex-field-title">Nombre Completo</span>
-                <span class="nuvex-field-value-lg">{{ $appointment->client_name }}</span>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="nuvex-field-value-lg">{{ $appointment->client_name }}</span>
+                    @php
+                        $loyalty = $appointment->getClientLoyaltyBadge();
+                    @endphp
+                    <span class="nuvex-status-badge {{ $loyalty['color'] }}" style="padding: 2px 10px; font-size: 0.7rem;">
+                        {{ $loyalty['label'] }}
+                    </span>
+                </div>
+                @if ($appointment->customer && $appointment->customer->registered_at)
+                    <div style="font-size: 0.75rem; color: #64748B; margin-top: 2px;" class="dark:text-slate-400">
+                        Registrada desde {{ \Carbon\Carbon::parse($appointment->customer->registered_at)->translatedFormat('d M Y') }} • {{ $appointment->customer->appointments()->count() }} citas totales
+                    </div>
+                @endif
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">

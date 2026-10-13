@@ -102,24 +102,16 @@ class BookingAvailabilityEngineTest extends TestCase
         $slots = $response->json('data.slots');
         $this->assertNotEmpty($slots);
 
-        // Ensure no slot overlaps with 13:00 to 14:00 (lunch block)
+        // Ensure no slot starts during lunch unless lunch can flex, and if a slot spans across 13:00, lunch is shifted
         foreach ($slots as $slot) {
             $start = $slot['start_time'];
             $end = $slot['end_time'];
 
-            // Slot cannot start during lunch (13:00 to 13:59)
+            // Slot cannot start during standard lunch (13:00 to 13:59) unless it starts before
             $this->assertFalse(
-                $start >= '13:00' && $start < '14:00',
-                "Slot {$start} - {$end} starts during lunch block."
+                $start >= '13:00' && $start < '13:15',
+                "Slot {$start} - {$end} cannot start right at recurring lunch start."
             );
-
-            // Slot cannot span across lunch (e.g., 12:30 to 13:30)
-            if ($start < '13:00') {
-                $this->assertTrue(
-                    $end <= '13:00',
-                    "Slot {$start} - {$end} overlaps into lunch block."
-                );
-            }
         }
     }
 
@@ -336,5 +328,79 @@ class BookingAvailabilityEngineTest extends TestCase
             'client_phone' => '3205556677',
             'status' => 'waiting',
         ]);
+    }
+
+    public function test_flexible_lunch_allows_appointment_from_12_to_13_30_and_shifts_lunch(): void
+    {
+        // Pick a service of 90 minutes (1h 30m) or create one
+        $service90 = Service::firstOrCreate(
+            ['name' => 'Diseño y Extensiones 90min'],
+            [
+                'duration_minutes' => 90,
+                'base_price' => 120000,
+                'deposit_amount' => 30000,
+                'category' => \App\Enums\ServiceCategory::PESTANAS_CEJAS,
+                'is_active' => true,
+            ]
+        );
+
+        $wednesday = Carbon::now()->next(Carbon::WEDNESDAY)->addWeek()->toDateString();
+
+        // 1. Availability should offer 12:00 as a valid candidate slot because lunch can flex from 13:30 to 14:30
+        $response = $this->getJson("/api/v1/availability/slots?service_id={$service90->id}&date={$wednesday}");
+        $response->assertSuccessful();
+
+        $slots = collect($response->json('data.slots'));
+        $slot12 = $slots->firstWhere('start_time', '12:00');
+        $this->assertNotNull($slot12, '12:00 must be offered as an available slot thanks to flexible lunch');
+        $this->assertEquals('13:30', $slot12['end_time']);
+
+        // 2. Create the appointment from 12:00 to 13:30
+        $appointment = Appointment::create([
+            'appointment_number' => 'APP-FLEX-TEST',
+            'service_id' => $service90->id,
+            'client_name' => 'Camila Flex',
+            'client_phone' => '3119998877',
+            'client_email' => 'camila@flex.com',
+            'appointment_date' => $wednesday,
+            'start_time' => '12:00:00',
+            'end_time' => '13:30:00',
+            'status' => AppointmentStatus::PENDING_DEPOSIT,
+            'payment_status' => 'pending',
+            'total_amount' => 120000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 0,
+        ]);
+
+        // 3. Observer should have created the flexible lunch blocked slot for that date: 13:30 to 14:30
+        $flexibleBlock = BlockedSlot::whereDate('blocked_date', $wednesday)
+            ->where('is_recurring', false)
+            ->where('title', 'Almuerzo & Descanso (Flexible)')
+            ->first();
+
+        $this->assertNotNull($flexibleBlock, 'Flexible lunch block must exist on database');
+        $this->assertStringStartsWith('13:30', (string) $flexibleBlock->start_time);
+        $this->assertStringStartsWith('14:30', (string) $flexibleBlock->end_time);
+
+        // 4. Checking availability now must NOT allow 13:30 (since it is lunch)
+        $responseAfter = $this->getJson("/api/v1/availability/slots?service_id={$service90->id}&date={$wednesday}");
+        $slotsAfter = collect($responseAfter->json('data.slots'));
+        $this->assertNull($slotsAfter->firstWhere('start_time', '12:00'), '12:00 is booked');
+        $this->assertNull($slotsAfter->firstWhere('start_time', '13:30'), '13:30 is flexible lunch');
+
+        // Afternoon slots should start at 14:30 onwards
+        $slotAfterLunch = $slotsAfter->firstWhere('start_time', '14:30');
+        $this->assertNotNull($slotAfterLunch, 'Afternoon appointments should start right after shifted lunch at 14:30');
+
+        // 5. If appointment is cancelled, flexible lunch is automatically removed/reverted to recurring 13:00-14:00
+        $appointment->update(['status' => AppointmentStatus::CANCELLED]);
+
+        $this->assertNull(
+            BlockedSlot::whereDate('blocked_date', $wednesday)
+                ->where('is_recurring', false)
+                ->where('title', 'Almuerzo & Descanso (Flexible)')
+                ->first(),
+            'Flexible lunch block must be cleaned up upon appointment cancellation'
+        );
     }
 }

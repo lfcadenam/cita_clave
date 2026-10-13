@@ -9,7 +9,8 @@ use App\Services\AppointmentMailNotificationService;
 class AppointmentObserver
 {
     public function __construct(
-        protected AppointmentMailNotificationService $mailService
+        protected AppointmentMailNotificationService $mailService,
+        protected \App\Services\BookingAvailabilityService $availabilityService
     ) {}
 
     /**
@@ -24,10 +25,13 @@ class AppointmentObserver
         if ($appointment->status === AppointmentStatus::CONFIRMED) {
             $this->mailService->sendPaymentConfirmedEmail($appointment);
         }
+
+        // Ajustar almuerzo flexible si la cita se traslapa con la ventana normal de almuerzo
+        $this->availabilityService->adjustLunchForAppointment($appointment);
     }
 
     /**
-     * Se ejecuta cuando se actualiza la cita (ej. aprobación de abono Nequi o pago Bold).
+     * Se ejecuta cuando se actualiza la cita (ej. aprobación de abono Nequi o pago Bold, cambio de estado u horario).
      */
     public function updated(Appointment $appointment): void
     {
@@ -40,5 +44,26 @@ class AppointmentObserver
                 $this->mailService->sendPaymentConfirmedEmail($appointment);
             }
         }
+
+        // Si cambió el horario, fecha o estado, recalcular el almuerzo de la fecha afectada
+        if ($appointment->wasChanged(['status', 'start_time', 'end_time', 'appointment_date'])) {
+            $this->availabilityService->recalculateLunchForDate($appointment->appointment_date, $appointment->tenant_id);
+
+            // Si cambió la fecha, recalcular también la fecha anterior
+            if ($appointment->wasChanged('appointment_date')) {
+                $originalDate = $appointment->getOriginal('appointment_date');
+                if ($originalDate) {
+                    $this->availabilityService->recalculateLunchForDate($originalDate, $appointment->tenant_id);
+                }
+            }
+        }
+    }
+
+    /**
+     * Se ejecuta cuando se elimina una cita.
+     */
+    public function deleted(Appointment $appointment): void
+    {
+        $this->availabilityService->recalculateLunchForDate($appointment->appointment_date, $appointment->tenant_id);
     }
 }

@@ -47,10 +47,20 @@
                             <p><span class="text-slate-400">Fecha:</span> <span class="font-semibold text-slate-800">{{ $appointment->appointment_date->toDateString() }} ({{ substr($appointment->start_time, 0, 5) }} - {{ substr($appointment->end_time, 0, 5) }})</span></p>
                             <p><span class="text-slate-400">Saldo en local:</span> <span class="font-bold text-[#1e3a5f]">${{ number_format($appointment->balance_due, 0, ',', '.') }} COP</span></p>
                         </div>
-                        <a href="{{ url('/reserva/confirmacion/' . $appointment->appointment_number) }}"
-                           class="block text-center mt-3 py-2.5 rounded-xl text-xs font-bold bg-[#e6f7f2] hover:bg-[#ccfbf1] text-[#1e3a5f] border border-[#e2f0ea] transition-colors">
-                            Ver Comprobante Digital Completo →
-                        </a>
+                        <div class="mt-3 flex gap-2">
+                            <a href="{{ url('/reserva/confirmacion/' . $appointment->appointment_number) }}"
+                               class="flex-1 text-center py-2.5 rounded-xl text-xs font-bold bg-[#e6f7f2] hover:bg-[#ccfbf1] text-[#1e3a5f] border border-[#e2f0ea] transition-colors">
+                                Ver Comprobante Digital →
+                            </a>
+                            @if($appointment->canBeRescheduledByClient())
+                                <a href="{{ route('portal.reschedule-form', $appointment->appointment_number) }}"
+                                   class="py-2.5 px-3 rounded-xl text-xs font-bold bg-[#00C975] hover:bg-[#00A862] text-white shadow-xs transition-colors flex items-center justify-center gap-1"
+                                   title="Reagendar fecha u hora">
+                                    <i data-lucide="calendar-sync" class="w-3.5 h-3.5"></i>
+                                    <span>Reagendar</span>
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 @endforeach
             </div>

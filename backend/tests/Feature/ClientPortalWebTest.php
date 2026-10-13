@@ -294,4 +294,147 @@ class ClientPortalWebTest extends TestCase
 
         $this->assertEquals(AppointmentStatus::CANCELLED, $appointment->fresh()->status);
     }
+
+    public function test_client_can_view_reschedule_form(): void
+    {
+        $service = Service::first();
+        $appointment = Appointment::create([
+            'service_id' => $service->id,
+            'client_name' => 'Marcela Restrepo',
+            'client_phone' => '3119988776',
+            'appointment_date' => Carbon::now()->addDays(4)->toDateString(),
+            'start_time' => '10:00:00',
+            'end_time' => '11:30:00',
+            'total_amount' => 120000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 30000,
+            'balance_due' => 90000,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+            'status' => AppointmentStatus::CONFIRMED,
+        ]);
+
+        $response = $this->get("/reserva/reagendar/{$appointment->appointment_number}");
+        $response->assertSuccessful();
+        $response->assertSee('Reagenda tu Turno');
+        $response->assertSee($appointment->appointment_number);
+        $response->assertSee($service->name);
+    }
+
+    public function test_client_can_successfully_reschedule_appointment_web(): void
+    {
+        $service = Service::first();
+        $initialDate = Carbon::now()->addDays(3)->toDateString();
+        $appointment = Appointment::create([
+            'service_id' => $service->id,
+            'client_name' => 'Tatiana Suarez',
+            'client_phone' => '3124455667',
+            'appointment_date' => $initialDate,
+            'start_time' => '10:00:00',
+            'end_time' => '11:30:00',
+            'total_amount' => 120000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 30000,
+            'balance_due' => 90000,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+            'status' => AppointmentStatus::CONFIRMED,
+        ]);
+
+        $newTargetDate = Carbon::now()->addDays(6)->toDateString();
+
+        $response = $this->post("/reserva/reagendar/{$appointment->appointment_number}", [
+            'new_date' => $newTargetDate,
+            'new_time' => '15:00',
+            'reason' => 'Cambio de horario laboral.',
+        ]);
+
+        $response->assertRedirect("/reserva/confirmacion/{$appointment->appointment_number}");
+        $response->assertSessionHas('status_message');
+
+        $fresh = $appointment->fresh();
+        $this->assertEquals($newTargetDate, $fresh->appointment_date->toDateString());
+        $this->assertEquals('15:00:00', $fresh->start_time);
+        $this->assertEquals(AppointmentStatus::CONFIRMED, $fresh->status);
+    }
+
+    public function test_client_can_reschedule_cancelled_appointment_to_reactivate_it(): void
+    {
+        $service = Service::first();
+        $initialDate = Carbon::now()->addDays(4)->toDateString();
+        $appointment = Appointment::create([
+            'service_id' => $service->id,
+            'client_name' => 'Jimena Hoyos',
+            'client_phone' => '3137788990',
+            'appointment_date' => $initialDate,
+            'start_time' => '11:00:00',
+            'end_time' => '12:30:00',
+            'total_amount' => 120000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 30000,
+            'balance_due' => 90000,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+            'status' => AppointmentStatus::CANCELLED,
+            'cancellation_reason' => 'No podía asistir por calamidad doméstica.',
+            'cancelled_at' => Carbon::now()->subDay(),
+        ]);
+
+        $this->assertTrue($appointment->canBeRescheduledByClient());
+
+        $newTargetDate = Carbon::now()->addDays(7)->toDateString();
+
+        $response = $this->post("/reserva/reagendar/{$appointment->appointment_number}", [
+            'new_date' => $newTargetDate,
+            'new_time' => '09:00',
+        ]);
+
+        $response->assertRedirect("/reserva/confirmacion/{$appointment->appointment_number}");
+
+        $fresh = $appointment->fresh();
+        $this->assertEquals($newTargetDate, $fresh->appointment_date->toDateString());
+        $this->assertEquals('09:00:00', $fresh->start_time);
+        // Has deposit paid, so returns to CONFIRMED
+        $this->assertEquals(AppointmentStatus::CONFIRMED, $fresh->status);
+        $this->assertNull($fresh->cancelled_at);
+        $this->assertNull($fresh->cancellation_reason);
+    }
+
+    public function test_api_client_reschedule_flow(): void
+    {
+        $service = Service::first();
+        $appointment = Appointment::create([
+            'service_id' => $service->id,
+            'client_name' => 'Valeria Castano',
+            'client_phone' => '3156677889',
+            'appointment_date' => Carbon::now()->addDays(5)->toDateString(),
+            'start_time' => '14:00:00',
+            'end_time' => '15:30:00',
+            'total_amount' => 120000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 30000,
+            'balance_due' => 90000,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+            'status' => AppointmentStatus::CONFIRMED,
+        ]);
+
+        $newTargetDate = Carbon::now()->addDays(8)->toDateString();
+
+        $response = $this->postJson("/api/v1/appointments/{$appointment->appointment_number}/reschedule", [
+            'new_date' => $newTargetDate,
+            'new_time' => '16:00',
+            'reason' => 'Viaje de fin de semana.',
+        ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'success' => true,
+            'data' => [
+                'appointment_number' => $appointment->appointment_number,
+                'new_date' => $newTargetDate,
+                'new_start_time' => '16:00',
+            ],
+        ]);
+
+        $fresh = $appointment->fresh();
+        $this->assertEquals($newTargetDate, $fresh->appointment_date->toDateString());
+        $this->assertEquals('16:00:00', $fresh->start_time);
+    }
 }

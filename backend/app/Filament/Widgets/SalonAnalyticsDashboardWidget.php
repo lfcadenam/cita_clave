@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Enums\AppointmentStatus;
 use App\Enums\PaymentMethod;
 use App\Models\Appointment;
+use App\Models\Waitlist;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Filament\Widgets\Widget;
@@ -268,11 +269,32 @@ class SalonAnalyticsDashboardWidget extends Widget
         }
         $newClientsCount = max(0, $totalClientsInPeriod - $recurrentClientsCount);
 
+        // 7. Métricas Operativas Globales / Del Día de Hoy (Unificación de KPIs)
+        $today = Carbon::today();
+        $todayAppointmentsCount = Appointment::where('tenant_id', $tenantId)
+            ->whereDate('appointment_date', $today)
+            ->whereIn('status', [AppointmentStatus::CONFIRMED->value, AppointmentStatus::IN_PROGRESS->value])
+            ->count();
+
+        $pendingNequiGlobalCount = Appointment::where('tenant_id', $tenantId)
+            ->where('status', AppointmentStatus::PENDING_VERIFICATION->value)
+            ->where('payment_method', PaymentMethod::NEQUI_TRANSFER->value)
+            ->count();
+
+        $activeWaitlistCount = Waitlist::where('tenant_id', $tenantId)
+            ->where('status', 'waiting')
+            ->count();
+
         return [
             'period' => $this->period,
             'periodTitle' => $periodTitle,
             'offset' => $this->offset,
             'isCurrentPeriod' => $this->offset === 0,
+
+            // Métricas Operativas de Hoy (Unificadas)
+            'todayAppointmentsCount' => $todayAppointmentsCount,
+            'pendingNequiGlobalCount' => $pendingNequiGlobalCount,
+            'activeWaitlistCount' => $activeWaitlistCount,
             
             // Financieros
             'totalRevenue' => $totalRevenue,

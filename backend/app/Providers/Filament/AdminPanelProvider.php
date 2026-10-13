@@ -38,6 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(fn () => asset('favicon.png'))
             ->font('Plus Jakarta Sans')
             ->darkMode(false)
+            ->spa()
             ->sidebarWidth('17.5rem')
             ->maxContentWidth(Width::Full)
             ->colors([
@@ -65,7 +66,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->widgets([
                 \App\Filament\Widgets\SalonSpotlightWidget::class,
-                \App\Filament\Widgets\StatsOverviewWidget::class,
                 \App\Filament\Widgets\SalonAnalyticsDashboardWidget::class,
             ])
             ->middleware([

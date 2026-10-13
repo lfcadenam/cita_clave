@@ -198,3 +198,15 @@ Si decides no usar Cloudflare y gestionar los certificados Let's Encrypt directa
   git pull origin main
   docker compose up -d --build
   ```
+
+* **Limpiar datos operativos de prueba para pasar a producción (Puesta en marcha limpia):**
+  ```bash
+  # Limpia citas, clientas, comprobantes y catálogo, preservando salones y administradores:
+  docker compose exec app php artisan nuvex:reset-operational-data
+
+  # Si deseas conservar los servicios del catálogo ya cargados:
+  docker compose exec app php artisan nuvex:reset-operational-data --keep-services
+
+  # En scripts de automatización no interactivos:
+  docker compose exec app php artisan nuvex:reset-operational-data --force
+  ```

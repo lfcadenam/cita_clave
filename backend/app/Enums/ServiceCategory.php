@@ -9,6 +9,10 @@ enum ServiceCategory: string
     case LABIOS = 'LABIOS';                         // Hidratación labial, micropigmentación
     case CORPORAL_MASAJES = 'CORPORAL_MASAJES';     // Masajes relajantes, reductores, drenajes
     case DEPILACION = 'DEPILACION';                 // Cera, láser, hilo
+    case MANICURA = 'MANICURA';                     // Limpieza rusa, rubber, semipermanente
+    case PEDICURA = 'PEDICURA';                     // Limpieza pedicura, spa, semipermanente
+    case SISTEMAS_ARTIFICIALES = 'SISTEMAS_ARTIFICIALES'; // Polygel, acrílico, extensiones
+    case REPARACION_RETIRO = 'REPARACION_RETIRO';   // Remoción semi, remiendos, uñas individuales
 
     public function label(): string
     {
@@ -18,6 +22,10 @@ enum ServiceCategory: string
             self::LABIOS => 'Labios & Micropigmentación',
             self::CORPORAL_MASAJES => 'Corporal & Masajes',
             self::DEPILACION => 'Depilación Especializada',
+            self::MANICURA => 'Manicura',
+            self::PEDICURA => 'Pedicura',
+            self::SISTEMAS_ARTIFICIALES => 'Sistemas & Polygel',
+            self::REPARACION_RETIRO => 'Retiro & Reparaciones',
         };
     }
 }

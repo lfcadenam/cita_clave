@@ -5,12 +5,22 @@ namespace App\Http\Controllers;
 use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use App\Models\Service;
+use App\Services\BookingAvailabilityService;
+use App\Services\WhatsAppNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 class ClientBookingWebController extends Controller
 {
+    public function __construct(
+        protected ?BookingAvailabilityService $availabilityService = null,
+        protected ?WhatsAppNotificationService $whatsAppService = null
+    ) {
+        $this->availabilityService = $availabilityService ?? app(BookingAvailabilityService::class);
+        $this->whatsAppService = $whatsAppService ?? app(WhatsAppNotificationService::class);
+    }
     /**
      * Render the main booking portal (SPA / Multi-step).
      */
@@ -159,5 +169,121 @@ class ClientBookingWebController extends Controller
         ]);
 
         return redirect()->back()->with('status_message', 'Tu cita ha sido cancelada exitosamente.');
+    }
+
+    /**
+     * Muestra la vista interactiva para reagendar la cita.
+     */
+    public function showRescheduleForm(string $appointmentNumber)
+    {
+        $appointment = Appointment::with('service')
+            ->where('appointment_number', trim($appointmentNumber))
+            ->firstOrFail();
+
+        if (! $appointment->canBeRescheduledByClient()) {
+            return redirect()->route('portal.confirmation', $appointment->appointment_number)
+                ->withErrors([
+                    'cancellation_error' => 'No es posible reagendar la cita automáticamente. Por políticas del salón, si faltan menos de 24 horas para el inicio, cualquier cambio debe ser coordinado directamente con Paola vía WhatsApp.',
+                ]);
+        }
+
+        $minDate = now()->addDay()->toDateString();
+        $maxDate = now()->addDays(35)->toDateString();
+
+        return view('portal.reschedule', compact('appointment', 'minDate', 'maxDate'));
+    }
+
+    /**
+     * Procesa el reagendamiento a una nueva fecha y hora.
+     */
+    public function rescheduleAppointment(Request $request, string $appointmentNumber)
+    {
+        $appointment = Appointment::with('service')
+            ->where('appointment_number', trim($appointmentNumber))
+            ->firstOrFail();
+
+        if (! $appointment->canBeRescheduledByClient()) {
+            return redirect()->route('portal.confirmation', $appointment->appointment_number)
+                ->withErrors([
+                    'cancellation_error' => 'No es posible reagendar la cita automáticamente porque faltan menos de 24 horas para su inicio.',
+                ]);
+        }
+
+        $validated = $request->validate([
+            'new_date' => 'required|date_format:Y-m-d|after_or_equal:today',
+            'new_time' => 'required|date_format:H:i',
+            'reason' => 'nullable|string|max:500',
+        ], [
+            'new_date.required' => 'Debes seleccionar la nueva fecha para tu cita.',
+            'new_date.after_or_equal' => 'La nueva fecha debe ser igual o posterior a hoy.',
+            'new_time.required' => 'Debes seleccionar el nuevo horario disponible.',
+        ]);
+
+        $service = $appointment->service;
+        $newDate = Carbon::parse($validated['new_date']);
+        $newStartTime = $validated['new_time'];
+        $newEndTime = Carbon::parse($newDate->toDateString() . ' ' . $newStartTime)
+            ->addMinutes($service->duration_minutes)
+            ->format('H:i:s');
+
+        // Verificar conflicto excluyendo la cita actual
+        $conflict = Appointment::hasConflict(
+            $newDate,
+            $newStartTime,
+            $newEndTime,
+            excludeAppointmentId: $appointment->id,
+            tenantId: $appointment->tenant_id
+        );
+
+        if ($conflict) {
+            return redirect()->back()->withErrors([
+                'slot_error' => "El horario seleccionado ({$newStartTime}) ya fue ocupado por otra cita. Por favor elige otro horario.",
+            ])->withInput();
+        }
+
+        $oldDate = $appointment->appointment_date ? $appointment->appointment_date->toDateString() : '';
+        $oldDateFormatted = $appointment->appointment_date ? $appointment->appointment_date->locale('es')->isoFormat('dddd D [de] MMMM') : '';
+        $oldTime = substr($appointment->start_time, 0, 5);
+
+        // Actualizar datos de fecha y hora
+        $appointment->appointment_date = $newDate->toDateString();
+        $appointment->start_time = strlen($newStartTime) === 5 ? $newStartTime . ':00' : $newStartTime;
+        $appointment->end_time = $newEndTime;
+
+        // Si estaba cancelada, restaurar su estado activo
+        if ($appointment->status === AppointmentStatus::CANCELLED) {
+            $appointment->status = $appointment->deposit_paid > 0
+                ? AppointmentStatus::CONFIRMED
+                : AppointmentStatus::PENDING_VERIFICATION;
+        }
+
+        $appointment->cancelled_at = null;
+        $appointment->cancellation_reason = null;
+        $appointment->attendance_confirmed_at = null;
+        $appointment->reminder_24h_sent_at = null;
+        $appointment->save();
+
+        // Ajustar almuerzo flexible para la fecha anterior y la nueva
+        try {
+            if ($oldDate && $oldDate !== $newDate->toDateString()) {
+                $this->availabilityService->recalculateLunchForDate($oldDate, $appointment->tenant_id);
+            }
+            $this->availabilityService->adjustLunchForAppointment($appointment);
+        } catch (\Throwable $e) {
+            Log::warning("Error recalculando almuerzo al reagendar #{$appointment->appointment_number}: " . $e->getMessage());
+        }
+
+        // Notificación WhatsApp
+        try {
+            $this->whatsAppService->sendAppointmentRescheduled($appointment, $oldDateFormatted, $oldTime);
+        } catch (\Throwable $e) {
+            Log::warning("Error enviando WhatsApp de reagendamiento #{$appointment->appointment_number}: " . $e->getMessage());
+        }
+
+        $newDateReadable = $newDate->locale('es')->isoFormat('dddd D [de] MMMM');
+        $successMsg = "✨ ¡Tu cita ha sido reagendada exitosamente para el {$newDateReadable} a las {$newStartTime}!";
+
+        return redirect()->route('portal.confirmation', $appointment->appointment_number)
+            ->with('status_message', $successMsg);
     }
 }

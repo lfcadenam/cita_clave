@@ -59,30 +59,54 @@ class BookingAvailabilityService
         }
 
         // 1. Gather busy intervals: Blocked Slots (specific date + recurring)
-        $busyIntervals = [];
-
-        $blockedSlots = BlockedSlot::query()
+        $rawBlockedSlots = BlockedSlot::query()
             ->where(function ($query) use ($targetDate) {
                 $query->where('is_recurring', true)
                     ->orWhereDate('blocked_date', $targetDate);
             })
             ->get();
 
-        foreach ($blockedSlots as $block) {
+        $hasSpecificLunch = $rawBlockedSlots->contains(function ($b) use ($targetDate) {
+            return ! $b->is_recurring &&
+                   $b->blocked_date &&
+                   Carbon::parse($b->blocked_date)->isSameDay($targetDate) &&
+                   (str_contains(strtolower($b->title ?? ''), 'almuerzo') || str_contains(strtolower($b->reason ?? ''), 'almuerzo'));
+        });
+
+        $busyIntervals = [];
+        $recurringLunchInterval = null;
+
+        foreach ($rawBlockedSlots as $block) {
+            $isLunch = (str_contains(strtolower($block->title ?? ''), 'almuerzo') || str_contains(strtolower($block->reason ?? ''), 'almuerzo'));
+
+            // If a specific date lunch exists, skip recurring lunch for this date
+            if ($block->is_recurring && $isLunch && $hasSpecificLunch) {
+                continue;
+            }
+
             $start = Carbon::parse($targetDate->toDateString() . ' ' . $block->start_time);
             $end = Carbon::parse($targetDate->toDateString() . ' ' . $block->end_time);
+
+            if ($block->is_recurring && $isLunch) {
+                $recurringLunchInterval = [
+                    'start' => $start->copy(),
+                    'end' => $end->copy(),
+                    'duration' => (int) $start->diffInMinutes($end) ?: 60,
+                ];
+            }
+
             if ($end->gt($openDateTime) && $start->lt($closeDateTime)) {
                 $busyIntervals[] = [
                     'start' => $start->max($openDateTime),
                     'end' => $end->min($closeDateTime),
                     'type' => 'blocked',
                     'title' => $block->title,
+                    'is_lunch' => $isLunch,
                 ];
             }
         }
 
         // 2. Gather busy intervals: Active Appointments (Confirmed, Pending Verification, In Progress)
-        // Also hold appointments booked in the last 15 minutes that are pending deposit
         $appointments = Appointment::query()
             ->whereDate('appointment_date', $targetDate)
             ->where(function ($query) {
@@ -108,19 +132,175 @@ class BookingAvailabilityService
                     'end' => $end->min($closeDateTime),
                     'type' => 'appointment',
                     'title' => 'Cita: ' . $apt->client_name,
+                    'is_lunch' => false,
                 ];
             }
         }
 
-        // 3. Sort and merge overlapping busy intervals
-        $mergedBusy = $this->mergeIntervals($busyIntervals);
-
-        // 4. Calculate continuous free windows throughout the day
-        $freeWindows = $this->calculateFreeWindows($mergedBusy, $openDateTime, $closeDateTime);
-
-        // 5. Generate candidate slots that fit the service duration
         $serviceDuration = (int) $service->duration_minutes;
         $stepMinutes = $schedule->slot_interval_minutes ?: 15;
+
+        // 3. Generate candidate slots evaluating free windows and flexible lunch shift
+        return $this->buildSlots(
+            $busyIntervals,
+            $recurringLunchInterval,
+            $hasSpecificLunch,
+            $openDateTime,
+            $closeDateTime,
+            $serviceDuration,
+            $stepMinutes,
+            $strictAntiGaps
+        );
+    }
+
+    /**
+     * Build candidate slots evaluating free windows and flexible lunch shift.
+     */
+    protected function buildSlots(
+        array $busyIntervals,
+        ?array $recurringLunchInterval,
+        bool $hasSpecificLunch,
+        Carbon $openDateTime,
+        Carbon $closeDateTime,
+        int $serviceDuration,
+        int $stepMinutes,
+        bool $strictAntiGaps
+    ): array {
+        // If lunch is already fixed by a specific block or no recurring lunch defined
+        if ($hasSpecificLunch || ! $recurringLunchInterval) {
+            $merged = $this->mergeIntervals($busyIntervals);
+            $windows = $this->calculateFreeWindows($merged, $openDateTime, $closeDateTime);
+            return $this->generateSlotsFromWindows($windows, $serviceDuration, $stepMinutes, $strictAntiGaps);
+        }
+
+        // Separate lunch block from other busy intervals (appointments & hard blocks)
+        $nonLunchBusy = array_values(array_filter($busyIntervals, fn ($i) => empty($i['is_lunch'])));
+
+        // Standard windows with fixed lunch (13:00 - 14:00)
+        $standardBusy = $this->mergeIntervals($busyIntervals);
+        $standardWindows = $this->calculateFreeWindows($standardBusy, $openDateTime, $closeDateTime);
+        $standardSlots = $this->generateSlotsFromWindows($standardWindows, $serviceDuration, $stepMinutes, $strictAntiGaps);
+
+        // Generate flexible lunch candidate slots:
+        // Slots that start before lunch and extend into lunch (e.g. 12:00 to 13:30)
+        $flexibleSlots = [];
+        $lunchStart = $recurringLunchInterval['start'];
+        $lunchDuration = $recurringLunchInterval['duration'];
+
+        $earliestBridge = $lunchStart->copy()->subMinutes($serviceDuration);
+        if ($earliestBridge->lt($openDateTime)) {
+            $earliestBridge = $openDateTime->copy();
+        }
+
+        $candidateStarts = [];
+        if ($strictAntiGaps) {
+            foreach ($standardWindows as $w) {
+                if ($w['end']->eq($lunchStart)) {
+                    $cursor = $w['start']->copy();
+                    while ($cursor->lt($lunchStart)) {
+                        if ($cursor->copy()->addMinutes($serviceDuration)->gt($lunchStart)) {
+                            $candidateStarts[] = $cursor->copy();
+                        }
+                        $cursor->addMinutes($serviceDuration);
+                    }
+                }
+            }
+        }
+
+        // Step intervals between earliestBridge and lunchStart
+        $cursor = $earliestBridge->copy();
+        while ($cursor->lt($lunchStart)) {
+            if ($cursor->copy()->addMinutes($serviceDuration)->gt($lunchStart)) {
+                $candidateStarts[] = $cursor->copy();
+            }
+            $cursor->addMinutes($stepMinutes);
+        }
+
+        $uniqueStarts = [];
+        foreach ($candidateStarts as $cs) {
+            $key = $cs->format('H:i');
+            $uniqueStarts[$key] = $cs;
+        }
+
+        foreach ($uniqueStarts as $candStart) {
+            $candEnd = $candStart->copy()->addMinutes($serviceDuration);
+
+            if ($candStart->lt($openDateTime)) {
+                continue;
+            }
+
+            if ($candEnd->lte($lunchStart)) {
+                continue;
+            }
+
+            $shiftedLunchStart = $candEnd->copy();
+            $shiftedLunchEnd = $shiftedLunchStart->copy()->addMinutes($lunchDuration);
+
+            // Shifted lunch cannot start after 15:00
+            if ($shiftedLunchStart->hour >= 15 && $shiftedLunchStart->minute > 0) {
+                continue;
+            }
+
+            // Shifted lunch must finish before salon closing
+            if ($shiftedLunchEnd->gt($closeDateTime)) {
+                continue;
+            }
+
+            // Check collision of [candStart, candEnd] with any non-lunch busy interval
+            $collidesAppointment = false;
+            foreach ($nonLunchBusy as $busy) {
+                if ($candStart->lt($busy['end']) && $candEnd->gt($busy['start'])) {
+                    $collidesAppointment = true;
+                    break;
+                }
+            }
+            if ($collidesAppointment) {
+                continue;
+            }
+
+            // Check collision of shifted lunch [shiftedLunchStart, shiftedLunchEnd] with any appointment
+            $collidesShiftedLunch = false;
+            foreach ($nonLunchBusy as $busy) {
+                if ($shiftedLunchStart->lt($busy['end']) && $shiftedLunchEnd->gt($busy['start'])) {
+                    $collidesShiftedLunch = true;
+                    break;
+                }
+            }
+            if ($collidesShiftedLunch) {
+                continue;
+            }
+
+            $flexibleSlots[] = [
+                'start_time' => $candStart->format('H:i'),
+                'end_time' => $candEnd->format('H:i'),
+                'start_formatted' => $candStart->format('h:i A'),
+                'end_formatted' => $candEnd->format('h:i A'),
+                'duration_minutes' => $serviceDuration,
+                'is_recommended' => true,
+                'gap_after_minutes' => 0,
+            ];
+        }
+
+        $allSlots = array_merge($standardSlots, $flexibleSlots);
+        usort($allSlots, fn ($a, $b) => strcmp($a['start_time'], $b['start_time']));
+
+        $result = [];
+        $seen = [];
+        foreach ($allSlots as $slot) {
+            if (! isset($seen[$slot['start_time']])) {
+                $seen[$slot['start_time']] = true;
+                $result[] = $slot;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Generate slots from free windows.
+     */
+    protected function generateSlotsFromWindows(array $freeWindows, int $serviceDuration, int $stepMinutes, bool $strictAntiGaps): array
+    {
         $validSlots = [];
 
         foreach ($freeWindows as $window) {
@@ -129,15 +309,11 @@ class BookingAvailabilityService
             $windowDuration = (int) $winStart->diffInMinutes($winEnd);
 
             if ($windowDuration < $serviceDuration) {
-                continue; // Cannot fit service in this window
+                continue;
             }
 
             if ($strictAntiGaps) {
-                // Modo Anti-Huecos Estricto:
-                // Empaqueta los turnos de manera inmediatamente consecutiva a partir de $winStart
-                // (después de la última cita agendada, apertura del local o reinicio de la tarde)
                 $currentSlotStart = $winStart->copy();
-
                 while ($currentSlotStart->copy()->addMinutes($serviceDuration)->lte($winEnd)) {
                     $currentSlotEnd = $currentSlotStart->copy()->addMinutes($serviceDuration);
                     $gapBefore = (int) $winStart->diffInMinutes($currentSlotStart);
@@ -153,13 +329,10 @@ class BookingAvailabilityService
                         'gap_after_minutes' => $gapAfter,
                     ];
 
-                    // Avanza por la duración exacta del servicio para que los turnos queden 100% contiguos
                     $currentSlotStart->addMinutes($serviceDuration);
                 }
             } else {
-                // Modo Flexible / Manual:
                 $currentSlotStart = $winStart->copy();
-
                 while ($currentSlotStart->copy()->addMinutes($serviceDuration)->lte($winEnd)) {
                     $currentSlotEnd = $currentSlotStart->copy()->addMinutes($serviceDuration);
                     $gapBefore = (int) $winStart->diffInMinutes($currentSlotStart);
@@ -185,7 +358,6 @@ class BookingAvailabilityService
 
     /**
      * Check availability for every day in a given month.
-     * Returns an associative array of date string => has_availability (bool) and count.
      *
      * @param Service $service
      * @param int $year
@@ -268,7 +440,6 @@ class BookingAvailabilityService
             $next = $intervals[$i];
 
             if ($next['start']->lte($current['end'])) {
-                // Overlapping or touching
                 if ($next['end']->gt($current['end'])) {
                     $current['end'] = $next['end'];
                 }
@@ -314,5 +485,134 @@ class BookingAvailabilityService
         }
 
         return $freeWindows;
+    }
+
+    /**
+     * Get default recurring lunch slot for a tenant or globally.
+     */
+    public function getDefaultLunchSlot(?int $tenantId = null): ?BlockedSlot
+    {
+        $query = BlockedSlot::where('is_recurring', true)
+            ->where(function ($q) {
+                $q->where('title', 'LIKE', '%Almuerzo%')
+                    ->orWhere('reason', 'LIKE', '%almuerzo%')
+                    ->orWhere(function ($sub) {
+                        $sub->where('start_time', '>=', '12:00:00')
+                            ->where('start_time', '<=', '14:00:00');
+                    });
+            });
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        return $query->first();
+    }
+
+    /**
+     * Adjust lunch slot for an appointment if it overlaps with the normal lunch window.
+     * Moves lunch to start immediately after the appointment ends for that day only.
+     */
+    public function adjustLunchForAppointment(Appointment $appointment): ?BlockedSlot
+    {
+        if (in_array($appointment->status, [AppointmentStatus::CANCELLED, AppointmentStatus::NO_SHOW])) {
+            $this->recalculateLunchForDate($appointment->appointment_date, $appointment->tenant_id);
+            return null;
+        }
+
+        $lunch = $this->getDefaultLunchSlot($appointment->tenant_id);
+        if (! $lunch) {
+            return null;
+        }
+
+        $apptStart = substr($appointment->start_time, 0, 5);
+        $apptEnd = substr($appointment->end_time, 0, 5);
+        $lunchStart = substr($lunch->start_time, 0, 5);
+        $lunchEnd = substr($lunch->end_time, 0, 5);
+
+        // Does the appointment start before lunch end and end after lunch start?
+        $overlapsLunch = ($apptStart < $lunchEnd && $apptEnd > $lunchStart);
+
+        if (! $overlapsLunch) {
+            return null;
+        }
+
+        $lunchDuration = (int) Carbon::parse($lunch->start_time)->diffInMinutes(Carbon::parse($lunch->end_time));
+        if ($lunchDuration <= 0) {
+            $lunchDuration = 60;
+        }
+
+        $dateStr = $appointment->appointment_date instanceof Carbon
+            ? $appointment->appointment_date->toDateString()
+            : Carbon::parse($appointment->appointment_date)->toDateString();
+
+        $newStart = $apptEnd . (strlen($apptEnd) === 5 ? ':00' : '');
+        $newEnd = Carbon::parse($dateStr . ' ' . $apptEnd)->addMinutes($lunchDuration)->format('H:i:s');
+
+        return BlockedSlot::updateOrCreate(
+            [
+                'tenant_id' => $appointment->tenant_id,
+                'blocked_date' => $dateStr,
+                'is_recurring' => false,
+                'title' => 'Almuerzo & Descanso (Flexible)',
+            ],
+            [
+                'start_time' => $newStart,
+                'end_time' => $newEnd,
+                'reason' => "Almuerzo reprogramado automáticamente de {$newStart} a {$newEnd} por cita #{$appointment->appointment_number}",
+            ]
+        );
+    }
+
+    /**
+     * Recalculate or restore lunch when an appointment is updated, cancelled or deleted.
+     */
+    public function recalculateLunchForDate(Carbon|string $date, ?int $tenantId = null): void
+    {
+        $dateStr = $date instanceof Carbon ? $date->toDateString() : Carbon::parse($date)->toDateString();
+        $lunch = $this->getDefaultLunchSlot($tenantId);
+
+        if (! $lunch) {
+            return;
+        }
+
+        $lunchStart = substr($lunch->start_time, 0, 5);
+        $lunchEnd = substr($lunch->end_time, 0, 5);
+        $lunchDuration = (int) Carbon::parse($lunch->start_time)->diffInMinutes(Carbon::parse($lunch->end_time)) ?: 60;
+
+        // Check remaining active appointments on this date overlapping lunch
+        $overlappingApt = Appointment::query()
+            ->whereDate('appointment_date', $dateStr)
+            ->whereNotIn('status', [AppointmentStatus::CANCELLED->value, AppointmentStatus::NO_SHOW->value])
+            ->where('start_time', '<', $lunchEnd)
+            ->where('end_time', '>', $lunchStart)
+            ->orderBy('end_time', 'desc')
+            ->first();
+
+        if ($overlappingApt) {
+            $apptEnd = substr($overlappingApt->end_time, 0, 5);
+            $newStart = $apptEnd . (strlen($apptEnd) === 5 ? ':00' : '');
+            $newEnd = Carbon::parse($dateStr . ' ' . $apptEnd)->addMinutes($lunchDuration)->format('H:i:s');
+
+            BlockedSlot::updateOrCreate(
+                [
+                    'tenant_id' => $tenantId ?? $overlappingApt->tenant_id,
+                    'blocked_date' => $dateStr,
+                    'is_recurring' => false,
+                    'title' => 'Almuerzo & Descanso (Flexible)',
+                ],
+                [
+                    'start_time' => $newStart,
+                    'end_time' => $newEnd,
+                    'reason' => "Almuerzo reprogramado automáticamente de {$newStart} a {$newEnd} por cita #{$overlappingApt->appointment_number}",
+                ]
+            );
+        } else {
+            // Revert back: remove specific flexible lunch block
+            BlockedSlot::whereDate('blocked_date', $dateStr)
+                ->where('is_recurring', false)
+                ->where('title', 'Almuerzo & Descanso (Flexible)')
+                ->delete();
+        }
     }
 }

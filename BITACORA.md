@@ -799,10 +799,14 @@
   1. **Hoja de Estilos Oficial 
 uvex-admin-theme.css:**
      * Creación de ackend/public/css/nuvex-admin-theme.css y actualización de enlace de compatibilidad en salonesgo-admin-theme.css.
-     * **Sidebar Flotante Curva:** Curvatura amplia de 32px (ounded-[32px]), elevación y gradiente esmeralda (#00C975), items de navegación tipo píldora translúcidos, tipografía y elementos en blanco puro. En modo oscuro, transición fluida a Pizarra (#1E293B) con acentos esmeralda.
-     * **Tarjetas Elevadas Suaves (Soft Neumorphic):** Curvatura de 24px (ounded-3xl / ounded-2xl), sombras difusas multicapa sin bordes toscos (ox-shadow: 0 10px 25px -5px rgba(0,0,0,0.035)).
+     * **Sidebar Flotante Curva:** Curvatura amplia de 32px (
+ounded-[32px]), elevación y gradiente esmeralda (#00C975), items de navegación tipo píldora translúcidos, tipografía y elementos en blanco puro. En modo oscuro, transición fluida a Pizarra (#1E293B) con acentos esmeralda.
+     * **Tarjetas Elevadas Suaves (Soft Neumorphic):** Curvatura de 24px (
+ounded-3xl / 
+ounded-2xl), sombras difusas multicapa sin bordes toscos (ox-shadow: 0 10px 25px -5px rgba(0,0,0,0.035)).
      * **Tarjetas de Métricas KPI:** Tipografía de métricas en negrita destacada (1.85rem), rótulos en mayúsculas discretas y badges circulares tintados flotantes para los iconos (w-12 h-12 rounded-full con fondo esmeralda sutil #E6FDF4 / #00C975).
-     * **Topbar Píldora:** Cabecera flotante redondeada con desenfoque de fondo (ackdrop-filter: blur(12px)), buscador en píldora (ounded-full) y modo oscuro nativo.
+     * **Topbar Píldora:** Cabecera flotante redondeada con desenfoque de fondo (ackdrop-filter: blur(12px)), buscador en píldora (
+ounded-full) y modo oscuro nativo.
   2. **Configuración de Providers Filament (AdminPanelProvider & SuperAdminPanelProvider):**
      * Habilitación nativa de soporte dual: ->darkMode(true).
      * Paleta primaria y de éxito asignada a Verde Esmeralda Nuvex: Color::hex('#00C975').
@@ -842,3 +846,190 @@ uvex-admin-theme.css:**
      * Creación del repositorio de conocimiento del proyecto en `cerebro_nuvex/proyectos/proyecto_agendamiento/` (`01_dominio_y_reglas.md`, `02_arquitectura.md`, `03_backlog_tareas.md`, `05_aprendizajes.md`) y actualización del índice central `README.md`.
   7. **Verificación:**
      * Suite completa de **37 pruebas automatizadas aprobadas al 100%** (236 aserciones).
+
+---
+
+### 🏷️ Registro #055 — Sistema Integral de Notificaciones por WhatsApp y Conexión de Flujos de Negocio
+* **Fecha:** 10 de Octubre de 2026
+* **Responsable:** Nuvex Tecnología
+* **Actividades Realizadas:**
+  1. **Expansión y Blindaje de WhatsAppNotificationService.php:**
+     * Implementación de los 5 flujos completos de notificación del ciclo de vida de una cita:
+       * sendBookingCreated(): Acuse de recibo a la clienta con detalles de abono Nequi y estado pendiente.
+       * sendAdminNewBookingAlert(): Alerta inmediata a Paola (WHATSAPP_ADMIN_PHONE) con datos de la clienta y enlace directo al panel.
+       * sendDepositApproved(): Mensaje de confirmación tras validar el comprobante Nequi, con liquidación de saldo en local y dirección.
+       * sendDepositRejected(): Mensaje con el motivo del rechazo y enlace para que la clienta reintente subir el comprobante sin perder su cupo.
+       * sendAppointmentCancelled(): Aviso de cancelación con motivo y enlace para re-agendar.
+       * sendReminder24h(): Recordatorio del Cron con botón de confirmación de asistencia en 1 clic.
+       * generateWhatsAppUrl(): Constructor universal de enlaces wa.me y web.whatsapp.com.
+     * Sanitización estricta de números telefónicos a formato internacional E.164 (573...).
+     * Resiliencia y fallback seguro: todas las llamadas protegidas con try-catch y desvío a storage/logs/laravel.log para que ninguna falla de red o desconexión del gateway interrumpa las operaciones de base de datos ni arroje error 500.
+  2. **Conexión en la API de Reserva Pública (AppointmentBookingController.php):**
+     * Inyección de dependencias de WhatsAppNotificationService.
+     * Disparo automático en book(): notificación a la clienta y alerta inmediata a la administradora.
+     * Disparo automático en cancelAppointmentApi(): notificación de cita cancelada y cupo liberado.
+  3. **Conexión en el Panel Administrativo Filament (AppointmentResource.php):**
+     * Acción verifyNequi: al validar la transferencia Nequi, se despacha automáticamente el mensaje de confirmación a la clienta con feedback toast en Filament.
+     * Acción rejectNequi: captura el motivo del rechazo y lo notifica a la clienta por WhatsApp.
+     * Acción cancelAppointment: despacha el aviso de cancelación.
+     * Acción nueva sendWhatsAppGateway: botón directo con ícono de avión (heroicon-o-paper-airplane) para enviar recordatorio desatendido vía Evolution API.
+     * Acción sendWhatsAppDirect: botón con ícono de chat (heroicon-o-chat-bubble-left-right) para abrir WhatsApp Web con mensaje pre-rellenado (respaldo que no depende de Docker ni de conexiones externas).
+  4. **Verificación Automatizada (QA):**
+     * Creación de la suite tests/Feature/WhatsAppNotificationFlowTest.php (normalización de números, ejecución sin excepciones de todos los métodos y generación de enlaces).
+     * Ejecución de la suite completa del backend: 61/61 pruebas aprobadas al 100% (352 aserciones).
+  5. **Sincronización con el Cerebro Nuvex:**
+     * Actualizado cerebro_nuvex/proyectos/proyecto_agendamiento/03_backlog_tareas.md y documentada la arquitectura en 05_aprendizajes.md.
+
+---
+
+### 🏷️ Registro #056 — Módulo de Clientes, Reconocimiento de Nuevos vs Registrados y Expediente de Servicios
+* **Fecha:** 12 de Octubre de 2026
+* **Responsable:** Nuvex Tecnología
+* **Solicitud:** Identificar clientes nuevos vs ya registrados en la plataforma. En el panel de administración, habilitar el listado de clientes con fecha de registro y un modal con estadísticas y el listado de servicios asociados.
+* **Actividades Realizadas:**
+  1. **Modelo y Base de Datos (Customer):**
+     * Creación de la migración para la tabla customers vinculada a tenants, backfill automático de clientes existentes y adición de customer_id a appointments.
+     * Creación del modelo App\Models\Customer con métodos de fidelidad: isNew(), isRecurring(), getLoyaltyBadge(), total_spent, getCompletedAppointmentsCount() y getFavoriteService().
+     * Sincronización automática desatendida entre citas y clientes en Appointment::boot().
+  2. **Reconocimiento Visual e Identificación en Citas y API:**
+     * En AppointmentResource: descripción enriquecida en la columna de clienta con badge visual ✨ Nueva vs ⭐ Registrada y nuevos filtros para filtrar citas por tipo de clienta.
+     * En modal-view-details.blade.php: badge de fidelidad y fecha de registro con conteo histórico de citas.
+     * En AppointmentBookingController::lookupClient: retorno de metadatos is_registered, is_new y registered_at.
+  3. **Recurso de Administración en Filament (CustomerResource):**
+     * Nuevo menú lateral 'Clientes' dentro de 'Agenda & Citas' con contador en vivo.
+     * Tabla con Cliente, WhatsApp directo (wa.me), Badge de Estado (Nueva / Recurrente / VIP), Fecha de Registro legible y relativa, Total de Citas, Inversión Total ($ COP) y Última Visita.
+     * Filtros rápidos por tipo de cliente (Nuevos vs Recurrentes).
+     * Modal interactivo de Expediente (modal-customer-details.blade.php) con avatar, tarjetas KPI y tabla completa de citas y servicios tomados.
+  4. **Verificación Automatizada (QA):**
+     * Creación de tests/Feature/CustomerManagementTest.php con 5 pruebas exhaustivas.
+     * Suite completa de pruebas ejecutada: 66/66 pruebas aprobadas al 100% (376 aserciones) sin regresiones.
+
+---
+
+### 🏷️ Registro #057 — Motor de Almuerzo Dinámico y Flexible según Agendamientos
+* **Fecha:** 12 de Octubre de 2026
+* **Responsable:** Nuvex Tecnología
+* **Solicitud:** El horario de almuerzo debe ser flexible según los tiempos disponibles para agendamiento. Si el almuerzo habitual es de 13:00 a 14:00 y un servicio dura 1h 30m iniciando a las 12:00, el sistema debe permitir agendar de 12:00 a 13:30 y mover automáticamente el descanso de almuerzo para ese día exclusivo a 13:30 - 14:30.
+* **Actividades Realizadas:**
+  1. **Algoritmo de Agendamiento en BookingAvailabilityService.php:**
+     * getDefaultLunchSlot(): Localiza el bloque de almuerzo recurrente configurado para la sede.
+     * uildSlots(): Evalúa slots puente que inician antes del almuerzo y se extienden dentro del bloque regular (ej. 12:00 a 13:30). Valida que el almuerzo desplazado (ej. 13:30 a 14:30) no colisione con citas de la tarde ni exceda el cierre del salón.
+     * djustLunchForAppointment(): Genera o actualiza automáticamente un BlockedSlot puntual exclusivo para esa fecha (	itle = 'Almuerzo & Descanso (Flexible)', is_recurring = false, horario 13:30–14:30).
+     * 
+ecalculateLunchForDate(): Recalcula o elimina el bloque flexible retornando al horario recurrente en caso de cancelación o reprogramación de la cita.
+  2. **Automatización en AppointmentObserver.php:**
+     * Sincronizado en created(), updated() y deleted(). Cualquier cita creada por web o panel ajusta el almuerzo de forma desatendida y si se cancela o cambia de hora, se restaura inmediatamente.
+  3. **Visualización en Calendario (AppointmentCalendarPage.php):**
+     * Se ajustó el filtro de bloques bloqueados para suprimir el almuerzo recurrente en las fechas que cuenten con un almuerzo flexible específico, evitando duplicidades visuales.
+  4. **Verificación Automatizada (QA):**
+     * Añadida prueba 	est_flexible_lunch_allows_appointment_from_12_to_13_30_and_shifts_lunch en BookingAvailabilityEngineTest.php.
+     * Suite completa del backend: **67/67 pruebas aprobadas al 100% (384 aserciones)** sin errores ni advertencias.
+
+
+---
+
+### 🏷️ Registro #058 — Integración de Framer Motion, Rediseño del Escritorio, Limpieza de BD y Catálogo Oficial de Uñas
+* **Fecha:** 12 de Octubre de 2026 (Cierre de Jornada: 19:55)
+* **Responsable:** Nuvex Tecnología
+* **Actividades Realizadas:**
+  1. **Integración de Estándares de Animación (Framer Motion / Motion):**
+     * Incorporado el estándar oficial `cerebro_nuvex/core/estandares_animacion_framer_motion.md` y la skill `.agents/skills/nuvex-motion/SKILL.md` (Spring physics con duraciones ágiles <350ms).
+     * Instalado el paquete agnóstico de alto rendimiento `motion` (Motion DOM) en `frontend/` (Angular 19).
+     * Creado módulo de utilidades `src/app/core/animations/motion.animations.ts` y la directiva standalone `NuvexMotionDirective` (`[nuvexMotion]`).
+     * Compilación de frontend validada exitosamente con `ng build` (0 errores).
+  2. **Rediseño y Simplificación Ejecutiva del Escritorio / Dashboard en Filament:**
+     * Eliminada la redundancia de 8 tarjetas y cifras duplicadas de anticipos desactivando `StatsOverviewWidget`.
+     * Consolidada **1 sola fila con 4 Tarjetas KPI Maestras**:
+       * Citas para Hoy (con badge contextual ámbar para Nequi pendientes).
+       * Facturación Estimada (con comparativas de crecimiento).
+       * Anticipos Asegurados (depósitos reales confirmados).
+       * Por Recaudar en Salón (saldo pendiente al atender clientas).
+     * Retirada la barra divisoria intermedia; selectores de período y navegación temporal integrados limpiamente en la cabecera.
+     * Sección inferior reestructurada en 2 paneles armónicos y despejados:
+       * Columna izquierda: Gráfica de evolución temporal estilizada + resumen de clientas en un solo renglón sobrio.
+       * Columna derecha: Top 5 Tratamientos con barritas finas esmeralda + desglose discreto de canales de anticipo (Nequi Directo vs Bold Pasarela).
+  3. **Limpieza Controlada de Base de Datos & Comando de Producción:**
+     * Truncadas las tablas operativas de prueba: `appointments` (31 citas), `customers` (16 clientas), `waitlists` (0) y bloqueos puntuales temporales.
+     * Eliminados los 6 comprobantes físicos de prueba en `storage/app/public/receipts/`.
+     * Preservados íntegramente: Salón/Tenant (*La Belle Nails Bogotá* con branding intacto), Usuarios administradores con sus credenciales y los 7 días de Horarios de Atención.
+     * Creado el comando oficial Artisan `php artisan nuvex:reset-operational-data` (con soporte para `--keep-services` y `--force`), documentado en `DEPLOY_VPS.md`.
+  4. **Catálogo Oficial de Servicios & Imágenes de Alta Definición:**
+     * Expandido el enum `ServiceCategory` con categorías de estética de uñas: `MANICURA`, `PEDICURA`, `SISTEMAS_ARTIFICIALES` y `REPARACION_RETIRO`.
+     * Registrados los 11 servicios oficiales con sus precios y duraciones exactas:
+       1. Limpieza Manicura Rusa ($60.000 / 50 min)
+       2. Limpieza Pedicura ($55.000 / 50 min)
+       3. Pedicura Semipermanente ($85.000 / 60 min)
+       4. Aplicación Semi ($55.000 / 30 min)
+       5. Aplicación Rubber ($60.000 / 30 min)
+       6. Remoción Semi ($16.000 / 15 min)
+       7. Pedicura Spa ($65.000 / 60 min)
+       8. Remiendo ($5.000 / 5 min)
+       9. Uña Individual Polygel ($20.000 / 5 min)
+       10. Uñas Polygel ($210.000 / 120 min)
+       11. Mantenimiento Polygel ($155.000 / 90 min)
+     * Anticipos unificados a **$50.000 COP** para todos los servicios de $50.000 o más (y $0 para los servicios menores).
+     * Seleccionadas y enlazadas 11 imágenes fotográficas de estudio de alta definición desde Unsplash CDN (100% verificadas con código HTTP 200 OK), reflejando con fidelidad cada técnica específica (Pedicura Semipermanente con esmalte en pies, Pedicura Spa con tina y sales, Remoción con torno, Mantenimiento Polygel en salón, etc.).
+     * Creado el seeder oficial `database/seeders/LaBelleServicesSeeder.php` y el comando de siembra `php artisan nuvex:seed-services`.
+  5. **Certificación de Calidad y Cierre de Sesión:**
+     * Suite de pruebas del backend: **67/67 pruebas aprobadas al 100% (384 aserciones)** sin errores ni advertencias.
+     * Sistema listo y en estado óptimo para el arranque de la próxima sesión.
+
+---
+
+### 🏷️ Registro #059 — Importación y Normalización de 67 Clientas Reales y Enlace Directo a WhatsApp
+* **Fecha:** 13 de Octubre de 2026
+* **Responsable:** Nuvex Tecnología
+* **Solicitud:** Cargar en la base de datos la lista oficial de 67 clientas reales de La Belle Nails Bogotá con sus números de WhatsApp, asegurando soporte para números nacionales (+57 Colombia) e internacionales (+1 USA, +52 México), visualización legible en el panel y enlaces clicables a WhatsApp Web / Móvil.
+* **Actividades Realizadas:**
+  1. **Normalización y Soporte Internacional en Modelo Customer (app/Models/Customer.php):**
+     * Método getDisplayPhone(): Formatea con legibilidad estética celulares colombianos (+57 3XX XXX XXXX), mexicanos (+52 55 XXXX XXXX) y estadounidenses (+1 786 XXX XXXX, +1 305 XXX XXXX, +1 617 XXX XXXX).
+     * Método getWhatsAppUrl(): Genera el enlace directo universal https://wa.me/<codigo_pais><digitos> normalizado bajo estándar E.164 sin signos + ni caracteres extraños.
+     * Enriquecido syncFromAppointment(): Detección inteligente bidireccional para asociar citas a la clienta existente sin duplicados, tanto si el número se digita con o sin el prefijo del país.
+  2. **Interactividad en Filament (app/Filament/Resources/CustomerResource.php):**
+     * Columna de WhatsApp con formateo vía getDisplayPhone().
+     * Apertura directa de chat en pestaña nueva al hacer clic en el número de teléfono con icono esmeralda de mensajería (heroicon-o-chat-bubble-left-right).
+  3. **Seeder Oficial de Clientas (database/seeders/LaBelleClientsSeeder.php):**
+     * Carga idempotente (updateOrCreate) de las 67 clientas reales asociadas al tenant activo de Paola (labellenails).
+  4. **Comando Artisan Reutilizable (app/Console/Commands/SeedClientsCommand.php):**
+     * Implementado php artisan nuvex:seed-clients para ejecutar la carga en cualquier entorno local o en el VPS de producción.
+  5. **Reconocimiento de Clientas Antiguas / Históricas (is_legacy):**
+     * Migración dd_is_legacy_to_customers_table: Campo booleano indexado is_legacy para catalogar clientas preexistentes del salón.
+     * En Customer.php: Los métodos isNew() retornan alse, isRecurring() retorna 	rue y getLoyaltyBadge() asigna el badge oficial **⭐ Antigua** (esmeralda).
+     * En CustomerResource.php: Columna de registro rotulada como **Base Histórica (Clienta Antigua del Salón)**, filtros de tabla para clientas antiguas vs nuevas, y toggle editable en el formulario.
+     * En el modal de expediente (modal-customer-details.blade.php): Mensaje contextual claro indicando que sus citas se reflejarán a medida que agende en el nuevo sistema digital.
+  6. **Certificación de Calidad y QA:**
+     * Las 67 clientas reales actualizadas como is_legacy = true con badge ⭐ Antigua y notas de cliente habitual.
+     * Nueva prueba 	est_legacy_customer_is_recognized_as_antigua_and_recurring añadida a la suite.
+     * Suite completa de pruebas ejecutada: **68/68 pruebas aprobadas al 100% (385 aserciones)** sin errores.
+
+
+---
+
+### 🏷️ Registro #060 — Flujo Completo de Reagendamiento de Citas (Web + API REST) y Retención de Abono
+* **Fecha:** 13 de Octubre de 2026
+* **Responsable:** Nuvex Tecnología
+* **Solicitud:** Cuando una clienta requiera cancelar una cita, proveer una alternativa clara y recomendada para reagendar en lugar de cancelar definitivamente, conservando su abono y servicio.
+* **Actividades Realizadas:**
+  1. **Políticas y Métodos en Modelo `Appointment` (`app/Models/Appointment.php`):**
+     * Implementado `canBeRescheduledByClient()`: Valida que la cita no esté en el pasado y que falten más de 24 horas antes de la fecha y hora de inicio de la cita.
+  2. **Controlador Web y API (`ClientBookingWebController.php` & `AppointmentBookingController.php`):**
+     * Rutas web: `GET /reserva/reagendar/{number}` (`portal.reschedule-form`) y `POST /reserva/reagendar/{number}` (`portal.reschedule-appointment`).
+     * Endpoint API REST: `POST /api/v1/appointments/{number}/reschedule`.
+     * Validación de conflictos de horario utilizando `Appointment::hasConflict()` excluyendo el ID de la cita actual (`excludeAppointmentId`), evitando falsos positivos al cambiar de turno en el mismo día.
+     * Reactivación de citas previamente canceladas: Si una cita cancelada se reagenda, se restaura su estado a `CONFIRMED` (si tenía abono registrado) o `PENDING_VERIFICATION`, limpiando `cancelled_at` y `cancellation_reason`.
+     * Limpieza de `reminder_24h_sent_at` para garantizar que el cron de recordatorios dispare el aviso 24 horas antes de la nueva fecha.
+  3. **Ajuste Dinámico de Horarios y Almuerzo Flexible:**
+     * Al cambiar de día, el sistema sincroniza automáticamente el turno de almuerzo de la fecha anterior (`recalculateLunchForDate`) y recalcula el almuerzo flexible para la nueva fecha (`adjustLunchForAppointment`).
+  4. **Notificaciones Automáticas por WhatsApp (`WhatsAppNotificationService.php`):**
+     * Método `sendAppointmentRescheduled()`: Envía plantilla de WhatsApp a la clienta confirmando la nueva fecha, hora, servicio y enlace al comprobante digital actualizado.
+  5. **Diseño de Interfaz Nuvex Modern Curve UI:**
+     * `resources/views/portal/reschedule.blade.php`: Pantalla interactiva con Alpine.js que consulta en tiempo real `/api/v1/availability/slots?service_id=...&date=...&strict_anti_gaps=false`, renderiza selector de fechas y turnos disponibles con estética minimalista, indicador de abono protegido y validaciones visuales.
+     * `resources/views/portal/confirmation.blade.php`: Tarjeta preferente de *"Reagendar mi Cita"* antes del bloque de cancelación con aviso amigable *"¿Necesitas un cambio de horario? Reagenda tu cita sin perder tu abono"*, y botón de reactivación directa si el voucher visualizado está cancelado.
+     * `resources/views/portal/lookup.blade.php`: Enlace de acción rápida *"Reagendar"* en cada resultado del buscador de citas.
+  6. **Certificación y Pruebas Automatizadas:**
+     * 4 pruebas exhaustivas agregadas en `tests/Feature/ClientPortalWebTest.php`:
+       - `test_client_can_view_reschedule_form`: Verificación de renderizado de formulario.
+       - `test_client_can_successfully_reschedule_appointment_web`: Flujo web de cambio de fecha y hora.
+       - `test_client_can_reschedule_cancelled_appointment_to_reactivate_it`: Reactivación de cita cancelada.
+       - `test_api_client_reschedule_flow`: Endpoint JSON de reprogramación.
+     * Suite completa ejecutada con éxito: **72/72 pruebas aprobadas al 100% (407 aserciones)** en 12.04s.

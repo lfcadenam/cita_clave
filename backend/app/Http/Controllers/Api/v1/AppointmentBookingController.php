@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Service;
 use App\Services\BookingAvailabilityService;
+use App\Services\WhatsAppNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,8 @@ use Illuminate\Validation\Rule;
 class AppointmentBookingController extends Controller
 {
     public function __construct(
-        protected BookingAvailabilityService $availabilityService
+        protected BookingAvailabilityService $availabilityService,
+        protected WhatsAppNotificationService $whatsAppService
     ) {}
 
     /**
@@ -35,23 +37,43 @@ class AppointmentBookingController extends Controller
             ]);
         }
 
-        $appointment = Appointment::where('client_phone', 'LIKE', "%{$phone}%")
-            ->orderBy('id', 'desc')
-            ->first();
+        $customer = \App\Models\Customer::where('phone', 'LIKE', "%{$phone}%")->first();
+        $appointment = null;
 
-        if (! $appointment) {
+        if (! $customer) {
+            $appointment = Appointment::where('client_phone', 'LIKE', "%{$phone}%")
+                ->orderBy('id', 'desc')
+                ->first();
+            if ($appointment) {
+                try {
+                    $customer = \App\Models\Customer::syncFromAppointment($appointment);
+                } catch (\Throwable $e) {}
+            }
+        }
+
+        if (! $customer && ! $appointment) {
             return response()->json([
                 'success' => false,
                 'data' => null,
             ]);
         }
 
+        $name = $customer ? $customer->name : $appointment->client_name;
+        $phoneVal = $customer ? $customer->phone : $appointment->client_phone;
+        $email = $customer ? $customer->email : $appointment->client_email;
+        $isRegistered = $customer ? $customer->isRecurring() : false;
+        $isNew = $customer ? $customer->isNew() : true;
+        $registeredAt = $customer && $customer->registered_at ? $customer->registered_at->toIso8601String() : null;
+
         return response()->json([
             'success' => true,
             'data' => [
-                'name' => $appointment->client_name,
-                'phone' => $appointment->client_phone,
-                'email' => $appointment->client_email,
+                'name' => $name,
+                'phone' => $phoneVal,
+                'email' => $email,
+                'is_registered' => $isRegistered,
+                'is_new' => $isNew,
+                'registered_at' => $registeredAt,
             ],
         ]);
     }
@@ -250,6 +272,18 @@ class AppointmentBookingController extends Controller
 
             $appointment->save();
 
+            // Disparar notificaciones automáticas por WhatsApp
+            try {
+                if ($appointment->status === AppointmentStatus::CONFIRMED) {
+                    $this->whatsAppService->sendBookingConfirmation($appointment);
+                } else {
+                    $this->whatsAppService->sendBookingCreated($appointment);
+                }
+                $this->whatsAppService->sendAdminNewBookingAlert($appointment);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("No se pudo enviar notificación de WhatsApp al agendar cita #{$appointment->appointment_number}: " . $e->getMessage());
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => $appointment->status === AppointmentStatus::PENDING_VERIFICATION
@@ -421,6 +455,12 @@ class AppointmentBookingController extends Controller
             'cancelled_at' => now(),
         ]);
 
+        try {
+            $this->whatsAppService->sendAppointmentCancelled($appointment, $appointment->cancellation_reason);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("No se pudo enviar WhatsApp de cancelación para cita #{$appointment->appointment_number}: " . $e->getMessage());
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Tu cita ha sido cancelada exitosamente.',
@@ -430,6 +470,116 @@ class AppointmentBookingController extends Controller
                 'status_label' => $appointment->status->label(),
                 'cancellation_reason' => $appointment->cancellation_reason,
                 'cancelled_at' => $appointment->cancelled_at->toIso8601String(),
+            ],
+        ]);
+    }
+
+    /**
+     * Reschedule appointment by client via API.
+     */
+    public function rescheduleAppointmentApi(Request $request, string $appointmentNumber): JsonResponse
+    {
+        $appointment = Appointment::with('service')
+            ->where('appointment_number', trim($appointmentNumber))
+            ->first();
+
+        if (! $appointment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cita no encontrada.',
+            ], 404);
+        }
+
+        if (! $appointment->canBeRescheduledByClient()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No es posible reagendar la cita automáticamente. Por políticas del salón, si faltan menos de 24 horas para el inicio, la reprogramación debe ser gestionada directamente con la administración.',
+            ], 422);
+        }
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'new_date' => 'required|date_format:Y-m-d|after_or_equal:today',
+            'new_time' => 'required|date_format:H:i',
+            'reason' => 'nullable|string|max:500',
+        ], [
+            'new_date.required' => 'Debes ingresar la nueva fecha.',
+            'new_date.after_or_equal' => 'La nueva fecha debe ser igual o posterior a hoy.',
+            'new_time.required' => 'Debes ingresar el nuevo horario.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $service = $appointment->service;
+        $newDate = Carbon::parse($request->input('new_date'));
+        $newStartTime = $request->input('new_time');
+        $newEndTime = Carbon::parse($newDate->toDateString() . ' ' . $newStartTime)
+            ->addMinutes($service->duration_minutes)
+            ->format('H:i:s');
+
+        // Verificar conflicto excluyendo la cita actual
+        $conflict = Appointment::hasConflict(
+            $newDate,
+            $newStartTime,
+            $newEndTime,
+            excludeAppointmentId: $appointment->id,
+            tenantId: $appointment->tenant_id
+        );
+
+        if ($conflict) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El horario seleccionado ya se encuentra ocupado por otra cita.',
+            ], 422);
+        }
+
+        $oldDate = $appointment->appointment_date ? $appointment->appointment_date->toDateString() : '';
+        $oldDateFormatted = $appointment->appointment_date ? $appointment->appointment_date->locale('es')->isoFormat('dddd D [de] MMMM') : '';
+        $oldTime = substr($appointment->start_time, 0, 5);
+
+        $appointment->appointment_date = $newDate->toDateString();
+        $appointment->start_time = strlen($newStartTime) === 5 ? $newStartTime . ':00' : $newStartTime;
+        $appointment->end_time = $newEndTime;
+
+        if ($appointment->status === AppointmentStatus::CANCELLED) {
+            $appointment->status = $appointment->deposit_paid > 0
+                ? AppointmentStatus::CONFIRMED
+                : AppointmentStatus::PENDING_VERIFICATION;
+        }
+
+        $appointment->cancelled_at = null;
+        $appointment->cancellation_reason = null;
+        $appointment->attendance_confirmed_at = null;
+        $appointment->reminder_24h_sent_at = null;
+        $appointment->save();
+
+        try {
+            if ($oldDate && $oldDate !== $newDate->toDateString()) {
+                $this->availabilityService->recalculateLunchForDate($oldDate, $appointment->tenant_id);
+            }
+            $this->availabilityService->adjustLunchForAppointment($appointment);
+        } catch (\Throwable $e) {}
+
+        try {
+            $this->whatsAppService->sendAppointmentRescheduled($appointment, $oldDateFormatted, $oldTime);
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tu cita ha sido reagendada exitosamente.',
+            'data' => [
+                'appointment_number' => $appointment->appointment_number,
+                'status' => $appointment->status->value,
+                'status_label' => $appointment->status->label(),
+                'new_date' => $appointment->appointment_date->toDateString(),
+                'new_start_time' => substr($appointment->start_time, 0, 5),
+                'new_end_time' => substr($appointment->end_time, 0, 5),
+                'voucher_url' => url("/reserva/confirmacion/{$appointment->appointment_number}"),
             ],
         ]);
     }

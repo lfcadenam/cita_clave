@@ -29,6 +29,12 @@ Route::post('/reserva/cancelar/{appointmentNumber}', [ClientBookingWebController
 Route::post('/citas/cancelar/{appointmentNumber}', [ClientBookingWebController::class, 'cancelAppointment']);
 Route::post('/citas/{appointmentNumber}/cancel', [ClientBookingWebController::class, 'cancelAppointment']);
 
+// Reagendamiento de Cita por la Clienta
+Route::get('/reserva/reagendar/{appointmentNumber}', [ClientBookingWebController::class, 'showRescheduleForm'])->name('portal.reschedule-form');
+Route::get('/citas/{appointmentNumber}/reagendar', [ClientBookingWebController::class, 'showRescheduleForm']);
+Route::post('/reserva/reagendar/{appointmentNumber}', [ClientBookingWebController::class, 'rescheduleAppointment'])->name('portal.reschedule-appointment');
+Route::post('/citas/{appointmentNumber}/reagendar', [ClientBookingWebController::class, 'rescheduleAppointment']);
+
 // Descarga de Calendario (.ics)
 Route::get('/reserva/calendar/{appointmentNumber}.ics', [ClientBookingWebController::class, 'downloadCalendar'])->name('portal.calendar');
 Route::get('/citas/{appointmentNumber}/calendar', [ClientBookingWebController::class, 'downloadCalendar']);

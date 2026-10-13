@@ -21,6 +21,7 @@ class Appointment extends Model
 
     protected $fillable = [
         'tenant_id',
+        'customer_id',
         'appointment_number',
         'user_id',
         'service_id',
@@ -77,6 +78,14 @@ class Appointment extends Model
             }
             if (empty($appointment->balance_due)) {
                 $appointment->balance_due = $appointment->total_amount - $appointment->deposit_paid;
+            }
+            if (empty($appointment->customer_id) && !empty($appointment->client_phone)) {
+                try {
+                    $customer = Customer::syncFromAppointment($appointment);
+                    $appointment->customer_id = $customer->id;
+                } catch (\Throwable $e) {
+                    // Fallback resiliente
+                }
             }
         });
     }
@@ -137,6 +146,11 @@ class Appointment extends Model
         return static::findConflicting($date, $startTime, $endTime, $excludeAppointmentId, $tenantId) !== null;
     }
 
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -145,6 +159,45 @@ class Appointment extends Model
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
+    }
+
+    /**
+     * Determina si la cita corresponde a una clienta nueva (primera cita).
+     */
+    public function isClientNew(): bool
+    {
+        if ($this->customer) {
+            return $this->customer->isNew();
+        }
+
+        $cleanPhone = preg_replace('/[^0-9]/', '', (string) $this->client_phone);
+        if (empty($cleanPhone)) {
+            return true;
+        }
+
+        $count = static::where('client_phone', 'LIKE', "%{$cleanPhone}%")->count();
+        return $count <= 1;
+    }
+
+    /**
+     * Retorna la información de badge de fidelidad de la clienta.
+     */
+    public function getClientLoyaltyBadge(): array
+    {
+        if ($this->customer) {
+            return $this->customer->getLoyaltyBadge();
+        }
+
+        $isNew = $this->isClientNew();
+
+        return [
+            'label' => $isNew ? '✨ Nueva' : '⭐ Registrada',
+            'description' => $isNew ? 'Primera cita' : 'Cliente frecuente',
+            'color' => $isNew ? 'amber' : 'emerald',
+            'bg_class' => $isNew
+                ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+        ];
     }
 
     public function scopeConfirmed($query)
@@ -186,5 +239,30 @@ class Appointment extends Model
         $startDateTime = Carbon::parse($this->appointment_date->toDateString() . ' ' . $this->start_time);
 
         return round(now()->diffInMinutes($startDateTime, false) / 60, 1);
+    }
+
+    /**
+     * Determina si la cita puede ser reagendada por la clienta.
+     * Reglas de negocio:
+     * 1. No puede estar completada ni marcada como inasistencia.
+     * 2. Si está cancelada, se permite reagendar para reactivarla a una nueva fecha.
+     * 3. Si está activa, debe faltar estrictamente más de 24 horas para el inicio.
+     */
+    public function canBeRescheduledByClient(): bool
+    {
+        if (in_array($this->status, [
+            AppointmentStatus::COMPLETED,
+            AppointmentStatus::NO_SHOW,
+        ])) {
+            return false;
+        }
+
+        if ($this->status === AppointmentStatus::CANCELLED) {
+            return true;
+        }
+
+        $startDateTime = Carbon::parse($this->appointment_date->toDateString() . ' ' . $this->start_time);
+
+        return now()->diffInSeconds($startDateTime, false) > (24 * 3600);
     }
 }

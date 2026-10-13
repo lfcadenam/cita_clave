@@ -340,7 +340,13 @@ class AppointmentCalendarPage extends Page
         while ($current->lte($endDate)) {
             $dateStr = $current->toDateString();
             $dayAppointments = $appointments->filter(fn ($apt) => $apt->appointment_date->toDateString() === $dateStr);
-            $dayBlocks = $blockedSlots->filter(function ($b) use ($dateStr) {
+            $hasSpecificLunch = $blockedSlots->contains(function ($b) use ($dateStr) {
+                return ! $b->is_recurring && $b->blocked_date && $b->blocked_date->toDateString() === $dateStr && str_contains(strtolower($b->title ?? ''), 'almuerzo');
+            });
+            $dayBlocks = $blockedSlots->filter(function ($b) use ($dateStr, $hasSpecificLunch) {
+                if ($hasSpecificLunch && $b->is_recurring && str_contains(strtolower($b->title ?? ''), 'almuerzo')) {
+                    return false;
+                }
                 return $b->is_recurring || ($b->blocked_date && $b->blocked_date->toDateString() === $dateStr);
             });
 

@@ -24,6 +24,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class AppointmentResource extends Resource
@@ -451,7 +452,13 @@ class AppointmentResource extends Resource
                     ->label('Clienta')
                     ->weight('bold')
                     ->searchable(['client_name', 'client_phone', 'appointment_number'])
-                    ->description(fn (Appointment $record): string => ($record->client_phone ?? '') . ($record->appointment_number ? " • #{$record->appointment_number}" : ''))
+                    ->description(function (Appointment $record): string {
+                        $phone = $record->client_phone ? "+57 {$record->client_phone}" : '';
+                        $code = $record->appointment_number ? "#{$record->appointment_number}" : '';
+                        $loyalty = $record->isClientNew() ? '✨ Nueva' : '⭐ Registrada';
+                        $parts = array_filter([$loyalty, $phone, $code]);
+                        return implode(' • ', $parts);
+                    })
                     ->wrap(),
 
                 TextColumn::make('service.name')
@@ -492,6 +499,12 @@ class AppointmentResource extends Resource
                 SelectFilter::make('service_id')
                     ->label('Filtrar por Servicio')
                     ->relationship('service', 'name'),
+                Tables\Filters\Filter::make('clientas_nuevas')
+                    ->label('✨ Solo Clientas Nuevas')
+                    ->query(fn (Builder $query) => $query->whereHas('customer', fn ($q) => $q->has('appointments', '<=', 1))),
+                Tables\Filters\Filter::make('clientas_registradas')
+                    ->label('⭐ Solo Clientas Registradas / Recurrentes')
+                    ->query(fn (Builder $query) => $query->whereHas('customer', fn ($q) => $q->has('appointments', '>=', 2))),
             ])
             ->filtersTriggerAction(function ($action) {
                 return $action
@@ -537,15 +550,56 @@ class AppointmentResource extends Resource
                             'verified_at' => now(),
                             'verification_notes' => $data['verification_notes'] ?? 'Comprobante aprobado por Paola',
                         ]);
+
+                        try {
+                            app(\App\Services\WhatsAppNotificationService::class)->sendDepositApproved($record);
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::warning("Error enviando WhatsApp de aprobación: " . $e->getMessage());
+                        }
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Abono Nequi Aprobado')
+                            ->body("La cita #{$record->appointment_number} ha sido confirmada y se notificó por WhatsApp a {$record->client_name}.")
+                            ->success()
+                            ->send();
                     })
                     ->modalSubmitActionLabel('Aprobar Abono y Confirmar Cita')
                     ->modalCancelActionLabel('Cerrar')
                     ->modalWidth(\Filament\Support\Enums\Width::Large),
 
+                // 2.3. Botón Gateway WhatsApp: Envío automático silencioso
+                Action::make('sendWhatsAppGateway')
+                    ->label('Enviar Recordatorio por Gateway')
+                    ->tooltip('Enviar recordatorio automático vía Evolution API')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('info')
+                    ->iconButton()
+                    ->size('sm')
+                    ->visible(fn (Appointment $record) => !empty($record->client_phone) && $record->status !== AppointmentStatus::CANCELLED)
+                    ->requiresConfirmation()
+                    ->modalHeading('¿Enviar recordatorio por WhatsApp?')
+                    ->modalDescription(fn (Appointment $record) => "Se enviará el recordatorio con enlace de confirmación al número {$record->client_phone}.")
+                    ->action(function (Appointment $record): void {
+                        $sent = app(\App\Services\WhatsAppNotificationService::class)->sendReminder24h($record);
+                        if ($sent) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Recordatorio Despachado')
+                                ->body("Mensaje enviado por WhatsApp a {$record->client_name}.")
+                                ->success()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Gateway Sin Conexión')
+                                ->body("El Gateway local no respondió. El mensaje quedó en el log de Laravel o puedes usar el botón de WhatsApp Web directo.")
+                                ->warning()
+                                ->send();
+                        }
+                    }),
+
                 // 2.5. Botón Directo WhatsApp: Abrir chat con mensaje predefinido en 1 Clic
                 Action::make('sendWhatsAppDirect')
-                    ->label('Enviar Recordatorio WhatsApp')
-                    ->tooltip('Abrir WhatsApp Web con mensaje de recordatorio y enlace')
+                    ->label('Abrir en WhatsApp Web')
+                    ->tooltip('Abrir WhatsApp Web con mensaje de recordatorio pre-rellenado')
                     ->icon('heroicon-o-chat-bubble-left-right')
                     ->color('success')
                     ->iconButton()
@@ -592,6 +646,18 @@ class AppointmentResource extends Resource
                             'cancellation_reason' => $data['cancellation_reason'],
                             'cancelled_at' => now(),
                         ]);
+
+                        try {
+                            app(\App\Services\WhatsAppNotificationService::class)->sendDepositRejected($record, $data['cancellation_reason']);
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::warning("Error enviando WhatsApp de rechazo: " . $e->getMessage());
+                        }
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Comprobante Rechazado')
+                            ->body("La cita fue cancelada y se notificó el motivo por WhatsApp a la clienta.")
+                            ->warning()
+                            ->send();
                     })
                     ->modalSubmitActionLabel('Rechazar Comprobante y Cancelar Cita'),
 
@@ -638,9 +704,15 @@ class AppointmentResource extends Resource
                             'cancelled_at' => now(),
                         ]);
 
+                        try {
+                            app(\App\Services\WhatsAppNotificationService::class)->sendAppointmentCancelled($record, $data['cancellation_reason']);
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::warning("Error enviando WhatsApp de cancelación: " . $e->getMessage());
+                        }
+
                         \Filament\Notifications\Notification::make()
                             ->title('Cita Cancelada')
-                            ->body("La cita #{$record->appointment_number} ha sido cancelada exitosamente.")
+                            ->body("La cita #{$record->appointment_number} ha sido cancelada y se notificó a la clienta.")
                             ->danger()
                             ->send();
                     })

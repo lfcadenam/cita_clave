@@ -25,7 +25,179 @@ class WhatsAppNotificationService
     }
 
     /**
-     * Envía recordatorio de cita con 24 horas de anticipación a la clienta.
+     * 1. Solicitud de Cita Creada (Acuse de recibo y pendiente de abono Nequi).
+     */
+    public function sendBookingCreated(Appointment $appointment): bool
+    {
+        $clientPhone = $appointment->client_phone;
+        if (blank($clientPhone)) {
+            return false;
+        }
+
+        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $serviceName = $appointment->service->name;
+        $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
+        $startTime = substr($appointment->start_time, 0, 5);
+        $depositFormatted = number_format($appointment->deposit_amount, 0, ',', '.');
+        $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
+
+        $message = "✨ *¡Solicitud de Cita Recibida!* Hola {$clientName},\n\n"
+            . "Hemos recibido tu solicitud de cita *#{$appointment->appointment_number}*:\n\n"
+            . "💅 *Servicio:* {$serviceName}\n"
+            . "📅 *Fecha:* {$dateFormatted}\n"
+            . "⏰ *Hora:* {$startTime}\n"
+            . "💵 *Abono requerido:* \${$depositFormatted} COP\n\n"
+            . "📋 *Estado:* Pendiente de verificación de transferencia.\n"
+            . "Paola validará tu comprobante de abono y te confirmaremos tu cita por este medio.\n\n"
+            . "📄 *Consulta los detalles aquí:*\n"
+            . "{$voucherUrl}\n\n"
+            . "_¡Gracias por elegirnos!_";
+
+        return $this->sendTextMessageSafe($clientPhone, $message);
+    }
+
+    /**
+     * 2. Alerta inmediata a Paola (Administrador) sobre una nueva cita solicitada.
+     */
+    public function sendAdminNewBookingAlert(Appointment $appointment): bool
+    {
+        if (blank($this->adminPhone)) {
+            return false;
+        }
+
+        $serviceName = $appointment->service->name;
+        $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
+        $startTime = substr($appointment->start_time, 0, 5);
+        $depositFormatted = number_format($appointment->deposit_amount, 0, ',', '.');
+        $adminUrl = url("/admin/appointments");
+
+        $message = "🔔 *Nueva Cita Solicitada — Paola Aguilera*\n\n"
+            . "👤 *Clienta:* {$appointment->client_name}\n"
+            . "📱 *Tel:* {$appointment->client_phone}\n"
+            . "💅 *Servicio:* {$serviceName}\n"
+            . "📅 *Fecha:* {$dateFormatted} a las {$startTime}\n"
+            . "💵 *Abono:* \${$depositFormatted} COP\n"
+            . "🔖 *Cita:* #{$appointment->appointment_number}\n\n"
+            . "👉 *Ingresa al panel para verificar:*\n"
+            . "{$adminUrl}";
+
+        return $this->sendTextMessageSafe($this->adminPhone, $message);
+    }
+
+    /**
+     * 3. Abono Nequi Verificado y Cita Confirmada (disparado desde Filament).
+     */
+    public function sendDepositApproved(Appointment $appointment): bool
+    {
+        $clientPhone = $appointment->client_phone;
+        if (blank($clientPhone)) {
+            return false;
+        }
+
+        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $serviceName = $appointment->service->name;
+        $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
+        $startTime = substr($appointment->start_time, 0, 5);
+        $depositFormatted = number_format($appointment->deposit_amount, 0, ',', '.');
+        $balanceFormatted = number_format($appointment->balance_due, 0, ',', '.');
+        $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
+
+        $message = "🌸 *¡Abono Verificado y Cita Confirmada!* Hola {$clientName},\n\n"
+            . "¡Buenas noticias! Hemos validado con éxito tu abono de *\${$depositFormatted} COP* para tu cita *#{$appointment->appointment_number}*.\n\n"
+            . "💅 *Servicio:* {$serviceName}\n"
+            . "📅 *Fecha:* {$dateFormatted}\n"
+            . "⏰ *Hora:* {$startTime}\n"
+            . "📍 *Lugar:* Estudio Paola Aguilera, Bogotá\n"
+            . "💵 *Saldo a pagar en local:* *\${$balanceFormatted} COP*\n\n"
+            . "🎟️ *Comprobante digital actualizado:*\n"
+            . "{$voucherUrl}\n\n"
+            . "_Te esperamos puntualmente. Recibirás un recordatorio 24h antes._";
+
+        return $this->sendTextMessageSafe($clientPhone, $message);
+    }
+
+    /**
+     * 4. Abono Nequi Rechazado (Comprobante no válido o no coincide).
+     */
+    public function sendDepositRejected(Appointment $appointment, ?string $reason = null): bool
+    {
+        $clientPhone = $appointment->client_phone;
+        if (blank($clientPhone)) {
+            return false;
+        }
+
+        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $serviceName = $appointment->service->name;
+        $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
+
+        $message = "⚠️ *Novedad con tu Comprobante de Abono* Hola {$clientName},\n\n"
+            . "Revisamos tu solicitud de cita *#{$appointment->appointment_number}* ({$serviceName}), pero no pudimos validar el comprobante de transferencia.\n\n"
+            . ($reason ? "📝 *Motivo:* {$reason}\n\n" : "")
+            . "👉 *Por favor sube nuevamente tu comprobante aquí para asegurar tu cupo:*\n"
+            . "{$voucherUrl}\n\n"
+            . "_O comunícate con nosotros si tienes alguna duda._";
+
+        return $this->sendTextMessageSafe($clientPhone, $message);
+    }
+
+    /**
+     * 5. Cita Cancelada.
+     */
+    public function sendAppointmentCancelled(Appointment $appointment, ?string $reason = null): bool
+    {
+        $clientPhone = $appointment->client_phone;
+        if (blank($clientPhone)) {
+            return false;
+        }
+
+        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $serviceName = $appointment->service->name;
+        $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
+        $startTime = substr($appointment->start_time, 0, 5);
+        $bookingUrl = url("/");
+
+        $message = "🚫 *Cita Cancelada* Hola {$clientName},\n\n"
+            . "Te informamos que tu cita *#{$appointment->appointment_number}* ({$serviceName}) programada para el *{$dateFormatted} a las {$startTime}* ha sido cancelada.\n\n"
+            . ($reason ? "📝 *Motivo:* {$reason}\n\n" : "")
+            . "Tu horario ha sido liberado. Si deseas agendar para otra ocasión, puedes hacerlo aquí:\n"
+            . "{$bookingUrl}\n\n"
+            . "_¡Esperamos verte pronto!_";
+
+        return $this->sendTextMessageSafe($clientPhone, $message);
+    }
+
+    /**
+     * 5.1. Cita Reagendada / Reprogramada.
+     */
+    public function sendAppointmentRescheduled(Appointment $appointment, string $oldDate, string $oldTime): bool
+    {
+        $clientPhone = $appointment->client_phone;
+        if (blank($clientPhone)) {
+            return false;
+        }
+
+        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $serviceName = $appointment->service->name;
+        $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
+        $startTime = substr($appointment->start_time, 0, 5);
+        $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
+
+        $message = "🗓️ *¡Cita Reagendada con Éxito!* Hola {$clientName},\n\n"
+            . "Hemos reprogramado tu cita *#{$appointment->appointment_number}*:\n\n"
+            . "💅 *Servicio:* {$serviceName}\n"
+            . "📅 *Nueva Fecha:* {$dateFormatted}\n"
+            . "⏰ *Nuevo Horario:* {$startTime}\n"
+            . "📌 *Horario anterior:* {$oldDate} a las {$oldTime}\n\n"
+            . "Tu abono y reserva se mantienen totalmente vigentes.\n\n"
+            . "📄 *Consulta tu voucher digital actualizado:*\n"
+            . "{$voucherUrl}\n\n"
+            . "_¡Te esperamos con gusto en nuestro estudio!_";
+
+        return $this->sendTextMessageSafe($clientPhone, $message);
+    }
+
+    /**
+     * 6. Recordatorio de cita con 24 horas de anticipación a la clienta (Cron).
      */
     public function sendReminder24h(Appointment $appointment): bool
     {
@@ -56,7 +228,7 @@ class WhatsAppNotificationService
             . "{$portalUrl}\n\n"
             . "_¡Te esperamos puntualmente para brindarte la mejor experiencia!_";
 
-        $sent = $this->sendTextMessage($clientPhone, $message);
+        $sent = $this->sendTextMessageSafe($clientPhone, $message);
 
         if ($sent) {
             $appointment->update([
@@ -68,7 +240,7 @@ class WhatsAppNotificationService
     }
 
     /**
-     * Envía confirmación de reserva recién agendada.
+     * 7. Confirmación estándar de reserva (Bold u otros pagos instantáneos).
      */
     public function sendBookingConfirmation(Appointment $appointment): bool
     {
@@ -84,7 +256,7 @@ class WhatsAppNotificationService
         $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
 
         $message = "🌸 *¡Reserva Confirmada!* Hola {$clientName},\n\n"
-            . "Tu cita *#{$appointment->appointment_number}* ha sido registrada exitosamente:\n\n"
+            . "Tu cita *#{$appointment->appointment_number}* ha sido confirmada exitosamente:\n\n"
             . "💅 *Servicio:* {$serviceName}\n"
             . "📅 *Fecha:* {$dateFormatted}\n"
             . "⏰ *Hora:* {$startTime}\n"
@@ -93,7 +265,21 @@ class WhatsAppNotificationService
             . "{$voucherUrl}\n\n"
             . "_¡Gracias por elegirnos! Recibirás un recordatorio 24h antes de tu cita._";
 
-        return $this->sendTextMessage($clientPhone, $message);
+        return $this->sendTextMessageSafe($clientPhone, $message);
+    }
+
+    /**
+     * Envío seguro con manejo de excepciones (nunca arroja error fatal).
+     */
+    public function sendTextMessageSafe(string $phone, string $message): bool
+    {
+        try {
+            return $this->sendTextMessage($phone, $message);
+        } catch (\Throwable $e) {
+            Log::error("[WhatsApp Exception] Error enviando mensaje a {$phone}: " . $e->getMessage());
+            $this->sendViaLog($phone, $message);
+            return false;
+        }
     }
 
     /**
@@ -130,7 +316,7 @@ class WhatsAppNotificationService
             $response = Http::withHeaders([
                 'apikey' => $apiKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(10)->post($endpoint, [
+            ])->timeout(8)->post($endpoint, [
                 'number' => $phone,
                 'text' => $message,
             ]);
@@ -141,10 +327,10 @@ class WhatsAppNotificationService
             }
 
             Log::error("[WhatsApp Evolution] Error en respuesta ({$response->status()}): " . $response->body());
+            $this->sendViaLog($phone, $message);
             return false;
         } catch (\Throwable $e) {
-            Log::warning("[WhatsApp Evolution] No se pudo contactar el Gateway ({$baseUrl}): " . $e->getMessage());
-            // Si el gateway no está levantado, registramos en log como fallback
+            Log::warning("[WhatsApp Evolution] Gateway no accesible ({$baseUrl}), guardando en log como fallback: " . $e->getMessage());
             $this->sendViaLog($phone, $message);
             return false;
         }
@@ -161,11 +347,13 @@ class WhatsAppNotificationService
 
         if (empty($phoneId) || empty($token)) {
             Log::warning("[WhatsApp Meta] Faltan credenciales de Meta en .env.");
+            $this->sendViaLog($phone, $message);
             return false;
         }
 
         try {
             $response = Http::withToken($token)
+                ->timeout(8)
                 ->post("{$apiUrl}/{$phoneId}/messages", [
                     'messaging_product' => 'whatsapp',
                     'to' => $phone,
@@ -176,6 +364,7 @@ class WhatsAppNotificationService
             return $response->successful();
         } catch (\Throwable $e) {
             Log::error("[WhatsApp Meta] Excepción: " . $e->getMessage());
+            $this->sendViaLog($phone, $message);
             return false;
         }
     }
@@ -193,6 +382,21 @@ class WhatsAppNotificationService
     }
 
     /**
+     * Genera enlace dinámico directo a WhatsApp para abrir en navegador o app móvil.
+     */
+    public function generateWhatsAppUrl(string $phone, string $message, bool $webOnly = false): string
+    {
+        $sanitizedPhone = $this->sanitizePhoneNumber($phone);
+        $encodedText = rawurlencode($message);
+
+        if ($webOnly) {
+            return "https://web.whatsapp.com/send?phone={$sanitizedPhone}&text={$encodedText}";
+        }
+
+        return "https://wa.me/{$sanitizedPhone}?text={$encodedText}";
+    }
+
+    /**
      * Consulta el estado de conexión de la instancia en Evolution API.
      */
     public function getEvolutionInstanceStatus(): array
@@ -204,7 +408,7 @@ class WhatsAppNotificationService
         try {
             $response = Http::withHeaders([
                 'apikey' => $apiKey,
-            ])->timeout(5)->get("{$baseUrl}/instance/connectionState/{$instance}");
+            ])->timeout(4)->get("{$baseUrl}/instance/connectionState/{$instance}");
 
             if ($response->successful()) {
                 return $response->json();
