@@ -49,3 +49,6 @@ Route::get('/admin/whatsapp', [\App\Http\Controllers\WhatsAppWebController::clas
 Route::get('/reserva/whatsapp-qr', [\App\Http\Controllers\WhatsAppWebController::class, 'showQr'])->name('portal.whatsapp-qr');
 Route::get('/admin/whatsapp/status', [\App\Http\Controllers\WhatsAppWebController::class, 'status'])->name('admin.whatsapp.status');
 Route::post('/admin/whatsapp/test', [\App\Http\Controllers\WhatsAppWebController::class, 'testMessage'])->name('admin.whatsapp.test');
+Route::post('/admin/whatsapp/reset', [\App\Http\Controllers\WhatsAppWebController::class, 'resetInstance'])->name('admin.whatsapp.reset');
+
+

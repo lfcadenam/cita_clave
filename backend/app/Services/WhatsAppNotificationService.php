@@ -715,4 +715,50 @@ class WhatsAppNotificationService
 
         return $clean;
     }
+
+    /**
+     * Cierra la sesión activa en Evolution API (Logout).
+     */
+    public function logoutEvolutionInstance(): bool
+    {
+        $apiKey = $this->evolutionConfig['api_key'] ?? 'nuvex_evolution_key_2026';
+        $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
+        $candidateUrls = $this->getEvolutionCandidateUrls();
+
+        foreach ($candidateUrls as $url) {
+            try {
+                $response = Http::withHeaders(['apikey' => $apiKey])->timeout(5)->delete("{$url}/instance/logout/{$instance}");
+                if ($response->successful()) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // Siguiente candidato
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Elimina por completo la instancia de Evolution API para permitir recrear una limpia desde cero.
+     */
+    public function deleteEvolutionInstance(): bool
+    {
+        $apiKey = $this->evolutionConfig['api_key'] ?? 'nuvex_evolution_key_2026';
+        $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
+        $candidateUrls = $this->getEvolutionCandidateUrls();
+
+        foreach ($candidateUrls as $url) {
+            try {
+                $response = Http::withHeaders(['apikey' => $apiKey])->timeout(5)->delete("{$url}/instance/delete/{$instance}");
+                if ($response->successful()) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // Siguiente candidato
+            }
+        }
+
+        return false;
+    }
 }

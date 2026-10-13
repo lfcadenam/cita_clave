@@ -85,4 +85,21 @@ class WhatsAppWebController extends Controller
             'message' => $result['message'],
         ]);
     }
+
+    /**
+     * Desvincula y resetea la instancia para generar un código QR fresco.
+     */
+    public function resetInstance(): JsonResponse
+    {
+        $this->whatsAppService->logoutEvolutionInstance();
+        $this->whatsAppService->deleteEvolutionInstance();
+        $this->whatsAppService->createEvolutionInstance();
+        $qr = $this->whatsAppService->getEvolutionQrCode();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Instancia reiniciada correctamente. Escanea el nuevo código QR.',
+            'qr' => $qr,
+        ]);
+    }
 }
