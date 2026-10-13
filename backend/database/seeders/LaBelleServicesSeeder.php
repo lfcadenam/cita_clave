@@ -135,8 +135,10 @@ class LaBelleServicesSeeder extends Seeder
             ],
         ];
 
+        $validSlugs = [];
         foreach ($services as $srv) {
             $slug = Str::slug($srv['name']);
+            $validSlugs[] = $slug;
             Service::updateOrCreate(
                 [
                     'tenant_id' => $tenant->id,
@@ -149,5 +151,10 @@ class LaBelleServicesSeeder extends Seeder
                 ])
             );
         }
+
+        // Eliminar del tenant cualquier servicio anterior que no pertenezca al catálogo oficial de 11
+        Service::where('tenant_id', $tenant->id)
+            ->whereNotIn('slug', $validSlugs)
+            ->delete();
     }
 }
