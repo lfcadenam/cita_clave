@@ -235,4 +235,30 @@ class CustomerManagementTest extends TestCase
             ],
         ]);
     }
+
+    public function test_existing_client_selector_populates_from_customers(): void
+    {
+        $customer = Customer::create([
+            'tenant_id' => $this->tenant->id,
+            'name' => 'Valentina Duque',
+            'phone' => '3124445566',
+            'email' => 'valentina@duque.com',
+            'is_legacy' => true,
+        ]);
+
+        $this->actingAs($this->admin);
+        \Filament\Facades\Filament::setTenant($this->tenant);
+
+        \Livewire\Livewire::test(\App\Filament\Pages\AppointmentCalendarPage::class)
+            ->mountAction('newAppointment')
+            ->setActionData([
+                'existing_client_selector' => "Valentina Duque|3124445566|valentina@duque.com|{$customer->id}",
+            ])
+            ->assertActionDataSet([
+                'client_name' => 'Valentina Duque',
+                'client_phone' => '3124445566',
+                'client_email' => 'valentina@duque.com',
+                'customer_id' => $customer->id,
+            ]);
+    }
 }

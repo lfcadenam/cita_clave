@@ -7,6 +7,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\ServiceCategory;
 use App\Filament\Resources\AppointmentResource\Pages;
 use App\Models\Appointment;
+use App\Models\Customer;
 use App\Models\Service;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -118,23 +119,67 @@ class AppointmentResource extends Resource
                             ->icon('heroicon-o-user')
                             ->compact()
                             ->schema([
+                                Forms\Components\Hidden::make('customer_id'),
+
                                 Forms\Components\Select::make('existing_client_selector')
                                     ->label('Buscar Clienta Frecuente')
                                     ->placeholder('Escribe nombre o celular para autocompletar...')
                                     ->searchable()
-                                    ->options(function () {
-                                        return Appointment::query()
-                                            ->whereNotNull('client_phone')
-                                            ->where('client_phone', '!=', '')
-                                            ->select('client_name', 'client_phone', 'client_email')
-                                            ->distinct()
-                                            ->orderBy('client_name')
+                                    ->getSearchResultsUsing(function (string $search): array {
+                                        $search = trim($search);
+                                        $cleanPhoneSearch = preg_replace('/[^0-9]/', '', $search);
+
+                                        return Customer::query()
+                                            ->where(function ($q) use ($search, $cleanPhoneSearch) {
+                                                $q->where('name', 'like', "%{$search}%");
+                                                if (!empty($cleanPhoneSearch)) {
+                                                    $q->orWhere('phone', 'like', "%{$cleanPhoneSearch}%");
+                                                }
+                                                if (!empty($search)) {
+                                                    $q->orWhere('email', 'like', "%{$search}%");
+                                                }
+                                            })
+                                            ->orderBy('name')
+                                            ->limit(50)
                                             ->get()
-                                            ->mapWithKeys(function ($item) {
-                                                $email = $item->client_email ?? '';
-                                                $key = "{$item->client_name}|{$item->client_phone}|{$email}";
-                                                return [$key => "{$item->client_name} (+57 {$item->client_phone})"];
-                                            });
+                                            ->mapWithKeys(function ($customer) {
+                                                $email = $customer->email ?? '';
+                                                $rawPhone = (string) $customer->phone;
+                                                $cleanPhone = (str_starts_with($rawPhone, '57') && strlen($rawPhone) === 12)
+                                                    ? substr($rawPhone, 2)
+                                                    : $rawPhone;
+                                                $displayPhone = strlen($cleanPhone) === 10 ? "+57 {$cleanPhone}" : "+{$cleanPhone}";
+                                                $legacyBadge = $customer->is_legacy ? ' • ⭐ Clienta Frecuente' : '';
+                                                $key = "{$customer->name}|{$cleanPhone}|{$email}|{$customer->id}";
+                                                return [$key => "{$customer->name} ({$displayPhone}){$legacyBadge}"];
+                                            })
+                                            ->toArray();
+                                    })
+                                    ->options(function () {
+                                        return Customer::query()
+                                            ->orderBy('name')
+                                            ->limit(100)
+                                            ->get()
+                                            ->mapWithKeys(function ($customer) {
+                                                $email = $customer->email ?? '';
+                                                $rawPhone = (string) $customer->phone;
+                                                $cleanPhone = (str_starts_with($rawPhone, '57') && strlen($rawPhone) === 12)
+                                                    ? substr($rawPhone, 2)
+                                                    : $rawPhone;
+                                                $displayPhone = strlen($cleanPhone) === 10 ? "+57 {$cleanPhone}" : "+{$cleanPhone}";
+                                                $legacyBadge = $customer->is_legacy ? ' • ⭐ Clienta Frecuente' : '';
+                                                $key = "{$customer->name}|{$cleanPhone}|{$email}|{$customer->id}";
+                                                return [$key => "{$customer->name} ({$displayPhone}){$legacyBadge}"];
+                                            })
+                                            ->toArray();
+                                    })
+                                    ->getOptionLabelUsing(function ($value): ?string {
+                                        if (empty($value)) return null;
+                                        $parts = explode('|', $value);
+                                        $name = $parts[0] ?? '';
+                                        $phone = $parts[1] ?? '';
+                                        $displayPhone = strlen($phone) === 10 ? "+57 {$phone}" : "+{$phone}";
+                                        return "{$name} ({$displayPhone})";
                                     })
                                     ->reactive()
                                     ->afterStateUpdated(function ($state, $set) {
@@ -143,11 +188,14 @@ class AppointmentResource extends Resource
                                             $set('client_name', $parts[0] ?? '');
                                             $set('client_phone', $parts[1] ?? '');
                                             $set('client_email', $parts[2] ?? '');
+                                            if (!empty($parts[3])) {
+                                                $set('customer_id', (int) $parts[3]);
+                                            }
                                         }
                                     })
                                     ->dehydrated(false)
                                     ->columnSpanFull()
-                                    ->helperText('Selecciona para autocompletar o ingresa los datos abajo.'),
+                                    ->helperText('Selecciona una clienta para autocompletar automáticamente sus datos de contacto.'),
 
                                 Forms\Components\TextInput::make('client_name')
                                     ->label('Nombre Completo')
