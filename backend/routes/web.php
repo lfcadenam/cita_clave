@@ -43,3 +43,9 @@ Route::get('/citas/{appointmentNumber}/calendar.ics', [ClientBookingWebControlle
 // SuperAdmin - Previsualización de Plantillas de Correo Electrónico
 Route::get('/superadmin/email-preview/{key}', [\App\Filament\SuperAdmin\Pages\EmailTemplatesPage::class, 'renderStandalonePreview'])
     ->name('superadmin.email-preview');
+
+// Vinculación y Conexión Oficial de WhatsApp (Web)
+Route::get('/admin/whatsapp', [\App\Http\Controllers\WhatsAppWebController::class, 'showQr'])->name('admin.whatsapp');
+Route::get('/reserva/whatsapp-qr', [\App\Http\Controllers\WhatsAppWebController::class, 'showQr'])->name('portal.whatsapp-qr');
+Route::get('/admin/whatsapp/status', [\App\Http\Controllers\WhatsAppWebController::class, 'status'])->name('admin.whatsapp.status');
+Route::post('/admin/whatsapp/test', [\App\Http\Controllers\WhatsAppWebController::class, 'testMessage'])->name('admin.whatsapp.test');

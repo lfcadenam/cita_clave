@@ -597,6 +597,45 @@ class WhatsAppNotificationService
     }
 
     /**
+     * Obtiene el código de emparejamiento numérico (8 dígitos) para vincular por teléfono sin cámara.
+     */
+    public function getPairingCode(string $phone): ?string
+    {
+        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8085';
+        $apiKey = $this->evolutionConfig['api_key'] ?? '';
+        $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
+        $sanitizedPhone = $this->sanitizePhoneNumber($phone);
+
+        $candidateUrls = array_unique(array_filter([
+            $baseUrl,
+            str_replace([':8080', ':8085'], ':8085', $baseUrl),
+            str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
+            'http://host.docker.internal:8085',
+            'http://localhost:8085',
+            'http://host.docker.internal:8080',
+            'http://localhost:8080',
+            'http://nuvex_evolution_whatsapp:8080',
+        ]));
+
+        foreach ($candidateUrls as $url) {
+            try {
+                $response = Http::withHeaders([
+                    'apikey' => $apiKey,
+                ])->timeout(8)->get("{$url}/instance/connect/{$instance}?number={$sanitizedPhone}");
+
+                if ($response->successful()) {
+                    $json = $response->json();
+                    return $json['pairingCode'] ?? null;
+                }
+            } catch (\Throwable $e) {
+                // Probar siguiente candidato
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Normaliza el número al formato internacional estándar (E.164 sin signo +).
      * Ejemplo para Colombia: 3106080402 -> 573106080402
      */
