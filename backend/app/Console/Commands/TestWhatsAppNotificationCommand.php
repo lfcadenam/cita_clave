@@ -42,9 +42,31 @@ class TestWhatsAppNotificationCommand extends Command
 
         if ($driver === 'evolution') {
             $this->line("Consultando estado de Evolution API...");
-            $status = $this->whatsAppService->getEvolutionInstanceStatus();
-            $state = $status['instance']['state'] ?? $status['state'] ?? 'desconocido';
+            $attempts = 0;
+            $state = 'desconocido';
+
+            do {
+                $status = $this->whatsAppService->getEvolutionInstanceStatus();
+                $state = $status['instance']['state'] ?? $status['state'] ?? 'desconocido';
+
+                if (in_array(strtolower($state), ['open', 'connected'])) {
+                    break;
+                }
+
+                if (strtolower($state) === 'connecting') {
+                    $this->line("⏳ La sesión se está estableciendo con WhatsApp (Estado: connecting)... esperando 3s (intento " . ($attempts + 1) . "/6)...");
+                    sleep(3);
+                }
+
+                $attempts++;
+            } while ($attempts < 6 && strtolower($state) === 'connecting');
+
             $this->line("Estado de la instancia en Evolution API: [{$state}]");
+
+            if (!in_array(strtolower($state), ['open', 'connected'])) {
+                $this->error("❌ La sesión de WhatsApp no está activa (Estado: [{$state}]). Si dice 'connecting', espera unos segundos más. Si dice 'close' o 'disconnected', vincula de nuevo el QR.");
+                return self::FAILURE;
+            }
         }
 
         $message = $customMessage ?: "✨ *Mensaje de Prueba Nuvex WhatsApp*\n\nHola! Este es un mensaje de prueba enviado desde tu sistema de agendamiento *CitaClave / Paola Aguilera* a través del Gateway Evolution API.\n\nFecha y hora: " . now()->format('d/m/Y H:i:s');
