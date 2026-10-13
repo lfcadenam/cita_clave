@@ -57,31 +57,102 @@ class WhatsAppNotificationService
     }
 
     /**
-     * 2. Alerta inmediata a Paola (Administrador) sobre una nueva cita solicitada.
+     * Resuelve dinámicamente el número de WhatsApp de la administradora/dueña del salón para la cita.
+     */
+    public function resolveAdminPhone(?Appointment $appointment = null): ?string
+    {
+        if ($appointment) {
+            $appointment->loadMissing('tenant');
+            $tenant = $appointment->tenant;
+
+            if ($tenant) {
+                // 1. WhatsApp directo configurado en el salón (Tenant)
+                if (!empty($tenant->whatsapp_number)) {
+                    return $this->sanitizePhoneNumber($tenant->whatsapp_number);
+                }
+
+                // 2. Teléfono principal del salón (Tenant)
+                if (!empty($tenant->phone)) {
+                    return $this->sanitizePhoneNumber($tenant->phone);
+                }
+
+                // 3. Teléfono del usuario con rol ADMIN del salón
+                try {
+                    $adminUserPhone = $tenant->users()
+                        ->where('role', \App\Enums\UserRole::ADMIN)
+                        ->whereNotNull('phone')
+                        ->value('phone');
+
+                    if (!empty($adminUserPhone)) {
+                        return $this->sanitizePhoneNumber($adminUserPhone);
+                    }
+                } catch (\Throwable $e) {
+                    // Fallback silencioso
+                }
+            }
+        }
+
+        // 4. Configuración global en .env / config('whatsapp.admin_phone')
+        if (!empty($this->adminPhone)) {
+            return $this->sanitizePhoneNumber($this->adminPhone);
+        }
+
+        return null;
+    }
+
+    /**
+     * 2. Alerta inmediata a la administradora sobre una "Nueva Cita Agendada".
      */
     public function sendAdminNewBookingAlert(Appointment $appointment): bool
     {
-        if (blank($this->adminPhone)) {
+        $adminPhone = $this->resolveAdminPhone($appointment);
+        if (blank($adminPhone)) {
+            Log::warning("No se pudo enviar WhatsApp de Nueva Cita Agendada: teléfono de administradora no configurado.");
             return false;
         }
 
-        $serviceName = $appointment->service->name;
-        $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
+        $appointment->loadMissing(['tenant', 'service']);
+        $tenant = $appointment->tenant;
+        $serviceName = $appointment->service?->name ?? 'Tratamiento Especializado';
+        $clientName = trim($appointment->client_name);
+        $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM [de] YYYY');
         $startTime = substr($appointment->start_time, 0, 5);
+        $totalFormatted = number_format($appointment->total_amount, 0, ',', '.');
         $depositFormatted = number_format($appointment->deposit_amount, 0, ',', '.');
+        $balanceFormatted = number_format($appointment->balance_due, 0, ',', '.');
         $adminUrl = url("/admin/appointments");
 
-        $message = "🔔 *Nueva Cita Solicitada — Paola Aguilera*\n\n"
-            . "👤 *Clienta:* {$appointment->client_name}\n"
-            . "📱 *Tel:* {$appointment->client_phone}\n"
+        // Estado descriptivo de la cita
+        $statusText = match ($appointment->status) {
+            \App\Enums\AppointmentStatus::CONFIRMED => '✅ Confirmada' . ($appointment->payment_method === \App\Enums\PaymentMethod::CASH_AT_LOCATION ? ' (Clienta Habitual - Pago en Salón)' : ''),
+            \App\Enums\AppointmentStatus::PENDING_VERIFICATION => '⏳ Pendiente de Verificación de Abono (Nequi)',
+            \App\Enums\AppointmentStatus::PENDING_DEPOSIT => '⏳ Pendiente de Pago en Línea',
+            default => $appointment->status->label(),
+        };
+
+        // Enlace de WhatsApp directo para escribirle a la clienta en 1 toque
+        $clientPhoneClean = preg_replace('/\D/', '', (string) $appointment->client_phone);
+        $clientWaUrl = !empty($clientPhoneClean) ? "https://wa.me/57{$clientPhoneClean}" : null;
+        $clientContact = !empty($clientWaUrl)
+            ? "+57 {$appointment->client_phone} ({$clientWaUrl})"
+            : ($appointment->client_phone ?: 'No registrado');
+
+        $message = "🔔 *Nueva Cita Agendada: {$clientName} — {$serviceName}*\n\n"
+            . "✨ *Detalles de la Cita:*\n"
+            . "👤 *Clienta:* {$clientName}\n"
+            . "📱 *WhatsApp:* {$clientContact}\n"
             . "💅 *Servicio:* {$serviceName}\n"
-            . "📅 *Fecha:* {$dateFormatted} a las {$startTime}\n"
+            . "📅 *Fecha:* {$dateFormatted}\n"
+            . "⏰ *Hora:* {$startTime}\n"
+            . "💰 *Total Servicio:* \${$totalFormatted} COP\n"
             . "💵 *Abono:* \${$depositFormatted} COP\n"
-            . "🔖 *Cita:* #{$appointment->appointment_number}\n\n"
-            . "👉 *Ingresa al panel para verificar:*\n"
+            . "🏷️ *Saldo en Salón:* \${$balanceFormatted} COP\n"
+            . "🔖 *Cita:* #{$appointment->appointment_number}\n"
+            . "📋 *Estado:* {$statusText}\n\n"
+            . "👉 *Ver y gestionar en el panel administrativo:*\n"
             . "{$adminUrl}";
 
-        return $this->sendTextMessageSafe($this->adminPhone, $message);
+        return $this->sendTextMessageSafe($adminPhone, $message);
     }
 
     /**
@@ -310,30 +381,37 @@ class WhatsAppNotificationService
         $apiKey = $this->evolutionConfig['api_key'] ?? '';
         $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
 
-        $endpoint = "{$baseUrl}/message/sendText/{$instance}";
+        $candidateUrls = array_unique(array_filter([
+            $baseUrl,
+            str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
+            str_contains($baseUrl, 'localhost') ? str_replace('localhost:8080', 'nuvex_evolution_whatsapp:8080', $baseUrl) : null,
+        ]));
 
-        try {
-            $response = Http::withHeaders([
-                'apikey' => $apiKey,
-                'Content-Type' => 'application/json',
-            ])->timeout(8)->post($endpoint, [
-                'number' => $phone,
-                'text' => $message,
-            ]);
+        foreach ($candidateUrls as $url) {
+            $endpoint = "{$url}/message/sendText/{$instance}";
+            try {
+                $response = Http::withHeaders([
+                    'apikey' => $apiKey,
+                    'Content-Type' => 'application/json',
+                ])->timeout(8)->post($endpoint, [
+                    'number' => $phone,
+                    'text' => $message,
+                ]);
 
-            if ($response->successful()) {
-                Log::info("[WhatsApp Evolution] Mensaje enviado a {$phone}: " . substr($message, 0, 50) . "...");
-                return true;
+                if ($response->successful()) {
+                    Log::info("[WhatsApp Evolution] Mensaje enviado a {$phone} vía {$url}: " . substr($message, 0, 50) . "...");
+                    return true;
+                }
+
+                Log::error("[WhatsApp Evolution] Error en respuesta de {$url} ({$response->status()}): " . $response->body());
+            } catch (\Throwable $e) {
+                Log::warning("[WhatsApp Evolution] No se pudo conectar a {$url}: " . $e->getMessage());
             }
-
-            Log::error("[WhatsApp Evolution] Error en respuesta ({$response->status()}): " . $response->body());
-            $this->sendViaLog($phone, $message);
-            return false;
-        } catch (\Throwable $e) {
-            Log::warning("[WhatsApp Evolution] Gateway no accesible ({$baseUrl}), guardando en log como fallback: " . $e->getMessage());
-            $this->sendViaLog($phone, $message);
-            return false;
         }
+
+        // Si fallaron los endpoints, guardar en log como respaldo
+        $this->sendViaLog($phone, $message);
+        return false;
     }
 
     /**

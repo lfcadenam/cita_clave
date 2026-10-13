@@ -5,12 +5,15 @@ namespace App\Observers;
 use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use App\Services\AppointmentMailNotificationService;
+use App\Services\WhatsAppNotificationService;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentObserver
 {
     public function __construct(
         protected AppointmentMailNotificationService $mailService,
-        protected \App\Services\BookingAvailabilityService $availabilityService
+        protected \App\Services\BookingAvailabilityService $availabilityService,
+        protected WhatsAppNotificationService $whatsAppService
     ) {}
 
     /**
@@ -18,15 +21,22 @@ class AppointmentObserver
      */
     public function created(Appointment $appointment): void
     {
-        // Enviar correos iniciales de agendamiento (a la dueña y a la clienta)
+        // 1. Enviar correos iniciales de agendamiento (a la dueña y a la clienta)
         $this->mailService->sendAppointmentBookedEmails($appointment);
 
-        // Si la cita nace directamente en estado CONFIRMADO (ej. creada en el local por Paola)
+        // 2. Si la cita nace directamente en estado CONFIRMADO (ej. clienta habitual o creada en el local por Paola)
         if ($appointment->status === AppointmentStatus::CONFIRMED) {
             $this->mailService->sendPaymentConfirmedEmail($appointment);
         }
 
-        // Ajustar almuerzo flexible si la cita se traslapa con la ventana normal de almuerzo
+        // 3. Enviar notificación instantánea de "Nueva Cita Agendada" al WhatsApp del administrador
+        try {
+            $this->whatsAppService->sendAdminNewBookingAlert($appointment);
+        } catch (\Throwable $e) {
+            Log::warning("No se pudo enviar WhatsApp de Nueva Cita Agendada al administrador para cita #{$appointment->appointment_number}: " . $e->getMessage());
+        }
+
+        // 4. Ajustar almuerzo flexible si la cita se traslapa con la ventana normal de almuerzo
         $this->availabilityService->adjustLunchForAppointment($appointment);
     }
 

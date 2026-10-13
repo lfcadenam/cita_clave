@@ -287,16 +287,15 @@ class AppointmentBookingController extends Controller
 
             $appointment->save();
 
-            // Disparar notificaciones automáticas por WhatsApp
+            // Disparar notificaciones automáticas por WhatsApp a la clienta (la alerta a la admin se envía desde AppointmentObserver)
             try {
                 if ($appointment->status === AppointmentStatus::CONFIRMED) {
                     $this->whatsAppService->sendBookingConfirmation($appointment);
                 } else {
                     $this->whatsAppService->sendBookingCreated($appointment);
                 }
-                $this->whatsAppService->sendAdminNewBookingAlert($appointment);
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("No se pudo enviar notificación de WhatsApp al agendar cita #{$appointment->appointment_number}: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning("No se pudo enviar notificación de WhatsApp a la clienta al agendar cita #{$appointment->appointment_number}: " . $e->getMessage());
             }
 
             return response()->json([

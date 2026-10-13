@@ -106,4 +106,57 @@ class WhatsAppNotificationFlowTest extends TestCase
         $linkWeb = $this->serviceWhatsApp->generateWhatsAppUrl('3106080402', 'Hola Paola', true);
         $this->assertStringContainsString('https://web.whatsapp.com/send?phone=573106080402&text=Hola%20Paola', $linkWeb);
     }
+
+    public function test_resolve_admin_phone_prioritizes_tenant_whatsapp(): void
+    {
+        $this->tenant->update([
+            'whatsapp_number' => '3103248385',
+            'phone' => '3109999999',
+        ]);
+
+        $appointment = Appointment::create([
+            'tenant_id' => $this->tenant->id,
+            'service_id' => $this->service->id,
+            'client_name' => 'Camila Torres',
+            'client_phone' => '3112223344',
+            'appointment_date' => now()->addDays(3)->toDateString(),
+            'start_time' => '14:00:00',
+            'end_time' => '15:00:00',
+            'total_amount' => 70000,
+            'deposit_amount' => 0,
+            'deposit_paid' => 0,
+            'balance_due' => 70000,
+            'payment_method' => PaymentMethod::CASH_AT_LOCATION,
+            'status' => AppointmentStatus::CONFIRMED,
+        ]);
+
+        $resolved = $this->serviceWhatsApp->resolveAdminPhone($appointment);
+        $this->assertEquals('573103248385', $resolved);
+    }
+
+    public function test_appointment_creation_automatically_dispatches_admin_whatsapp_alert(): void
+    {
+        config(['whatsapp.driver' => 'log']);
+
+        $appointment = Appointment::create([
+            'tenant_id' => $this->tenant->id,
+            'service_id' => $this->service->id,
+            'client_name' => 'Natalia Morales',
+            'client_phone' => '3187766554',
+            'appointment_date' => now()->addDays(1)->toDateString(),
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'total_amount' => 70000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 0,
+            'balance_due' => 70000,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+            'status' => AppointmentStatus::PENDING_VERIFICATION,
+        ]);
+
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointment->id,
+            'client_name' => 'Natalia Morales',
+        ]);
+    }
 }
