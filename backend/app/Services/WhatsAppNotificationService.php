@@ -517,6 +517,86 @@ class WhatsAppNotificationService
     }
 
     /**
+     * Crea la instancia en Evolution API si aún no existe.
+     */
+    public function createEvolutionInstance(): array
+    {
+        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8085';
+        $apiKey = $this->evolutionConfig['api_key'] ?? '';
+        $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
+
+        $candidateUrls = array_unique(array_filter([
+            $baseUrl,
+            str_replace([':8080', ':8085'], ':8085', $baseUrl),
+            str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
+            'http://host.docker.internal:8085',
+            'http://localhost:8085',
+            'http://host.docker.internal:8080',
+            'http://localhost:8080',
+            'http://nuvex_evolution_whatsapp:8080',
+        ]));
+
+        foreach ($candidateUrls as $url) {
+            try {
+                $response = Http::withHeaders([
+                    'apikey' => $apiKey,
+                    'Content-Type' => 'application/json',
+                ])->timeout(8)->post("{$url}/instance/create", [
+                    'instanceName' => $instance,
+                    'qrcode' => true,
+                    'integration' => 'WHATSAPP-BAILEYS',
+                ]);
+
+                if ($response->successful() || $response->status() === 403 || $response->status() === 400) {
+                    return $response->json();
+                }
+            } catch (\Throwable $e) {
+                // Probar siguiente candidato
+            }
+        }
+
+        return ['error' => 'No se pudo conectar con el servicio Evolution API'];
+    }
+
+    /**
+     * Obtiene el código QR en base64 para vincular la instancia.
+     */
+    public function getEvolutionQrCode(): ?string
+    {
+        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8085';
+        $apiKey = $this->evolutionConfig['api_key'] ?? '';
+        $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
+
+        $candidateUrls = array_unique(array_filter([
+            $baseUrl,
+            str_replace([':8080', ':8085'], ':8085', $baseUrl),
+            str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
+            'http://host.docker.internal:8085',
+            'http://localhost:8085',
+            'http://host.docker.internal:8080',
+            'http://localhost:8080',
+            'http://nuvex_evolution_whatsapp:8080',
+        ]));
+
+        foreach ($candidateUrls as $url) {
+            try {
+                $response = Http::withHeaders([
+                    'apikey' => $apiKey,
+                ])->timeout(8)->get("{$url}/instance/connect/{$instance}");
+
+                if ($response->successful()) {
+                    $json = $response->json();
+                    return $json['base64'] ?? $json['code'] ?? null;
+                }
+            } catch (\Throwable $e) {
+                // Probar siguiente candidato
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Normaliza el número al formato internacional estándar (E.164 sin signo +).
      * Ejemplo para Colombia: 3106080402 -> 573106080402
      */
