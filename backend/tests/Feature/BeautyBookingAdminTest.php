@@ -249,6 +249,7 @@ class BeautyBookingAdminTest extends TestCase
             ->assertSee('Catalina Restrepo')
             ->call('closeDayModal')
             ->assertSet('showDayModal', false)
-            ->assertSet('selectedDayDate', '');
+            ->assertSet('selectedDayDate', '')
+            ->assertDontSee('Agenda diaria de citas');
     }
 }

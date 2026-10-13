@@ -814,13 +814,15 @@
             opacity: 0.9;
         }
 
+        [x-cloak] { display: none !important; }
+
         /* CIERRA-STYLE MODALS */
         .cal-modal-overlay {
             position: fixed;
             inset: 0;
             background: rgba(15, 23, 42, 0.45);
             backdrop-filter: blur(6px);
-            z-index: 9999;
+            z-index: 40;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1736,7 +1738,12 @@
             $dayBalance = $dayApts->sum('balance_due');
             $formattedDayTitle = $this->selectedDayTitle;
         @endphp
-        <div class="cal-modal-overlay" wire:keydown.escape="closeDayModal">
+        <div class="cal-modal-overlay" 
+             x-data="{ showModal: true }" 
+             x-show="showModal" 
+             x-cloak 
+             x-on:click.self="showModal = false; $wire.closeDayModal()"
+             wire:keydown.escape="closeDayModal">
             <div class="cal-modal-container" style="max-width: 680px; width: 95%;">
                 <!-- Header -->
                 <div class="cierra-modal-header">
@@ -1758,7 +1765,7 @@
                             <span class="cierra-header-sub">Agenda diaria de citas y reservas en salón</span>
                         </div>
                     </div>
-                    <button wire:click="closeDayModal" type="button" class="cierra-modal-close" title="Cerrar ventana">✕</button>
+                    <button x-on:click="showModal = false" wire:click="closeDayModal" type="button" class="cierra-modal-close" title="Cerrar ventana">✕</button>
                 </div>
 
                 <!-- Resumen KPI del Día -->
@@ -1795,7 +1802,7 @@
                             </div>
                             <h4 style="font-size: 14px; font-weight: 800; color: #1e293b; margin: 0 0 4px 0;">No hay citas agendadas para este día</h4>
                             <p style="font-size: 12px; color: #64748b; margin: 0 0 16px 0;">Puedes agendar una nueva reserva o turno personalizado para esta fecha.</p>
-                            <button wire:click="scheduleForDay('{{ $selectedDayDate }}')" type="button" class="btn-nueva-reserva" style="margin: 0 auto; display: inline-flex; width: auto; padding: 10px 20px;">
+                            <button x-on:click="showModal = false" wire:click="scheduleForDay('{{ $selectedDayDate }}')" type="button" class="btn-nueva-reserva" style="margin: 0 auto; display: inline-flex; width: auto; padding: 10px 20px;">
                                 + Agendar Cita para este Día
                             </button>
                         </div>
@@ -1837,7 +1844,7 @@
                                         <!-- Info Clienta -->
                                         <div style="display: flex; align-items: center; gap: 8px;">
                                             <div style="width: 28px; height: 28px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: #475569;">
-                                                {{ strtoupper(substr($apt->client_name, 0, 1)) }}
+                                                {{ substr($apt->client_name, 0, 1) }}
                                             </div>
                                             <div>
                                                 <div style="font-weight: 700; font-size: 13px; color: #1e293b;">
@@ -1847,7 +1854,7 @@
                                                     <div style="font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 6px;">
                                                         <span>{{ $apt->client_phone }}</span>
                                                         @if($waUrl)
-                                                            <a href="{{ $waUrl }}" target="_blank" title="Abrir chat de WhatsApp"
+                                                            <a href="{{ $waUrl }}" target="_blank" title="Abrir chat de WhatsApp" 
                                                                style="display: inline-flex; align-items: center; gap: 2px; color: #16a34a; font-weight: 700; text-decoration: none; font-size: 10px; background: #dcfce7; padding: 2px 6px; border-radius: 6px;">
                                                                 💬 WhatsApp
                                                             </a>
@@ -1868,7 +1875,7 @@
                                                 </div>
                                             </div>
 
-                                            <button wire:click="selectAppointmentFromDayModal({{ $apt->id }})" 
+                                            <button x-on:click="showModal = false" wire:click="selectAppointmentFromDayModal({{ $apt->id }})" 
                                                     type="button" 
                                                     style="background: #f0fdf9; color: #0d9488; border: 1px solid #a7f3d0; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; transition: all 0.15s ease;">
                                                 Ver Detalle →
@@ -1883,18 +1890,18 @@
 
                 <!-- Footer -->
                 <div class="cierra-modal-footer">
-                    <button wire:click="closeDayModal" type="button" class="cal-nav-btn" style="border: 1px solid #cbd5e1; background: white; font-size: 12px; padding: 8px 16px;">
+                    <button x-on:click="showModal = false" wire:click="closeDayModal" type="button" class="cal-nav-btn" style="border: 1px solid #cbd5e1; background: white; font-size: 12px; padding: 8px 16px;">
                         Cerrar
                     </button>
                     
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button wire:click="switchToDayView('{{ $selectedDayDate }}')" 
+                        <button x-on:click="showModal = false" wire:click="switchToDayView('{{ $selectedDayDate }}')" 
                                 type="button" 
                                 style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;">
                             🕒 Ver Timeline Horario
                         </button>
 
-                        <button wire:click="scheduleForDay('{{ $selectedDayDate }}')" 
+                        <button x-on:click="showModal = false" wire:click="scheduleForDay('{{ $selectedDayDate }}')" 
                                 type="button" 
                                 class="btn-nueva-reserva" 
                                 style="padding: 8px 16px; font-size: 12px; width: auto;">
