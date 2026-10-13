@@ -50,14 +50,14 @@ class TestWhatsAppNotificationCommand extends Command
         $message = $customMessage ?: "✨ *Mensaje de Prueba Nuvex WhatsApp*\n\nHola! Este es un mensaje de prueba enviado desde tu sistema de agendamiento *CitaClave / Paola Aguilera* a través del Gateway Evolution API.\n\nFecha y hora: " . now()->format('d/m/Y H:i:s');
 
         $this->line("Enviando mensaje...");
-        $success = $this->whatsAppService->sendTextMessage($phone, $message);
+        $result = $this->whatsAppService->sendTextMessageWithDetails($phone, $message);
 
-        if ($success) {
-            $this->info("✅ Mensaje enviado exitosamente a {$phone}.");
+        if ($result['success']) {
+            $this->info("✅ {$result['message']}");
             return self::SUCCESS;
         }
 
-        $this->error("❌ No se pudo enviar el mensaje. Verifica que el Gateway Evolution API esté corriendo y el QR esté escaneado.");
+        $this->error("❌ {$result['message']}");
         return self::FAILURE;
     }
 }

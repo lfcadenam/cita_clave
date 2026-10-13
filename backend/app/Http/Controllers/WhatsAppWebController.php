@@ -78,13 +78,11 @@ class WhatsAppWebController extends Controller
         $phone = $request->input('phone', '3106080402');
         $msg = "✨ *¡Conexión Exitosa!* Tu WhatsApp oficial de *La Belle Nails Bogotá* ha quedado correctamente vinculado al sistema CitaClave.\n\nFecha y hora: " . now()->format('d/m/Y H:i:s');
 
-        $sent = $this->whatsAppService->sendTextMessage($phone, $msg);
+        $result = $this->whatsAppService->sendTextMessageWithDetails($phone, $msg);
 
         return response()->json([
-            'success' => $sent,
-            'message' => $sent
-                ? "Mensaje de prueba enviado exitosamente a +57 {$phone}."
-                : "No se pudo enviar el mensaje. Verifica que el WhatsApp esté conectado.",
+            'success' => $result['success'],
+            'message' => $result['message'],
         ]);
     }
 }

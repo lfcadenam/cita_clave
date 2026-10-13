@@ -373,13 +373,50 @@ class WhatsAppNotificationService
     }
 
     /**
+     * Envía un mensaje con retorno detallado del resultado (útil para pruebas en UI y diagnósticos).
+     */
+    public function sendTextMessageWithDetails(string $phone, string $message): array
+    {
+        if (!$this->enabled) {
+            return [
+                'success' => false,
+                'message' => 'WhatsApp está deshabilitado en configuración (WHATSAPP_ENABLED=false).',
+            ];
+        }
+
+        $sanitizedPhone = $this->sanitizePhoneNumber($phone);
+
+        if ($this->driver === 'evolution') {
+            return $this->sendViaEvolutionWithDetails($sanitizedPhone, $message);
+        }
+
+        $sent = $this->sendTextMessage($phone, $message);
+        return [
+            'success' => $sent,
+            'message' => $sent
+                ? "Mensaje enviado exitosamente a +{$sanitizedPhone} vía {$this->driver}."
+                : "No se pudo enviar el mensaje vía {$this->driver}.",
+        ];
+    }
+
+    /**
      * Envío a través de Evolution API (Gateway QR / Baileys).
      */
     protected function sendViaEvolution(string $phone, string $message): bool
     {
+        $result = $this->sendViaEvolutionWithDetails($phone, $message);
+        return $result['success'];
+    }
+
+    /**
+     * Ejecuta el envío vía Evolution API con soporte dual v1/v2 y diagnóstico detallado.
+     */
+    public function sendViaEvolutionWithDetails(string $phone, string $message): array
+    {
         $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8085';
         $apiKey = $this->evolutionConfig['api_key'] ?? '';
         $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
+        $sanitizedPhone = $this->sanitizePhoneNumber($phone);
 
         $candidateUrls = array_unique(array_filter([
             $baseUrl,
@@ -392,31 +429,81 @@ class WhatsAppNotificationService
             'http://nuvex_evolution_whatsapp:8080',
         ]));
 
+        $lastError = 'No se pudo contactar con Evolution API en ninguna URL candidata.';
+        $lastStatus = 500;
+
         foreach ($candidateUrls as $url) {
             $endpoint = "{$url}/message/sendText/{$instance}";
-            try {
-                $response = Http::withHeaders([
-                    'apikey' => $apiKey,
-                    'Content-Type' => 'application/json',
-                ])->timeout(8)->post($endpoint, [
-                    'number' => $phone,
+
+            // Intentar variantes de payload aceptadas por Evolution API v2 y v1
+            $payloadVariants = [
+                // Variante 1: Evolution API v2 (anidado textMessage + opciones)
+                [
+                    'number' => $sanitizedPhone,
+                    'textMessage' => [
+                        'text' => $message,
+                    ],
+                    'options' => [
+                        'delay' => 1200,
+                        'presence' => 'composing',
+                        'linkPreview' => false,
+                    ],
+                ],
+                // Variante 2: Evolution API v2 híbrido (textMessage + text plano)
+                [
+                    'number' => $sanitizedPhone,
                     'text' => $message,
-                ]);
+                    'textMessage' => [
+                        'text' => $message,
+                    ],
+                ],
+                // Variante 3: Evolution API v1 / Baileys directa (solo text plano)
+                [
+                    'number' => $sanitizedPhone,
+                    'text' => $message,
+                ],
+            ];
 
-                if ($response->successful()) {
-                    Log::info("[WhatsApp Evolution] Mensaje enviado a {$phone} vía {$url}: " . substr($message, 0, 50) . "...");
-                    return true;
+            foreach ($payloadVariants as $payload) {
+                try {
+                    $response = Http::withHeaders([
+                        'apikey' => $apiKey,
+                        'Content-Type' => 'application/json',
+                    ])->timeout(8)->post($endpoint, $payload);
+
+                    if ($response->successful()) {
+                        Log::info("[WhatsApp Evolution] Mensaje enviado a {$sanitizedPhone} vía {$url}: " . substr($message, 0, 50) . "...");
+                        return [
+                            'success' => true,
+                            'message' => "Mensaje de prueba enviado exitosamente a +{$sanitizedPhone}.",
+                            'url' => $url,
+                            'data' => $response->json(),
+                        ];
+                    }
+
+                    $body = $response->json() ?? $response->body();
+                    $errorMsg = is_array($body)
+                        ? ($body['response']['message'][0] ?? $body['message'] ?? $body['error'] ?? json_encode($body))
+                        : (string) $body;
+
+                    $lastError = "{$url} HTTP {$response->status()}: {$errorMsg}";
+                    $lastStatus = $response->status();
+                    Log::error("[WhatsApp Evolution] Error en respuesta de {$url} ({$response->status()}): " . (is_string($body) ? $body : json_encode($body)));
+                } catch (\Throwable $e) {
+                    $lastError = "{$url}: " . $e->getMessage();
+                    Log::warning("[WhatsApp Evolution] No se pudo conectar a {$url}: " . $e->getMessage());
                 }
-
-                Log::error("[WhatsApp Evolution] Error en respuesta de {$url} ({$response->status()}): " . $response->body());
-            } catch (\Throwable $e) {
-                Log::warning("[WhatsApp Evolution] No se pudo conectar a {$url}: " . $e->getMessage());
             }
         }
 
-        // Si fallaron los endpoints, guardar en log como respaldo
-        $this->sendViaLog($phone, $message);
-        return false;
+        // Si fallaron los endpoints, registrar en log de respaldo
+        $this->sendViaLog($sanitizedPhone, $message);
+
+        return [
+            'success' => false,
+            'message' => "No se pudo enviar el mensaje. Detalle: {$lastError}",
+            'status' => $lastStatus,
+        ];
     }
 
     /**
