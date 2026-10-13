@@ -47,6 +47,8 @@ class AppointmentCalendarPage extends Page
     public ?int $selectedAppointmentId = null;
     public bool $showDetailModal = false;
     public bool $showNequiModal = false;
+    public bool $showDayModal = false;
+    public string $selectedDayDate = '';
     public string $verificationNotes = '';
     public string $cancellationReason = '';
 
@@ -190,6 +192,71 @@ class AppointmentCalendarPage extends Page
         $this->selectedAppointmentId = null;
         $this->verificationNotes = '';
         $this->cancellationReason = '';
+    }
+
+    public function openDayModal(string $date): void
+    {
+        $this->selectedDayDate = $date;
+        $this->showDayModal = true;
+    }
+
+    public function closeDayModal(): void
+    {
+        $this->showDayModal = false;
+        $this->selectedDayDate = '';
+    }
+
+    public function selectAppointmentFromDayModal(int $id): void
+    {
+        $this->showDayModal = false;
+        $this->selectAppointment($id);
+    }
+
+    public function switchToDayView(string $date): void
+    {
+        $this->currentDate = $date;
+        $this->viewMode = 'day';
+        $this->closeDayModal();
+    }
+
+    public function scheduleForDay(string $date): void
+    {
+        $this->currentDate = $date;
+        $this->closeDayModal();
+        $this->mountAction('newAppointment');
+    }
+
+    public function getSelectedDayAppointmentsProperty()
+    {
+        if (empty($this->selectedDayDate)) {
+            return collect();
+        }
+
+        $query = Appointment::with(['service', 'customer'])
+            ->whereDate('appointment_date', $this->selectedDayDate);
+
+        if ($this->statusFilter === 'confirmed') {
+            $query->where('status', AppointmentStatus::CONFIRMED);
+        } elseif ($this->statusFilter === 'pending_verification') {
+            $query->where('status', AppointmentStatus::PENDING_VERIFICATION);
+        }
+
+        if ($this->serviceFilter !== 'all') {
+            $query->where('service_id', (int) $this->serviceFilter);
+        }
+
+        return $query->orderBy('start_time')->get();
+    }
+
+    public function getSelectedDayTitleProperty(): string
+    {
+        if (empty($this->selectedDayDate)) {
+            return '';
+        }
+
+        return Carbon::parse($this->selectedDayDate)
+            ->locale('es')
+            ->isoFormat('dddd, D [de] MMMM [de] YYYY');
     }
 
     public function approveNequiDeposit(int $id): void

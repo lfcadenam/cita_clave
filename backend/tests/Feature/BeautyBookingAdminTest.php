@@ -236,8 +236,19 @@ class BeautyBookingAdminTest extends TestCase
 
         $component = Livewire::test(\App\Filament\Pages\AppointmentCalendarPage::class);
         $calendarData = $component->instance()->getCalendarData();
-        
+
         $allCalendarApts = collect($calendarData['days'])->flatMap(fn ($d) => $d['appointments']);
         $this->assertFalse($allCalendarApts->contains('id', $cancelledApt->id));
+
+        // Verify Day Appointments Modal interactions
+        $targetDate = now()->addDays(3)->toDateString();
+        Livewire::test(\App\Filament\Pages\AppointmentCalendarPage::class)
+            ->call('openDayModal', $targetDate)
+            ->assertSet('showDayModal', true)
+            ->assertSet('selectedDayDate', $targetDate)
+            ->assertSee('Catalina Restrepo')
+            ->call('closeDayModal')
+            ->assertSet('showDayModal', false)
+            ->assertSet('selectedDayDate', '');
     }
 }

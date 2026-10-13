@@ -299,20 +299,43 @@
             padding: 4px;
         }
         .cal-nav-btn {
-            background: transparent;
-            border: none;
-            padding: 6px 14px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 7px 11px;
             border-radius: 8px;
             font-size: 13px;
             font-weight: 700;
-            color: #475569;
+            color: #334155;
             cursor: pointer;
             transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .cal-nav-btn:hover {
-            background: #ffffff;
+            background: #f1f5f9;
             color: #0f172a;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+        .cal-today-pill {
+            background: #0d9488;
+            color: #ffffff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 3px rgba(13, 148, 136, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .cal-today-pill:hover {
+            background: #0f766e;
+            transform: translateY(-1px);
         }
 
         .cal-date-picker-input {
@@ -321,8 +344,8 @@
             color: #334155;
             font-size: 12px;
             font-weight: 700;
-            padding: 5px 10px;
-            border-radius: 8px;
+            padding: 6px 12px;
+            border-radius: 10px;
             outline: none;
             cursor: pointer;
             transition: all 0.15s ease;
@@ -334,8 +357,8 @@
         }
 
         .cal-month-title {
-            font-size: 18px;
-            font-weight: 800;
+            font-size: 20px;
+            font-weight: 900;
             color: #0f172a;
             letter-spacing: 0.5px;
             text-transform: uppercase;
@@ -393,13 +416,21 @@
             background: #f8fafc;
         }
         .salonesgo-month-table td {
-            height: 110px;
+            height: 115px;
             vertical-align: top;
-            padding: 6px;
+            padding: 8px;
             border: 1px solid #e2e8f0;
             position: relative;
             background: #ffffff;
-            transition: background 0.15s ease;
+            transition: all 0.15s ease;
+        }
+        .salonesgo-month-table td.month-day-cell {
+            cursor: pointer;
+        }
+        .salonesgo-month-table td.month-day-cell:hover {
+            background: #f0fdf9;
+            border-color: #99f6e4;
+            box-shadow: inset 0 0 0 1px #0d9488;
         }
         .salonesgo-month-table td.out-month {
             background: #f8fafc;
@@ -412,17 +443,29 @@
 
         .day-header-num {
             display: flex;
-            justify-content: flex-end;
-            margin-bottom: 4px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
         }
         .day-num-text {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 800;
-            color: #475569;
-            cursor: pointer;
+            color: #334155;
             padding: 2px 6px;
             border-radius: 6px;
             transition: all 0.15s ease;
+        }
+        .day-count-badge {
+            font-size: 10px;
+            font-weight: 800;
+            background: #e6f7f2;
+            color: #0d9488;
+            padding: 2px 7px;
+            border-radius: 9999px;
+            border: 1px solid #a7f3d0;
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
         }
         .day-num-text:hover {
             background: #e2e8f0;
@@ -1232,9 +1275,19 @@
                 <div class="cal-header-bar">
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <div class="cal-nav-group">
-                            <button wire:click="previousPeriod" type="button" class="cal-nav-btn" title="Período anterior">&lt;</button>
-                            <button wire:click="nextPeriod" type="button" class="cal-nav-btn" title="Período siguiente">&gt;</button>
-                            <button wire:click="goToToday" type="button" class="cal-nav-btn" style="color: #0d9488; font-weight: 800;">Hoy</button>
+                            <button wire:click="previousPeriod" type="button" class="cal-nav-btn" title="Período anterior" aria-label="Anterior">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <button wire:click="nextPeriod" type="button" class="cal-nav-btn" title="Período siguiente" aria-label="Siguiente">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                            <button wire:click="goToToday" type="button" class="cal-today-pill" title="Ir a la fecha de hoy">
+                                Hoy
+                            </button>
                         </div>
 
                         <!-- Selector rápido de fecha específica -->
@@ -1283,13 +1336,19 @@
                                 @foreach($dayChunks as $week)
                                     <tr>
                                         @foreach($week as $day)
-                                            <td class="{{ !$day['isCurrentMonth'] ? 'out-month' : '' }} {{ $day['isToday'] ? 'today-cell' : '' }}">
+                                            <td wire:click="openDayModal('{{ $day['date'] }}')"
+                                                class="month-day-cell {{ !$day['isCurrentMonth'] ? 'out-month' : '' }} {{ $day['isToday'] ? 'today-cell' : '' }}"
+                                                title="Clic para ver listado completo de citas del {{ $day['fullDayName'] }}">
                                                 <div class="day-header-num">
-                                                    <span wire:click="selectDate('{{ $day['date'] }}', 'day')" 
-                                                          class="day-num-text"
-                                                          title="Ver agenda detallada del {{ $day['fullDayName'] }}">
+                                                    <span class="day-num-text">
                                                         {{ $day['dayNumber'] }}
                                                     </span>
+
+                                                    @if(count($day['appointments']) > 0)
+                                                        <span class="day-count-badge" title="{{ count($day['appointments']) }} citas agendadas">
+                                                            {{ count($day['appointments']) }} {{ count($day['appointments']) === 1 ? 'cita' : 'citas' }}
+                                                        </span>
+                                                    @endif
                                                 </div>
 
                                                 <!-- Appointment Chips -->
@@ -1299,7 +1358,7 @@
                                                             $pillColors = ['pill-purple', 'pill-blue', 'pill-rose', 'pill-amber', 'pill-emerald'];
                                                             $pillClass = $pillColors[$aptIndex % count($pillColors)];
                                                         @endphp
-                                                         <div wire:click="selectAppointment({{ $apt->id }})" 
+                                                         <div wire:click.stop="selectAppointment({{ $apt->id }})" 
                                                              class="salonesgo-event-pill {{ $pillClass }}"
                                                              title="{{ $apt->service?->name }} • {{ $apt->client_name }}">
                                                             <span style="font-size: 9px; opacity: 0.9;">{{ substr($apt->start_time, 0, 5) }}</span>
@@ -1662,6 +1721,186 @@
                             style="padding: 9px 20px; font-size: 12px;">
                         Aprobar Abono y Confirmar
                     </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- DAY APPOINTMENTS MODAL (LISTADO COMPLETO DEL DÍA) -->
+    @if($showDayModal)
+        @php
+            $dayApts = $this->selectedDayAppointments;
+            $dayTotal = $dayApts->count();
+            $dayConfirmed = $dayApts->where('status', \App\Enums\AppointmentStatus::CONFIRMED)->count();
+            $dayPending = $dayApts->where('status', \App\Enums\AppointmentStatus::PENDING_VERIFICATION)->count();
+            $dayBalance = $dayApts->sum('balance_due');
+            $formattedDayTitle = $this->selectedDayTitle;
+        @endphp
+        <div class="cal-modal-overlay" wire:keydown.escape="closeDayModal">
+            <div class="cal-modal-container" style="max-width: 680px; width: 95%;">
+                <!-- Header -->
+                <div class="cierra-modal-header">
+                    <div class="cierra-header-left">
+                        <div class="cierra-icon-box" style="background: linear-gradient(135deg, #0d9488, #00C975);">
+                            <svg style="width: 22px; height: 22px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="cierra-header-info">
+                            <div class="cierra-header-title-row">
+                                <h3 class="cierra-header-title" style="font-size: 16px; text-transform: capitalize;">
+                                    {{ $formattedDayTitle }}
+                                </h3>
+                                <span class="cierra-status-pill {{ $dayTotal > 0 ? 'confirmed' : 'pending_verification' }}">
+                                    <span>{{ $dayTotal }} {{ $dayTotal === 1 ? 'Cita' : 'Citas' }}</span>
+                                </span>
+                            </div>
+                            <span class="cierra-header-sub">Agenda diaria de citas y reservas en salón</span>
+                        </div>
+                    </div>
+                    <button wire:click="closeDayModal" type="button" class="cierra-modal-close" title="Cerrar ventana">✕</button>
+                </div>
+
+                <!-- Resumen KPI del Día -->
+                <div style="padding: 14px 22px 0 22px;">
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: #f8fafc; padding: 12px; border-radius: 14px; border: 1px solid #e2e8f0;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Total Citas</div>
+                            <div style="font-size: 16px; font-weight: 900; color: #0f172a; margin-top: 2px;">{{ $dayTotal }}</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 10px; font-weight: 700; color: #0d9488; text-transform: uppercase;">Confirmadas</div>
+                            <div style="font-size: 16px; font-weight: 900; color: #0d9488; margin-top: 2px;">{{ $dayConfirmed }}</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 10px; font-weight: 700; color: #d97706; text-transform: uppercase;">Por Validar</div>
+                            <div style="font-size: 16px; font-weight: 900; color: #d97706; margin-top: 2px;">{{ $dayPending }}</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 10px; font-weight: 700; color: #3b82f6; text-transform: uppercase;">Por Cobrar</div>
+                            <div style="font-size: 13px; font-weight: 900; color: #1e3a5f; margin-top: 4px;">${{ number_format($dayBalance, 0, ',', '.') }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Citas del Día -->
+                <div class="cierra-modal-body" style="max-height: 52vh; overflow-y: auto; padding: 16px 22px;">
+                    @if($dayTotal === 0)
+                        <!-- Empty State -->
+                        <div style="text-align: center; padding: 36px 16px; background: #ffffff; border: 2px dashed #e2e8f0; border-radius: 16px;">
+                            <div style="width: 52px; height: 52px; border-radius: 50%; background: #f0fdf9; color: #0d9488; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;">
+                                <svg style="width: 26px; height: 26px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                </svg>
+                            </div>
+                            <h4 style="font-size: 14px; font-weight: 800; color: #1e293b; margin: 0 0 4px 0;">No hay citas agendadas para este día</h4>
+                            <p style="font-size: 12px; color: #64748b; margin: 0 0 16px 0;">Puedes agendar una nueva reserva o turno personalizado para esta fecha.</p>
+                            <button wire:click="scheduleForDay('{{ $selectedDayDate }}')" type="button" class="btn-nueva-reserva" style="margin: 0 auto; display: inline-flex; width: auto; padding: 10px 20px;">
+                                + Agendar Cita para este Día
+                            </button>
+                        </div>
+                    @else
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            @foreach($dayApts as $apt)
+                                @php
+                                    $status = $apt->status instanceof \App\Enums\AppointmentStatus ? $apt->status : \App\Enums\AppointmentStatus::tryFrom($apt->status);
+                                    $statusClass = $status?->value ?? 'confirmed';
+                                    $statusLabel = $status?->label() ?? 'Confirmada';
+                                    $waUrl = $apt->client_phone ? 'https://wa.me/' . preg_replace('/[^0-9]/', '', $apt->client_phone) : null;
+                                @endphp
+                                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; transition: all 0.15s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                        <!-- Horario y Servicio -->
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div style="background: #e6f7f2; color: #0d9488; font-weight: 900; font-size: 12px; padding: 6px 10px; border-radius: 8px; font-family: monospace;">
+                                                {{ substr($apt->start_time, 0, 5) }} - {{ substr($apt->end_time, 0, 5) }}
+                                            </div>
+                                            <div>
+                                                <div style="font-weight: 800; font-size: 14px; color: #0f172a;">
+                                                    {{ $apt->service?->name ?? 'Servicio' }}
+                                                </div>
+                                                <div style="font-size: 11px; color: #64748b;">
+                                                    {{ $apt->service?->duration_minutes ?? 60 }} min &nbsp;•&nbsp; <span style="font-family: monospace; font-weight: 700; color: #0d9488;">#{{ $apt->appointment_number }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Badge de Estado -->
+                                        <span class="cierra-status-pill {{ $statusClass }}">
+                                            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block;"></span>
+                                            <span>{{ $statusLabel }}</span>
+                                        </span>
+                                    </div>
+
+                                    <!-- Fila de Clienta y Finanzas -->
+                                    <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 10px; flex-wrap: wrap; gap: 8px;">
+                                        <!-- Info Clienta -->
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <div style="width: 28px; height: 28px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: #475569;">
+                                                {{ strtoupper(substr($apt->client_name, 0, 1)) }}
+                                            </div>
+                                            <div>
+                                                <div style="font-weight: 700; font-size: 13px; color: #1e293b;">
+                                                    {{ $apt->client_name }}
+                                                </div>
+                                                @if($apt->client_phone)
+                                                    <div style="font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 6px;">
+                                                        <span>{{ $apt->client_phone }}</span>
+                                                        @if($waUrl)
+                                                            <a href="{{ $waUrl }}" target="_blank" title="Abrir chat de WhatsApp"
+                                                               style="display: inline-flex; align-items: center; gap: 2px; color: #16a34a; font-weight: 700; text-decoration: none; font-size: 10px; background: #dcfce7; padding: 2px 6px; border-radius: 6px;">
+                                                                💬 WhatsApp
+                                                            </a>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <!-- Liquidación + Botón Acción -->
+                                        <div style="display: flex; align-items: center; gap: 14px;">
+                                            <div style="text-align: right;">
+                                                <div style="font-size: 10px; font-weight: 700; color: #64748b;">
+                                                    Abono: <strong style="color: #0d9488;">${{ number_format($apt->deposit_paid ?: $apt->deposit_amount, 0, ',', '.') }}</strong>
+                                                </div>
+                                                <div style="font-size: 11px; font-weight: 800; color: #0f172a;">
+                                                    Saldo: <strong style="color: #1e3a5f;">${{ number_format($apt->balance_due, 0, ',', '.') }}</strong>
+                                                </div>
+                                            </div>
+
+                                            <button wire:click="selectAppointmentFromDayModal({{ $apt->id }})" 
+                                                    type="button" 
+                                                    style="background: #f0fdf9; color: #0d9488; border: 1px solid #a7f3d0; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; transition: all 0.15s ease;">
+                                                Ver Detalle →
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Footer -->
+                <div class="cierra-modal-footer">
+                    <button wire:click="closeDayModal" type="button" class="cal-nav-btn" style="border: 1px solid #cbd5e1; background: white; font-size: 12px; padding: 8px 16px;">
+                        Cerrar
+                    </button>
+                    
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button wire:click="switchToDayView('{{ $selectedDayDate }}')" 
+                                type="button" 
+                                style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;">
+                            🕒 Ver Timeline Horario
+                        </button>
+
+                        <button wire:click="scheduleForDay('{{ $selectedDayDate }}')" 
+                                type="button" 
+                                class="btn-nueva-reserva" 
+                                style="padding: 8px 16px; font-size: 12px; width: auto;">
+                            + Nueva Cita en este Día
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
