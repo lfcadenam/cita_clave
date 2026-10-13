@@ -107,7 +107,9 @@ export class BookingComponent implements OnInit {
   clientForm!: FormGroup;
   showPrivacyModal = signal<boolean>(false);
   isExistingClient = signal<boolean>(false);
+  isRecurringClient = signal<boolean>(false);
   existingClientName = signal<string>('');
+  isCheckingClient = signal<boolean>(false);
   copiedNequi = signal<boolean>(false);
   paymentMethod = signal<'NEQUI' | 'BOLD'>('NEQUI');
   isBoldEnabled = computed(() => {
@@ -265,8 +267,8 @@ export class BookingComponent implements OnInit {
 
   private initForm(): void {
     this.clientForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
       phone: ['', [Validators.required, Validators.minLength(10)]],
+      name: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.email]],
       notes: [''],
       accept_terms: [false, [Validators.requiredTrue]]
@@ -278,6 +280,10 @@ export class BookingComponent implements OnInit {
         const clean = val.phone.toString().replace(/\D/g, '');
         if (clean.length === 10) {
           this.lookupClientData(clean);
+        } else if (clean.length < 10 && this.isExistingClient()) {
+          this.isExistingClient.set(false);
+          this.isRecurringClient.set(false);
+          this.existingClientName.set('');
         }
       }
     });
@@ -286,11 +292,11 @@ export class BookingComponent implements OnInit {
   checkStep3Validity(): boolean {
     const val = this.clientForm?.value;
     if (!val) return false;
-    const nameValid = !!(val.name && val.name.trim().length >= 3);
     const phoneClean = (val.phone || '').toString().replace(/\D/g, '');
     const phoneValid = phoneClean.length === 10;
+    const nameValid = !!(val.name && val.name.trim().length >= 3);
     const termsAccepted = !!val.accept_terms;
-    return nameValid && phoneValid && termsAccepted;
+    return phoneValid && nameValid && termsAccepted;
   }
 
   openPrivacyModal(): void {
@@ -327,27 +333,54 @@ export class BookingComponent implements OnInit {
   loadSavedDeviceProfile(): void {
     const profile = this.storage.getSavedProfile();
     if (profile && profile.phone) {
+      const cleanPhone = profile.phone.replace(/\D/g, '');
       this.clientForm.patchValue({
+        phone: cleanPhone,
         name: profile.name || '',
-        phone: profile.phone.replace(/\D/g, ''),
         email: profile.email || '',
         notes: profile.notes || ''
       }, { emitEvent: true });
       this.isStep3Valid.set(this.checkStep3Validity());
+      if (cleanPhone.length === 10) {
+        this.lookupClientData(cleanPhone);
+      }
     }
   }
 
   lookupClientData(phone: string): void {
-    this.api.lookupClient(phone).subscribe((profile: ClientProfile | null) => {
-      if (profile && profile.name) {
-        this.isExistingClient.set(true);
-        this.existingClientName.set(profile.name);
-        this.clientForm.patchValue({
-          name: profile.name,
-          email: profile.email || this.clientForm.get('email')?.value || ''
-        }, { emitEvent: false });
-      } else {
+    const clean = phone.replace(/\D/g, '');
+    if (clean.length < 10) {
+      this.isExistingClient.set(false);
+      this.isRecurringClient.set(false);
+      this.existingClientName.set('');
+      return;
+    }
+
+    this.isCheckingClient.set(true);
+    this.api.lookupClient(clean).subscribe({
+      next: (profile: ClientProfile | null) => {
+        this.isCheckingClient.set(false);
+        if (profile && profile.name) {
+          this.isExistingClient.set(true);
+          const recurring = profile.is_recurring === true || profile.is_new === false || profile.is_legacy === true || profile.is_registered === true;
+          this.isRecurringClient.set(recurring);
+          this.existingClientName.set(profile.name);
+          this.clientForm.patchValue({
+            name: profile.name,
+            email: profile.email || this.clientForm.get('email')?.value || ''
+          }, { emitEvent: false });
+          this.isStep3Valid.set(this.checkStep3Validity());
+        } else {
+          this.isExistingClient.set(false);
+          this.isRecurringClient.set(false);
+          this.existingClientName.set('');
+        }
+      },
+      error: () => {
+        this.isCheckingClient.set(false);
         this.isExistingClient.set(false);
+        this.isRecurringClient.set(false);
+        this.existingClientName.set('');
       }
     });
   }
@@ -588,6 +621,64 @@ export class BookingComponent implements OnInit {
     if (step === 2 && (!this.availableSlots().length || !this.selectedSlot())) {
       this.loadSlotsForCurrentSelection();
     }
+  }
+
+  confirmRecurringBooking(): void {
+    if (!this.isStep3Valid() || this.isSubmitting()) {
+      return;
+    }
+
+    const svc = this.selectedService();
+    const slot = this.selectedSlot();
+    const date = this.selectedDate();
+    const formVal = this.clientForm.value;
+
+    if (!svc || !slot) {
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+
+    this.api.createBooking({
+      service_id: svc.id,
+      booking_date: date,
+      start_time: slot.start_time,
+      client_name: formVal.name.trim(),
+      client_phone: formVal.phone.replace(/\D/g, ''),
+      client_email: formVal.email ? formVal.email.trim() : undefined,
+      client_notes: formVal.notes ? formVal.notes.trim() : '',
+      payment_method: 'CASH'
+    }).subscribe({
+      next: (res: AppointmentResponse) => {
+        this.isSubmitting.set(false);
+        if (res && res.data) {
+          this.bookingResult.set(res.data);
+          this.currentStep.set(5);
+          this.storage.saveProfile({
+            name: formVal.name.trim(),
+            phone: formVal.phone.replace(/\D/g, ''),
+            email: formVal.email ? formVal.email.trim() : '',
+            notes: formVal.notes ? formVal.notes.trim() : ''
+          });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          this.errorMessage.set(res?.message || 'Ocurrió un error al procesar tu cita.');
+        }
+      },
+      error: (err: any) => {
+        this.isSubmitting.set(false);
+        let msg = 'Error al procesar la reserva. Verifica los datos e intenta de nuevo.';
+        if (err.error) {
+          if (err.error.message) msg = err.error.message;
+          if (err.error.errors && typeof err.error.errors === 'object') {
+            const errorDetails = Object.values(err.error.errors).flat().join(' ');
+            if (errorDetails) msg += ` (${errorDetails})`;
+          }
+        }
+        this.errorMessage.set(msg);
+      }
+    });
   }
 
   submitBooking(): void {

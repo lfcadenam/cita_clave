@@ -143,7 +143,7 @@
           </svg>
           <span *ngIf="currentStep() <= 4">4</span>
         </div>
-        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 4 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Abono</span>
+        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 4 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">{{ isRecurringClient() ? 'Confirmar' : 'Abono' }}</span>
       </button>
     </div>
 
@@ -504,11 +504,23 @@
           <!-- Financial Settlement Box -->
           <div class="flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 md:border-l border-[#e2f0ea] pt-3 md:pt-0 md:pl-5">
             <div class="text-left md:text-right">
-              <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">Abono Requerido</span>
-              <span class="font-bold text-[#1e3a5f] text-lg sm:text-xl">${{ formatPrice(selectedService()?.deposit_amount) }} COP</span>
+              <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
+                {{ isRecurringClient() ? 'Modalidad de Pago' : 'Abono Requerido' }}
+              </span>
+              <span *ngIf="!isRecurringClient()" class="font-bold text-[#1e3a5f] text-lg sm:text-xl">
+                ${{ formatPrice(selectedService()?.deposit_amount) }} COP
+              </span>
+              <span *ngIf="isRecurringClient()" class="font-extrabold text-[#0d9488] text-base sm:text-lg inline-flex items-center gap-1.5 bg-[#e6f7f2] px-2.5 py-1 rounded-full border border-[#a7f3d0]">
+                ⭐ Sin Abono Requerido
+              </span>
             </div>
             <span class="text-[11px] text-slate-500 font-medium block mt-0.5">
-              Saldo en local: <strong class="text-slate-700">${{ formatPrice((selectedService()?.price || selectedService()?.base_price || 0) - (selectedService()?.deposit_amount || 0)) }} COP</strong>
+              <ng-container *ngIf="!isRecurringClient()">
+                Saldo en local: <strong class="text-slate-700">${{ formatPrice((selectedService()?.price || selectedService()?.base_price || 0) - (selectedService()?.deposit_amount || 0)) }} COP</strong>
+              </ng-container>
+              <ng-container *ngIf="isRecurringClient()">
+                Total en salón: <strong class="text-slate-800">${{ formatPrice(selectedService()?.price || selectedService()?.base_price || 0) }} COP</strong>
+              </ng-container>
             </span>
           </div>
         </div>
@@ -519,7 +531,27 @@
         <form [formGroup]="clientForm" class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             
-            <!-- Nombre Completo -->
+            <!-- 1. WhatsApp Celular (PRIMERO) -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Celular WhatsApp *</label>
+                <span *ngIf="isCheckingClient()" class="text-[10px] text-[#0d9488] font-bold animate-pulse flex items-center gap-1">
+                  <svg class="animate-spin w-3 h-3 text-[#0d9488]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                  </svg>
+                  Consultando...
+                </span>
+              </div>
+              <input type="tel" formControlName="phone" (input)="formatPhoneInput($event)" placeholder="Ej: 310 123 4567"
+                     class="w-full text-xs text-slate-900 border rounded-xl px-4 py-3 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]"
+                     [ngClass]="clientForm.get('phone')?.touched && clientForm.get('phone')?.invalid ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'">
+              <span *ngIf="clientForm.get('phone')?.touched && clientForm.get('phone')?.invalid" class="text-[10px] text-rose-500 font-semibold mt-1 block">
+                Ingresa un número de 10 dígitos válido.
+              </span>
+            </div>
+
+            <!-- 2. Nombre Completo (SEGUNDO) -->
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nombre Completo *</label>
               <input type="text" formControlName="name" placeholder="Ej: Paola Andrea Gómez"
@@ -528,16 +560,23 @@
                 Por favor ingresa tu nombre (mínimo 3 caracteres).
               </span>
             </div>
+          </div>
 
-            <!-- WhatsApp Celular -->
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Celular WhatsApp *</label>
-              <input type="tel" formControlName="phone" (input)="formatPhoneInput($event)" placeholder="Ej: 310 123 4567"
-                     class="w-full text-xs text-slate-900 border rounded-xl px-4 py-3 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]"
-                     [ngClass]="clientForm.get('phone')?.touched && clientForm.get('phone')?.invalid ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'">
-              <span *ngIf="clientForm.get('phone')?.touched && clientForm.get('phone')?.invalid" class="text-[10px] text-rose-500 font-semibold mt-1 block">
-                Ingresa un número de 10 dígitos válido.
-              </span>
+          <!-- Banner de Reconocimiento de Clienta Frecuente / Recurrente -->
+          <div *ngIf="isRecurringClient()" class="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-white border border-emerald-200/90 shadow-2xs flex items-start gap-3.5 animate-fade-in">
+            <div class="w-9 h-9 rounded-xl bg-[#0d9488] text-white shrink-0 flex items-center justify-center font-black text-sm shadow-xs">
+              ⭐
+            </div>
+            <div class="text-xs leading-relaxed">
+              <h5 class="font-extrabold text-emerald-950 text-xs sm:text-sm flex items-center gap-2 flex-wrap">
+                <span>¡Hola de nuevo, {{ existingClientName() }}!</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  Clienta Habitual VIP
+                </span>
+              </h5>
+              <p class="text-emerald-800 text-[11px] sm:text-xs mt-1 font-medium">
+                Por ser clienta habitual de <strong>La Belle Nails</strong>, tu reserva queda confirmada inmediatamente <strong>sin pagar abono previo</strong>. Pagarás el 100% en el salón el día de tu turno.
+              </p>
             </div>
           </div>
 
@@ -573,17 +612,41 @@
         </form>
 
         <!-- Continue CTA -->
-        <div class="mt-6 flex justify-end">
-          <button type="button"
-                  (click)="goToStep(4)"
-                  [disabled]="!isStep3Valid()"
-                  class="px-8 py-3.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-2 tracking-wide shadow-md"
-                  [ngClass]="isStep3Valid() ? 'bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white hover:from-[#0f766e] hover:to-[#115e59] shadow-teal-500/25 hover:scale-[1.02] cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'">
-            <span>Continuar al Pago del Abono (${{ formatPrice(selectedService()?.deposit_amount) }} COP)</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p *ngIf="isRecurringClient()" class="text-xs text-emerald-700 font-bold flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
             </svg>
-          </button>
+            <span>Beneficio VIP: Confirmación instantánea sin anticipo</span>
+          </p>
+          <div class="w-full sm:w-auto ml-auto flex justify-end">
+            <!-- Si es recurrente: Confirmar Cita Directa Sin Abono -->
+            <button *ngIf="isRecurringClient()"
+                    type="button"
+                    (click)="confirmRecurringBooking()"
+                    [disabled]="!isStep3Valid() || isSubmitting()"
+                    class="w-full sm:w-auto px-8 py-3.5 rounded-full text-xs font-extrabold transition-all duration-200 flex items-center justify-center gap-2 tracking-wide shadow-md"
+                    [ngClass]="isStep3Valid() && !isSubmitting() ? 'bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white hover:from-[#0f766e] hover:to-[#115e59] shadow-teal-500/25 hover:scale-[1.02] cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'">
+              <span *ngIf="!isSubmitting()">Confirmar Cita Inmediata (Sin Abono)</span>
+              <span *ngIf="isSubmitting()">Confirmando tu reserva...</span>
+              <svg *ngIf="!isSubmitting()" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+
+            <!-- Si es clienta nueva: Continuar al Pago del Abono -->
+            <button *ngIf="!isRecurringClient()"
+                    type="button"
+                    (click)="goToStep(4)"
+                    [disabled]="!isStep3Valid()"
+                    class="w-full sm:w-auto px-8 py-3.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 tracking-wide shadow-md"
+                    [ngClass]="isStep3Valid() ? 'bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white hover:from-[#0f766e] hover:to-[#115e59] shadow-teal-500/25 hover:scale-[1.02] cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'">
+              <span>Continuar al Pago del Abono (${{ formatPrice(selectedService()?.deposit_amount) }} COP)</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 

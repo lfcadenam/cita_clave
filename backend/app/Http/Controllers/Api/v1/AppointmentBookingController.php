@@ -37,11 +37,16 @@ class AppointmentBookingController extends Controller
             ]);
         }
 
-        $customer = \App\Models\Customer::where('phone', 'LIKE', "%{$phone}%")->first();
+        $cleanPhone10 = preg_replace('/^57(\d{10})$/', '$1', $phone);
+
+        $customer = \App\Models\Customer::where('phone', 'LIKE', "%{$cleanPhone10}%")
+            ->orWhere('phone', 'LIKE', "%{$phone}%")
+            ->first();
         $appointment = null;
 
         if (! $customer) {
-            $appointment = Appointment::where('client_phone', 'LIKE', "%{$phone}%")
+            $appointment = Appointment::where('client_phone', 'LIKE', "%{$cleanPhone10}%")
+                ->orWhere('client_phone', 'LIKE', "%{$phone}%")
                 ->orderBy('id', 'desc')
                 ->first();
             if ($appointment) {
@@ -61,7 +66,8 @@ class AppointmentBookingController extends Controller
         $name = $customer ? $customer->name : $appointment->client_name;
         $phoneVal = $customer ? $customer->phone : $appointment->client_phone;
         $email = $customer ? $customer->email : $appointment->client_email;
-        $isRegistered = $customer ? $customer->isRecurring() : false;
+        $isRecurring = $customer ? $customer->isRecurring() : false;
+        $isLegacy = $customer ? (bool) $customer->is_legacy : false;
         $isNew = $customer ? $customer->isNew() : true;
         $registeredAt = $customer && $customer->registered_at ? $customer->registered_at->toIso8601String() : null;
 
@@ -71,7 +77,9 @@ class AppointmentBookingController extends Controller
                 'name' => $name,
                 'phone' => $phoneVal,
                 'email' => $email,
-                'is_registered' => $isRegistered,
+                'is_registered' => $isRecurring,
+                'is_recurring' => $isRecurring,
+                'is_legacy' => $isLegacy,
                 'is_new' => $isNew,
                 'registered_at' => $registeredAt,
             ],
@@ -174,6 +182,8 @@ class AppointmentBookingController extends Controller
                 $inputs['payment_method'] = 'NEQUI_TRANSFER';
             } elseif ($inputs['payment_method'] === 'BOLD') {
                 $inputs['payment_method'] = 'BOLD_ONLINE';
+            } elseif ($inputs['payment_method'] === 'CASH' || $inputs['payment_method'] === 'CASH_AT_LOCATION') {
+                $inputs['payment_method'] = 'CASH_AT_LOCATION';
             }
         }
         $request->merge($inputs);
@@ -187,7 +197,7 @@ class AppointmentBookingController extends Controller
             'client_phone' => 'required|string|max:20',
             'client_email' => 'nullable|email|max:255',
             'client_notes' => 'nullable|string|max:1000',
-            'payment_method' => ['required', Rule::in(['NEQUI_TRANSFER', 'BOLD_ONLINE'])],
+            'payment_method' => ['required', Rule::in(['NEQUI_TRANSFER', 'BOLD_ONLINE', 'CASH_AT_LOCATION'])],
             'receipt' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,pdf|max:10240', // Max 10MB
         ]);
 
@@ -259,8 +269,13 @@ class AppointmentBookingController extends Controller
             $appointment->client_notes = $validated['client_notes'] ?? $appointment->client_notes;
             $appointment->payment_method = PaymentMethod::from($validated['payment_method']);
 
-            // If Nequi receipt is uploaded
-            if ($request->hasFile('receipt')) {
+            // Si es pago en local (clienta habitual sin abono)
+            if ($validated['payment_method'] === 'CASH_AT_LOCATION') {
+                $appointment->deposit_amount = 0;
+                $appointment->deposit_paid = 0;
+                $appointment->balance_due = $appointment->total_amount;
+                $appointment->status = AppointmentStatus::CONFIRMED;
+            } elseif ($request->hasFile('receipt')) {
                 $path = $request->file('receipt')->store('receipts', 'public');
                 $appointment->deposit_proof_image = $path;
                 $appointment->status = AppointmentStatus::PENDING_VERIFICATION;
@@ -286,9 +301,11 @@ class AppointmentBookingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $appointment->status === AppointmentStatus::PENDING_VERIFICATION
-                    ? '¡Tu cita ha sido apartada con éxito! Paola validará tu transferencia y te confirmará en breve.'
-                    : 'Cita registrada. Procede con el pago en línea.',
+                'message' => $appointment->status === AppointmentStatus::CONFIRMED
+                    ? '¡Tu cita ha sido confirmada con éxito! Como clienta habitual de La Belle Nails, pagarás el valor total directamente en el salón el día de tu turno.'
+                    : ($appointment->status === AppointmentStatus::PENDING_VERIFICATION
+                        ? '¡Tu cita ha sido apartada con éxito! Paola validará tu transferencia y te confirmará en breve.'
+                        : 'Cita registrada. Procede con el pago en línea.'),
                 'data' => [
                     'appointment_number' => $appointment->appointment_number,
                     'status' => $appointment->status->value,

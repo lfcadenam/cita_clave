@@ -30,6 +30,10 @@ export interface ClientProfile {
   preferences?: string[];
   total_past_appointments?: number;
   is_vip?: boolean;
+  is_recurring?: boolean;
+  is_legacy?: boolean;
+  is_new?: boolean;
+  is_registered?: boolean;
 }
 
 export interface AppointmentBookingRequest {
