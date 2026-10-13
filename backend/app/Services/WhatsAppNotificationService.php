@@ -409,94 +409,122 @@ class WhatsAppNotificationService
     }
 
     /**
+     * Obtiene la lista de URLs candidatas ordenadas por probabilidad de éxito.
+     */
+    public function getEvolutionCandidateUrls(): array
+    {
+        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://host.docker.internal:8085';
+
+        return array_unique(array_filter([
+            'http://host.docker.internal:8085',
+            $baseUrl,
+            str_replace([':8080', ':8085'], ':8085', $baseUrl),
+            str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
+            'http://localhost:8085',
+            'http://host.docker.internal:8080',
+            'http://localhost:8080',
+        ]));
+    }
+
+    /**
      * Ejecuta el envío vía Evolution API con soporte dual v1/v2 y diagnóstico detallado.
      */
     public function sendViaEvolutionWithDetails(string $phone, string $message): array
     {
-        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8085';
-        $apiKey = $this->evolutionConfig['api_key'] ?? '';
+        $apiKey = $this->evolutionConfig['api_key'] ?? 'nuvex_evolution_key_2026';
         $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
         $sanitizedPhone = $this->sanitizePhoneNumber($phone);
 
-        $candidateUrls = array_unique(array_filter([
-            $baseUrl,
-            str_replace([':8080', ':8085'], ':8085', $baseUrl),
-            str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
-            'http://host.docker.internal:8085',
-            'http://localhost:8085',
-            'http://host.docker.internal:8080',
-            'http://localhost:8080',
-            'http://nuvex_evolution_whatsapp:8080',
-        ]));
-
-        $lastError = 'No se pudo contactar con Evolution API en ninguna URL candidata.';
-        $lastStatus = 500;
+        // 1. Detectar la URL que realmente está respondiendo
+        $candidateUrls = $this->getEvolutionCandidateUrls();
+        $targetUrl = null;
 
         foreach ($candidateUrls as $url) {
-            $endpoint = "{$url}/message/sendText/{$instance}";
-
-            // Intentar variantes de payload aceptadas por Evolution API v2 y v1
-            $payloadVariants = [
-                // Variante 1: Evolution API v2 (anidado textMessage + opciones)
-                [
-                    'number' => $sanitizedPhone,
-                    'textMessage' => [
-                        'text' => $message,
-                    ],
-                    'options' => [
-                        'delay' => 1200,
-                        'presence' => 'composing',
-                        'linkPreview' => false,
-                    ],
-                ],
-                // Variante 2: Evolution API v2 híbrido (textMessage + text plano)
-                [
-                    'number' => $sanitizedPhone,
-                    'text' => $message,
-                    'textMessage' => [
-                        'text' => $message,
-                    ],
-                ],
-                // Variante 3: Evolution API v1 / Baileys directa (solo text plano)
-                [
-                    'number' => $sanitizedPhone,
-                    'text' => $message,
-                ],
-            ];
-
-            foreach ($payloadVariants as $payload) {
-                try {
-                    $response = Http::withHeaders([
-                        'apikey' => $apiKey,
-                        'Content-Type' => 'application/json',
-                    ])->timeout(8)->post($endpoint, $payload);
-
-                    if ($response->successful()) {
-                        Log::info("[WhatsApp Evolution] Mensaje enviado a {$sanitizedPhone} vía {$url}: " . substr($message, 0, 50) . "...");
-                        return [
-                            'success' => true,
-                            'message' => "Mensaje de prueba enviado exitosamente a +{$sanitizedPhone}.",
-                            'url' => $url,
-                            'data' => $response->json(),
-                        ];
-                    }
-
-                    $body = $response->json() ?? $response->body();
-                    $errorMsg = is_array($body)
-                        ? ($body['response']['message'][0] ?? $body['message'] ?? $body['error'] ?? json_encode($body))
-                        : (string) $body;
-
-                    $lastError = "{$url} HTTP {$response->status()}: {$errorMsg}";
-                    $lastStatus = $response->status();
-                    Log::error("[WhatsApp Evolution] Error en respuesta de {$url} ({$response->status()}): " . (is_string($body) ? $body : json_encode($body)));
-                } catch (\Throwable $e) {
-                    $lastError = "{$url}: " . $e->getMessage();
-                    Log::warning("[WhatsApp Evolution] No se pudo conectar a {$url}: " . $e->getMessage());
+            try {
+                $check = Http::withHeaders(['apikey' => $apiKey])->timeout(3)->get("{$url}/instance/connectionState/{$instance}");
+                if ($check->successful()) {
+                    $targetUrl = $url;
+                    break;
                 }
+            } catch (\Throwable $e) {
+                // Siguiente candidato
             }
         }
 
-        // Si fallaron los endpoints, registrar en log de respaldo
+        if (!$targetUrl) {
+            $targetUrl = 'http://host.docker.internal:8085';
+        }
+
+        $endpoint = "{$targetUrl}/message/sendText/{$instance}";
+
+        // 2. Variantes de payload aceptadas por Evolution API v2 y Baileys
+        $payloadVariants = [
+            // Variante 1: Estándar Evolution API v2 (número + texto plano con opciones)
+            [
+                'number' => $sanitizedPhone,
+                'text' => $message,
+                'delay' => 1200,
+                'linkPreview' => false,
+            ],
+            // Variante 2: Anidado textMessage Evolution API v2
+            [
+                'number' => $sanitizedPhone,
+                'textMessage' => [
+                    'text' => $message,
+                ],
+                'options' => [
+                    'delay' => 1200,
+                    'presence' => 'composing',
+                    'linkPreview' => false,
+                ],
+            ],
+            // Variante 3: Texto plano directo
+            [
+                'number' => $sanitizedPhone,
+                'text' => $message,
+            ],
+            // Variante 4: Con JID explícito de WhatsApp
+            [
+                'number' => "{$sanitizedPhone}@s.whatsapp.net",
+                'text' => $message,
+            ],
+        ];
+
+        $lastError = 'No se obtuvo respuesta exitosa de Evolution API';
+        $lastStatus = 500;
+
+        foreach ($payloadVariants as $idx => $payload) {
+            try {
+                $response = Http::withHeaders([
+                    'apikey' => $apiKey,
+                    'Content-Type' => 'application/json',
+                ])->timeout(10)->post($endpoint, $payload);
+
+                if ($response->successful()) {
+                    Log::info("[WhatsApp Evolution] Mensaje enviado a {$sanitizedPhone} vía {$targetUrl} (variante {$idx}): " . substr($message, 0, 50) . "...");
+                    return [
+                        'success' => true,
+                        'message' => "Mensaje enviado exitosamente a +{$sanitizedPhone}.",
+                        'url' => $targetUrl,
+                        'data' => $response->json(),
+                    ];
+                }
+
+                $body = $response->json() ?? $response->body();
+                $errorMsg = is_array($body)
+                    ? ($body['response']['message'][0] ?? $body['message'] ?? $body['error'] ?? json_encode($body))
+                    : (string) $body;
+
+                $lastError = "{$targetUrl} HTTP {$response->status()}: {$errorMsg}";
+                $lastStatus = $response->status();
+                Log::warning("[WhatsApp Evolution] Intento payload variante {$idx} falló en {$endpoint} ({$response->status()}): " . (is_string($body) ? $body : json_encode($body)));
+            } catch (\Throwable $e) {
+                $lastError = "{$targetUrl}: " . $e->getMessage();
+                Log::warning("[WhatsApp Evolution] Excepción al enviar a {$endpoint}: " . $e->getMessage());
+            }
+        }
+
+        // Si fallaron los intentos, registrar en log de respaldo
         $this->sendViaLog($sanitizedPhone, $message);
 
         return [
@@ -571,20 +599,9 @@ class WhatsAppNotificationService
      */
     public function getEvolutionInstanceStatus(): array
     {
-        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8085';
-        $apiKey = $this->evolutionConfig['api_key'] ?? '';
+        $apiKey = $this->evolutionConfig['api_key'] ?? 'nuvex_evolution_key_2026';
         $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
-
-        $candidateUrls = array_unique(array_filter([
-            $baseUrl,
-            str_replace([':8080', ':8085'], ':8085', $baseUrl),
-            str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
-            'http://host.docker.internal:8085',
-            'http://localhost:8085',
-            'http://host.docker.internal:8080',
-            'http://localhost:8080',
-            'http://nuvex_evolution_whatsapp:8080',
-        ]));
+        $candidateUrls = $this->getEvolutionCandidateUrls();
 
         foreach ($candidateUrls as $url) {
             try {
@@ -596,7 +613,7 @@ class WhatsAppNotificationService
                     return $response->json();
                 }
             } catch (\Throwable $e) {
-                // Continuar probando los demás candidatos
+                // Siguiente candidato
             }
         }
 
@@ -608,20 +625,9 @@ class WhatsAppNotificationService
      */
     public function createEvolutionInstance(): array
     {
-        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8085';
-        $apiKey = $this->evolutionConfig['api_key'] ?? '';
+        $apiKey = $this->evolutionConfig['api_key'] ?? 'nuvex_evolution_key_2026';
         $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
-
-        $candidateUrls = array_unique(array_filter([
-            $baseUrl,
-            str_replace([':8080', ':8085'], ':8085', $baseUrl),
-            str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
-            'http://host.docker.internal:8085',
-            'http://localhost:8085',
-            'http://host.docker.internal:8080',
-            'http://localhost:8080',
-            'http://nuvex_evolution_whatsapp:8080',
-        ]));
+        $candidateUrls = $this->getEvolutionCandidateUrls();
 
         foreach ($candidateUrls as $url) {
             try {
@@ -638,7 +644,7 @@ class WhatsAppNotificationService
                     return $response->json();
                 }
             } catch (\Throwable $e) {
-                // Probar siguiente candidato
+                // Siguiente candidato
             }
         }
 
@@ -650,20 +656,9 @@ class WhatsAppNotificationService
      */
     public function getEvolutionQrCode(): ?string
     {
-        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8085';
-        $apiKey = $this->evolutionConfig['api_key'] ?? '';
+        $apiKey = $this->evolutionConfig['api_key'] ?? 'nuvex_evolution_key_2026';
         $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
-
-        $candidateUrls = array_unique(array_filter([
-            $baseUrl,
-            str_replace([':8080', ':8085'], ':8085', $baseUrl),
-            str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
-            'http://host.docker.internal:8085',
-            'http://localhost:8085',
-            'http://host.docker.internal:8080',
-            'http://localhost:8080',
-            'http://nuvex_evolution_whatsapp:8080',
-        ]));
+        $candidateUrls = $this->getEvolutionCandidateUrls();
 
         foreach ($candidateUrls as $url) {
             try {
@@ -676,7 +671,7 @@ class WhatsAppNotificationService
                     return $json['base64'] ?? $json['code'] ?? null;
                 }
             } catch (\Throwable $e) {
-                // Probar siguiente candidato
+                // Siguiente candidato
             }
         }
 
@@ -688,21 +683,10 @@ class WhatsAppNotificationService
      */
     public function getPairingCode(string $phone): ?string
     {
-        $baseUrl = $this->evolutionConfig['base_url'] ?? 'http://localhost:8085';
-        $apiKey = $this->evolutionConfig['api_key'] ?? '';
+        $apiKey = $this->evolutionConfig['api_key'] ?? 'nuvex_evolution_key_2026';
         $instance = $this->evolutionConfig['instance_name'] ?? 'paola_estudio';
         $sanitizedPhone = $this->sanitizePhoneNumber($phone);
-
-        $candidateUrls = array_unique(array_filter([
-            $baseUrl,
-            str_replace([':8080', ':8085'], ':8085', $baseUrl),
-            str_contains($baseUrl, 'localhost') ? str_replace('localhost', 'host.docker.internal', $baseUrl) : null,
-            'http://host.docker.internal:8085',
-            'http://localhost:8085',
-            'http://host.docker.internal:8080',
-            'http://localhost:8080',
-            'http://nuvex_evolution_whatsapp:8080',
-        ]));
+        $candidateUrls = $this->getEvolutionCandidateUrls();
 
         foreach ($candidateUrls as $url) {
             try {
@@ -715,7 +699,7 @@ class WhatsAppNotificationService
                     return $json['pairingCode'] ?? null;
                 }
             } catch (\Throwable $e) {
-                // Probar siguiente candidato
+                // Siguiente candidato
             }
         }
 
