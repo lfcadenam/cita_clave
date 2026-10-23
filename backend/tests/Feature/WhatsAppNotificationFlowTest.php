@@ -9,7 +9,7 @@ use App\Models\Service;
 use App\Models\Tenant;
 use App\Services\WhatsAppNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class WhatsAppNotificationFlowTest extends TestCase
@@ -25,8 +25,9 @@ class WhatsAppNotificationFlowTest extends TestCase
         parent::setUp();
 
         $this->tenant = Tenant::create([
-            'name' => 'Paola Aguilera Belleza',
+            'name' => 'La Belle Nails Bogotá',
             'slug' => 'paola-aguilera',
+            'city' => 'Bogotá',
             'is_active' => true,
         ]);
 
@@ -93,7 +94,11 @@ class WhatsAppNotificationFlowTest extends TestCase
         $this->assertTrue($resReminder);
         $this->assertNotNull($appointment->fresh()->reminder_24h_sent_at);
 
-        // 5. Cancelación
+        // 5. Reagendamiento
+        $resRescheduled = $this->serviceWhatsApp->sendAppointmentRescheduled($appointment, 'lunes 20 de octubre', '10:00');
+        $this->assertTrue($resRescheduled);
+
+        // 6. Cancelación
         $resCancelled = $this->serviceWhatsApp->sendAppointmentCancelled($appointment, 'Fuerza mayor');
         $this->assertTrue($resCancelled);
     }
@@ -132,6 +137,42 @@ class WhatsAppNotificationFlowTest extends TestCase
 
         $resolved = $this->serviceWhatsApp->resolveAdminPhone($appointment);
         $this->assertEquals('573103248385', $resolved);
+    }
+
+    public function test_meta_cloud_api_driver_sends_template_and_verifies_webhook(): void
+    {
+        $this->tenant->update([
+            'whatsapp_driver' => 'meta',
+            'meta_phone_number_id' => '123456789012345',
+            'meta_waba_id' => '987654321098765',
+            'meta_access_token' => 'EAAG_TEST_PERMANENT_TOKEN',
+            'meta_verify_token' => 'nuvex_meta_verify_2026',
+        ]);
+
+        Http::fake([
+            'https://graph.facebook.com/v21.0/123456789012345/messages' => Http::response([
+                'messaging_product' => 'whatsapp',
+                'contacts' => [['input' => '573106080402', 'wa_id' => '573106080402']],
+                'messages' => [['id' => 'wamid.HBgMNTczMTA2MDgwNDAyFQIAERgSQkI']],
+            ], 200),
+        ]);
+
+        $service = app(WhatsAppNotificationService::class);
+        $result = $service->sendTemplateViaMetaWithDetails(
+            phone: '3106080402',
+            templateName: 'hello_world',
+            bodyParameters: [],
+            languageCode: 'en_US',
+            tenant: $this->tenant
+        );
+
+        $this->assertTrue($result['success']);
+        $this->assertEquals('wamid.HBgMNTczMTA2MDgwNDAyFQIAERgSQkI', $result['wamid']);
+
+        // Webhook handshake verification
+        $verifyRes = $this->get('/api/v1/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=nuvex_meta_verify_2026&hub.challenge=CHALLENGE_OK_2026');
+        $verifyRes->assertStatus(200);
+        $this->assertEquals('CHALLENGE_OK_2026', $verifyRes->getContent());
     }
 
     public function test_appointment_creation_automatically_dispatches_admin_whatsapp_alert(): void

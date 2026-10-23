@@ -1033,3 +1033,34 @@ ecalculateLunchForDate(): Recalcula o elimina el bloque flexible retornando al h
        - `test_client_can_reschedule_cancelled_appointment_to_reactivate_it`: Reactivación de cita cancelada.
        - `test_api_client_reschedule_flow`: Endpoint JSON de reprogramación.
      * Suite completa ejecutada con éxito: **72/72 pruebas aprobadas al 100% (407 aserciones)** en 12.04s.
+
+---
+
+### 🏷️ Registro #061 — Integración Oficial de Meta WhatsApp Cloud API y Panel de Conectividad Administrativa
+* **Fecha:** 16 de Octubre de 2026
+* **Responsable:** Nuvex Tecnología
+* **Solicitud:** Integrar el API oficial de Meta para notificaciones transaccionales de WhatsApp y construir un panel en el backoffice para configurar credenciales por salón/tenant, monitorear el estado de conexión en vivo y realizar pruebas de envío de plantillas y texto.
+* **Actividades Realizadas:**
+  1. **Servicio Central Dual (pp/Services/WhatsAppNotificationService.php):**
+     - Compatibilidad con Meta Graph API v21.0 junto al respaldo por Evolution API (Baileys/QR).
+     - Estrategia inteligente para la ventana de 24 horas de Meta: despacho de plantillas pre-aprobadas (	ype: "template") o texto libre (	ype: "text").
+     - Verificación de salud y estado en vivo (getMetaAccountStatus): consulta en tiempo real nombre comercial verificado, número de teléfono y calidad del número (quality_rating).
+     - Normalización estricta E.164 y diagnóstico detallado de errores HTTP de Meta.
+  2. **Esquema de Base de Datos y Soporte Multi-Tenant (	enants):**
+     - Migración 2026_10_16_010000_add_meta_whatsapp_fields_to_tenants_table.php: campos whatsapp_driver, meta_phone_number_id, meta_waba_id, meta_access_token, meta_verify_token.
+     - Modelo Tenant.php enriquecido con isMetaWhatsAppConfigured() y campos fillables.
+     - Gestión en SuperAdmin (TenantResource.php) y a nivel de salón.
+  3. **Controlador de Webhooks (pp/Http/Controllers/Api/v1/MetaWhatsAppWebhookController.php):**
+     - GET /api/v1/webhooks/whatsapp: Verificación del desafío handshake hub.challenge con token seguro.
+     - POST /api/v1/webhooks/whatsapp: Procesamiento de acuses de recibo (sent, delivered, ead, ailed) y mensajes entrantes.
+  4. **Panel Administrativo Filament (/admin/configuracion-whatsapp):**
+     - Clase WhatsAppSettingsPage.php y vista whatsapp-settings.blade.php bajo el estándar *Nuvex Modern Curve UI*.
+     - Tarjeta superior con badge de estado en tiempo real (Conexión Activa vs No configurado) y datos de la cuenta Meta.
+     - Formulario de credenciales con guardado seguro por tenant.
+     - Tarjeta de integración con URL de webhook y token listos para copiar y pegar en Meta Developer.
+     - Herramienta interactiva para disparar pruebas de texto libre o plantillas oficiales (hello_world) con feedback inmediato.
+  5. **Comando Artisan y Documentación de Operación:**
+     - php artisan whatsapp:test {phone} {--template=} {--lang=} para pruebas desde terminal.
+     - Creado GUIA_INTEGRACION_META_WHATSAPP.md con el paso a paso detallado para Meta for Developers (System User token permanente, webhooks, plantillas y políticas).
+  6. **Certificación y Pruebas Automatizadas:**
+     - Suite ejecutada con éxito (WhatsAppNotificationFlowTest.php): 6/6 pruebas aprobadas (19 aserciones).

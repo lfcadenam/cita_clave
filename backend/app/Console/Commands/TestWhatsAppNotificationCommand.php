@@ -12,14 +12,14 @@ class TestWhatsAppNotificationCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'whatsapp:test {phone : Número de teléfono celular (ej: 3106080402)} {--message= : Mensaje personalizado de prueba}';
+    protected $signature = 'whatsapp:test {phone : Número de teléfono celular (ej: 3106080402)} {--message= : Mensaje personalizado de prueba} {--template= : Nombre de plantilla Meta a enviar (ej: hello_world)} {--lang= : Código de idioma de la plantilla (ej: es, en_US)}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Envía un mensaje de prueba de WhatsApp a través del Gateway (Evolution API / Baileys)';
+    protected $description = 'Envía un mensaje de prueba de WhatsApp vía el driver activo (Meta Cloud API oficial o Evolution API)';
 
     public function __construct(
         protected WhatsAppNotificationService $whatsAppService
@@ -34,11 +34,30 @@ class TestWhatsAppNotificationCommand extends Command
     {
         $phone = $this->argument('phone');
         $customMessage = $this->option('message');
+        $template = $this->option('template');
 
-        $driver = config('whatsapp.driver');
+        $driver = $this->whatsAppService->resolveDriver();
         $this->info("Iniciando prueba de WhatsApp...");
         $this->info("Driver activo: [{$driver}]");
         $this->info("Destinatario: {$phone}");
+
+        if ($driver === 'meta') {
+            $this->line("Consultando estado de la cuenta en Meta Graph API...");
+            $status = $this->whatsAppService->getMetaAccountStatus();
+
+            if (! $status['connected']) {
+                $this->error("❌ {$status['message']}");
+                return self::FAILURE;
+            }
+
+            $this->info("✅ Número: {$status['display_phone_number']} | Nombre verificado: {$status['verified_name']} | Calidad: {$status['quality_rating']}");
+
+            if ($template) {
+                $this->line("Enviando plantilla '{$template}'...");
+                $result = $this->whatsAppService->sendTemplateViaMetaWithDetails($phone, $template, [], $this->option('lang'));
+                return $this->report($result);
+            }
+        }
 
         if ($driver === 'evolution') {
             $this->line("Consultando estado de Evolution API...");
@@ -69,11 +88,16 @@ class TestWhatsAppNotificationCommand extends Command
             }
         }
 
-        $message = $customMessage ?: "✨ *Mensaje de Prueba Nuvex WhatsApp*\n\nHola! Este es un mensaje de prueba enviado desde tu sistema de agendamiento *CitaClave / Paola Aguilera* a través del Gateway Evolution API.\n\nFecha y hora: " . now()->format('d/m/Y H:i:s');
+        $message = $customMessage ?: "Mensaje de prueba del sistema de agendamiento CitaClave enviado vía [{$driver}].\n\nFecha y hora: " . now()->format('d/m/Y H:i:s');
 
-        $this->line("Enviando mensaje...");
+        $this->line("Enviando mensaje de texto...");
         $result = $this->whatsAppService->sendTextMessageWithDetails($phone, $message);
 
+        return $this->report($result);
+    }
+
+    protected function report(array $result): int
+    {
         if ($result['success']) {
             $this->info("✅ {$result['message']}");
             return self::SUCCESS;

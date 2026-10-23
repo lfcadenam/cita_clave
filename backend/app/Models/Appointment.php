@@ -19,6 +19,8 @@ class Appointment extends Model
 {
     use HasFactory, BelongsToTenant;
 
+    public bool $skipObserverRescheduleWhatsApp = false;
+
     protected $fillable = [
         'tenant_id',
         'customer_id',

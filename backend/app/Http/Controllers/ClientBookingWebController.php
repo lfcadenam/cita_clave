@@ -39,11 +39,25 @@ class ClientBookingWebController extends Controller
     /**
      * Render confirmation voucher page after booking.
      */
-    public function confirmation(string $appointmentNumber)
+    public function confirmation(Request $request, string $appointmentNumber)
     {
-        $appointment = Appointment::with('service')
-            ->where('appointment_number', $appointmentNumber)
+        $appointment = Appointment::with(['service', 'tenant'])
+            ->where('appointment_number', trim($appointmentNumber))
             ->firstOrFail();
+
+        if ($request->boolean('confirmar') && !$appointment->attendance_confirmed_at && $appointment->status !== AppointmentStatus::CANCELLED) {
+            $appointment->update([
+                'attendance_confirmed_at' => now(),
+            ]);
+
+            try {
+                $this->whatsAppService?->sendAttendanceConfirmedNotification($appointment);
+            } catch (\Throwable $e) {
+                Log::warning("Error enviando WhatsApp de asistencia confirmada #{$appointment->appointment_number}: " . $e->getMessage());
+            }
+
+            session()->flash('status_message', '¡Muchas gracias! Has confirmado tu asistencia para esta cita. Te esperamos puntualmente en nuestro estudio.');
+        }
 
         $nequiConfig = config('payment.nequi');
 
@@ -126,15 +140,52 @@ class ClientBookingWebController extends Controller
     }
 
     /**
-     * Permite a la clienta confirmar manualmente su asistencia a la cita desde el portal web.
+     * Permite a la clienta confirmar su asistencia en 1 clic desde el enlace enviado por WhatsApp (/reserva/confirmar/{appointmentNumber}).
+     */
+    public function confirmAttendanceViaLink(string $appointmentNumber)
+    {
+        $appointment = Appointment::with(['service', 'tenant'])
+            ->where('appointment_number', trim($appointmentNumber))
+            ->firstOrFail();
+
+        if (!$appointment->attendance_confirmed_at && $appointment->status !== AppointmentStatus::CANCELLED) {
+            $appointment->update([
+                'attendance_confirmed_at' => now(),
+            ]);
+
+            try {
+                $this->whatsAppService?->sendAttendanceConfirmedNotification($appointment);
+            } catch (\Throwable $e) {
+                Log::warning("Error enviando WhatsApp de asistencia confirmada #{$appointment->appointment_number}: " . $e->getMessage());
+            }
+        }
+
+        return redirect()->route('portal.confirmation', $appointment->appointment_number)
+            ->with('status_message', '¡Muchas gracias! Has confirmado tu asistencia para esta cita. Te esperamos puntualmente en nuestro estudio.');
+    }
+
+    /**
+     * Permite a la clienta confirmar manualmente su asistencia a la cita desde el botón del portal web.
      */
     public function confirmAttendance(string $appointmentNumber)
     {
-        $appointment = Appointment::where('appointment_number', $appointmentNumber)->firstOrFail();
+        $appointment = Appointment::with(['service', 'tenant'])
+            ->where('appointment_number', trim($appointmentNumber))
+            ->firstOrFail();
+
+        $wasAlreadyConfirmed = (bool) $appointment->attendance_confirmed_at;
 
         $appointment->update([
             'attendance_confirmed_at' => now(),
         ]);
+
+        if (!$wasAlreadyConfirmed) {
+            try {
+                $this->whatsAppService?->sendAttendanceConfirmedNotification($appointment);
+            } catch (\Throwable $e) {
+                Log::warning("Error enviando WhatsApp de asistencia confirmada #{$appointment->appointment_number}: " . $e->getMessage());
+            }
+        }
 
         return redirect()->back()->with('status_message', '¡Muchas gracias! Has confirmado tu asistencia para esta cita. Te esperamos puntualmente en nuestro estudio.');
     }
@@ -167,6 +218,12 @@ class ClientBookingWebController extends Controller
             'cancellation_reason' => strip_tags(trim($validated['cancellation_reason'])),
             'cancelled_at' => now(),
         ]);
+
+        try {
+            $this->whatsAppService?->sendAppointmentCancelled($appointment, $appointment->cancellation_reason);
+        } catch (\Throwable $e) {
+            Log::warning("Error enviando WhatsApp de cancelación #{$appointment->appointment_number}: " . $e->getMessage());
+        }
 
         return redirect()->back()->with('status_message', 'Tu cita ha sido cancelada exitosamente.');
     }
@@ -261,6 +318,7 @@ class ClientBookingWebController extends Controller
         $appointment->cancellation_reason = null;
         $appointment->attendance_confirmed_at = null;
         $appointment->reminder_24h_sent_at = null;
+        $appointment->skipObserverRescheduleWhatsApp = true;
         $appointment->save();
 
         // Ajustar almuerzo flexible para la fecha anterior y la nueva

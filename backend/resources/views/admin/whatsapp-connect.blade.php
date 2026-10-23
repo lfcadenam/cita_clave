@@ -43,6 +43,67 @@
         <!-- Card de Estado y Vinculación -->
         <div class="w-full max-w-lg bg-white border border-slate-200/80 rounded-[32px] p-6 sm:p-10 shadow-xl shadow-slate-200/50 text-center relative overflow-hidden">
 
+            @if(($driver ?? 'evolution') === 'meta')
+            <!-- Meta WhatsApp Cloud API (Oficial) -->
+            <div class="space-y-6">
+                <div>
+                    @if($isConnected)
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> API Oficial Conectada
+                    </span>
+                    @else
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 mb-2">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span> Requiere Configuración
+                    </span>
+                    @endif
+                    <h2 class="text-xl font-bold text-slate-900">Meta WhatsApp Cloud API</h2>
+                    <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                        Las notificaciones se envían desde la API oficial de Meta. No es necesario escanear códigos QR.
+                    </p>
+                </div>
+
+                @if($isConnected)
+                <dl class="bg-slate-50 rounded-2xl p-4 border border-slate-200/60 text-left text-xs grid grid-cols-2 gap-y-3 gap-x-4">
+                    <div>
+                        <dt class="text-slate-500 font-medium">Número</dt>
+                        <dd class="font-bold text-slate-900">{{ $metaStatus['display_phone_number'] ?? '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-slate-500 font-medium">Nombre verificado</dt>
+                        <dd class="font-bold text-slate-900">{{ $metaStatus['verified_name'] ?? '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-slate-500 font-medium">Calidad</dt>
+                        <dd class="font-bold text-slate-900">{{ $metaStatus['quality_rating'] ?? '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-slate-500 font-medium">Phone Number ID</dt>
+                        <dd class="font-mono font-semibold text-slate-700 truncate">{{ $metaStatus['phone_number_id'] ?? '-' }}</dd>
+                    </div>
+                </dl>
+
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200/60 text-left space-y-3">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Enviar Mensaje de Prueba</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="testPhone" value="{{ $adminPhone }}" placeholder="Ej: 3106080402"
+                               class="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                        <button onclick="sendTestMessage()" id="btnTestMsg"
+                                class="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-sm cursor-pointer">
+                            <span>Enviar</span>
+                        </button>
+                    </div>
+                    <p id="testResult" class="text-[11px] text-slate-500 hidden"></p>
+                    <p class="text-[10px] text-slate-400 leading-relaxed">
+                        El texto libre solo se entrega si el destinatario escribió al número en las últimas 24 horas. Las notificaciones automáticas usan plantillas aprobadas.
+                    </p>
+                </div>
+                @else
+                <div class="bg-rose-50/60 border border-rose-100 rounded-2xl p-4 text-left text-xs text-rose-800 leading-relaxed">
+                    {{ $metaStatus['message'] ?? 'No fue posible validar las credenciales de Meta.' }}
+                </div>
+                @endif
+            </div>
+            @else
             <!-- Estado Conectado -->
             <div id="stateConnected" class="{{ $isConnected ? '' : 'hidden' }} space-y-6">
                 <div class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center mx-auto shadow-sm">
@@ -172,6 +233,7 @@
                 </div>
 
             </div>
+            @endif
 
         </div>
 
@@ -222,8 +284,10 @@
             }
         }
 
-        // Consultar cada 3.5 segundos para actualización instantánea
+        // Consultar cada 3.5 segundos para actualización instantánea (solo Gateway QR)
+        @if(($driver ?? 'evolution') !== 'meta')
         setInterval(pollStatus, 3500);
+        @endif
 
         function togglePairingCode() {
             const sec = document.getElementById('pairingCodeSection');

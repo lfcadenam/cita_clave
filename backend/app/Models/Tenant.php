@@ -19,6 +19,11 @@ class Tenant extends Model implements HasCurrentTenantLabel
         'domain',
         'phone',
         'whatsapp_number',
+        'whatsapp_driver',
+        'meta_phone_number_id',
+        'meta_waba_id',
+        'meta_access_token',
+        'meta_verify_token',
         'email',
         'address',
         'city',
@@ -110,4 +115,16 @@ class Tenant extends Model implements HasCurrentTenantLabel
             && ! str_contains((string) $apiKey, 'sample')
             && ! str_contains((string) $secretKey, 'sample');
     }
+
+    /**
+     * Determina si el salón tiene credenciales de Meta WhatsApp Cloud API configuradas (propias o globales).
+     */
+    public function isMetaWhatsAppConfigured(): bool
+    {
+        $phoneId = $this->meta_phone_number_id ?: config('whatsapp.meta.phone_number_id');
+        $token = $this->meta_access_token ?: config('whatsapp.meta.access_token');
+
+        return ! empty($phoneId) && ! empty($token);
+    }
 }
+

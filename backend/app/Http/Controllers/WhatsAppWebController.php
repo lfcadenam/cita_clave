@@ -20,6 +20,23 @@ class WhatsAppWebController extends Controller
     public function showQr(Request $request): View
     {
         $tenant = Tenant::where('is_active', true)->first();
+        $driver = $this->whatsAppService->resolveDriver(null, $tenant);
+
+        // Driver oficial Meta Cloud API: no hay QR, se muestra el estado de la cuenta
+        if ($driver === 'meta') {
+            $metaStatus = $this->whatsAppService->getMetaAccountStatus($tenant);
+
+            return view('admin.whatsapp-connect', [
+                'tenant' => $tenant,
+                'driver' => 'meta',
+                'metaStatus' => $metaStatus,
+                'isConnected' => (bool) $metaStatus['connected'],
+                'state' => $metaStatus['state'],
+                'qrBase64' => null,
+                'pairingCode' => null,
+                'adminPhone' => $tenant?->whatsapp_number ?? ($tenant?->phone ?? '3106080402'),
+            ]);
+        }
 
         // 1. Estado actual de la instancia
         $status = $this->whatsAppService->getEvolutionInstanceStatus();
@@ -55,6 +72,8 @@ class WhatsAppWebController extends Controller
 
         return view('admin.whatsapp-connect', [
             'tenant' => $tenant,
+            'driver' => 'evolution',
+            'metaStatus' => null,
             'isConnected' => $isConnected,
             'state' => $state,
             'qrBase64' => $qrBase64,
@@ -68,6 +87,17 @@ class WhatsAppWebController extends Controller
      */
     public function status(): JsonResponse
     {
+        if ($this->whatsAppService->resolveDriver() === 'meta') {
+            $metaStatus = $this->whatsAppService->getMetaAccountStatus();
+
+            return response()->json([
+                'connected' => (bool) $metaStatus['connected'],
+                'state' => $metaStatus['state'],
+                'qr' => null,
+                'driver' => 'meta',
+            ]);
+        }
+
         $status = $this->whatsAppService->getEvolutionInstanceStatus();
         $state = $status['instance']['state'] ?? $status['state'] ?? 'disconnected';
         $isConnected = in_array(strtolower($state), ['open', 'connected']);
@@ -77,6 +107,7 @@ class WhatsAppWebController extends Controller
             'connected' => $isConnected,
             'state' => $state,
             'qr' => $qrBase64,
+            'driver' => 'evolution',
         ]);
     }
 
@@ -86,7 +117,7 @@ class WhatsAppWebController extends Controller
     public function testMessage(Request $request): JsonResponse
     {
         $phone = $request->input('phone', '3106080402');
-        $msg = "✨ *¡Conexión Exitosa!* Tu WhatsApp oficial de *La Belle Nails Bogotá* ha quedado correctamente vinculado al sistema CitaClave.\n\nFecha y hora: " . now()->format('d/m/Y H:i:s');
+        $msg = "Conexión exitosa: tu WhatsApp oficial ha quedado correctamente vinculado al sistema CitaClave.\n\nFecha y hora: " . now()->format('d/m/Y H:i:s');
 
         $result = $this->whatsAppService->sendTextMessageWithDetails($phone, $msg);
 

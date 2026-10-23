@@ -136,6 +136,45 @@ class TenantResource extends Resource
                             ->maxLength(255),
                     ])->columns(2),
 
+                Section::make('Notificaciones WhatsApp (Meta Cloud API Oficial / Gateway)')
+                    ->description('Configuración del canal de envío de notificaciones automáticas de WhatsApp para este salón.')
+                    ->schema([
+                        Forms\Components\Select::make('whatsapp_driver')
+                            ->label('Proveedor de WhatsApp')
+                            ->options([
+                                'meta' => 'Meta WhatsApp Cloud API (Oficial)',
+                                'evolution' => 'Evolution API (Gateway QR / Baileys)',
+                                'log' => 'Solo Registro en Log (Pruebas)',
+                            ])
+                            ->placeholder('Usar configuración global (.env)')
+                            ->helperText('Selecciona Meta WhatsApp Cloud API para usar la API oficial de Meta Business.'),
+
+                        Forms\Components\TextInput::make('meta_phone_number_id')
+                            ->label('Meta Phone Number ID')
+                            ->placeholder('Ej: 105928374650192')
+                            ->maxLength(100)
+                            ->helperText('Identificador del número de teléfono en Meta App Dashboard > WhatsApp > Configuración de la API.'),
+
+                        Forms\Components\TextInput::make('meta_waba_id')
+                            ->label('Meta WhatsApp Business Account ID (WABA ID)')
+                            ->placeholder('Ej: 109482736451920')
+                            ->maxLength(100)
+                            ->helperText('Identificador de la cuenta de WhatsApp Business en Meta.'),
+
+                        Forms\Components\TextInput::make('meta_verify_token')
+                            ->label('Webhook Verify Token')
+                            ->placeholder('nuvex_meta_verify_2026')
+                            ->maxLength(150)
+                            ->helperText('Token secreto para validar el Webhook en Meta (GET /api/v1/webhooks/whatsapp).'),
+
+                        Forms\Components\Textarea::make('meta_access_token')
+                            ->label('Meta Permanent Access Token (System User Token)')
+                            ->placeholder('EAAG...')
+                            ->rows(2)
+                            ->columnSpanFull()
+                            ->helperText('Token permanente generado desde Meta Business Suite (Usuarios del sistema) o token temporal de prueba.'),
+                    ])->columns(2),
+
                 Section::make('Suscripción & Plan SaaS')
                     ->description('Control de estado comercial y cuotas en la plataforma Nuvex.')
                     ->schema([

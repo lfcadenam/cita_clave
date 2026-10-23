@@ -60,7 +60,7 @@
             </div>
             <div class="flex justify-between items-center">
                 <span class="text-slate-500">Tratamiento:</span>
-                <span class="font-bold text-[#0d9488] text-sm">{{ $appointment->service->name }}</span>
+                <span class="font-bold text-[#0d9488] text-sm">{{ $appointment->service?->name ?? 'Servicio de Belleza' }}</span>
             </div>
             <div class="flex justify-between items-center">
                 <span class="text-slate-500">Fecha:</span>
@@ -68,7 +68,7 @@
             </div>
             <div class="flex justify-between items-center">
                 <span class="text-slate-500">Horario:</span>
-                <span class="font-bold text-slate-800">{{ substr($appointment->start_time, 0, 5) }} a {{ substr($appointment->end_time, 0, 5) }} ({{ $appointment->service->formatted_duration }})</span>
+                <span class="font-bold text-slate-800">{{ substr($appointment->start_time, 0, 5) }} a {{ substr($appointment->end_time, 0, 5) }} ({{ $appointment->service?->formatted_duration ?? '60 min' }})</span>
             </div>
             <div class="flex justify-between items-center pt-2 border-t border-[#e2f0ea]">
                 <span class="text-slate-500">Abono Recibido:</span>
@@ -140,13 +140,13 @@
                         Has confirmado tu asistencia para esta cita el {{ $appointment->attendance_confirmed_at->format('d/m/Y \a \l\a\s h:i A') }}. ¡Te esperamos con gusto!
                     </p>
                 </div>
-            @elseif($appointment->status === \App\Enums\AppointmentStatus::CONFIRMED)
+            @elseif($appointment->status !== \App\Enums\AppointmentStatus::COMPLETED)
                 <div class="mt-6 p-4 rounded-2xl bg-[#f0fdf4] border border-[#86efac] text-center">
                     <div class="text-xs font-bold text-[#166534] uppercase tracking-wider mb-1">
                         ¿Confirmas tu asistencia para el día de tu cita?
                     </div>
                     <p class="text-xs text-[#15803d] mb-3">
-                        Ayúdanos a preparar tu espacio confirmando tu asistencia de forma manual:
+                        Ayúdanos a preparar tu espacio confirmando tu asistencia en un solo clic:
                     </p>
                     <form action="{{ route('portal.confirm-attendance', $appointment->appointment_number) }}" method="POST">
                         @csrf
@@ -161,8 +161,9 @@
             <!-- Action Buttons: WhatsApp -->
             <div class="mt-6 space-y-3">
                 @php
-                    $ownerPhone = preg_replace('/\D/', '', $appointment->tenant?->whatsapp_number ?: ($appointment->tenant?->phone ?: '3103248385'));
-                    $waMsg = urlencode("Hola Paola, confirmo mi asistencia a mi cita #{$appointment->appointment_number} de {$appointment->service->name} para el día " . ($appointment->appointment_date ? $appointment->appointment_date->format('d/m/Y') : '') . " a las " . substr($appointment->start_time, 0, 5) . ". Mi nombre es {$appointment->client_name}.");
+                    $ownerPhone = preg_replace('/\D/', '', $appointment->tenant?->whatsapp_number ?: ($appointment->tenant?->phone ?: '3106080402'));
+                    $serviceLabel = $appointment->service?->name ?? 'Belleza';
+                    $waMsg = urlencode("Hola Paola, confirmo mi asistencia a mi cita #{$appointment->appointment_number} de {$serviceLabel} para el día " . ($appointment->appointment_date ? $appointment->appointment_date->format('d/m/Y') : '') . " a las " . substr($appointment->start_time, 0, 5) . ". Mi nombre es {$appointment->client_name}.");
                 @endphp
                 <a href="https://wa.me/57{{ $ownerPhone }}?text={{ $waMsg }}"
                    target="_blank"

@@ -572,6 +572,7 @@ class AppointmentBookingController extends Controller
         $appointment->cancellation_reason = null;
         $appointment->attendance_confirmed_at = null;
         $appointment->reminder_24h_sent_at = null;
+        $appointment->skipObserverRescheduleWhatsApp = true;
         $appointment->save();
 
         try {

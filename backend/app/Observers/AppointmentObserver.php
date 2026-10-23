@@ -67,6 +67,26 @@ class AppointmentObserver
                 }
             }
         }
+
+        // Si cambió la fecha o la hora de inicio (ej. reagendado desde el panel Filament) y no fue disparado ya por el controlador
+        if (
+            !$appointment->skipObserverRescheduleWhatsApp
+            && $appointment->wasChanged(['appointment_date', 'start_time'])
+            && $appointment->status !== AppointmentStatus::CANCELLED
+        ) {
+            try {
+                $origDateRaw = $appointment->getOriginal('appointment_date');
+                $oldDateFormatted = $origDateRaw
+                    ? \Carbon\Carbon::parse($origDateRaw)->locale('es')->isoFormat('dddd D [de] MMMM')
+                    : '';
+                $origTimeRaw = (string) ($appointment->getOriginal('start_time') ?? '');
+                $oldTime = substr($origTimeRaw, 0, 5);
+
+                $this->whatsAppService->sendAppointmentRescheduled($appointment, $oldDateFormatted, $oldTime);
+            } catch (\Throwable $e) {
+                Log::warning("No se pudo enviar WhatsApp de reagendamiento en Observer para cita #{$appointment->appointment_number}: " . $e->getMessage());
+            }
+        }
     }
 
     /**

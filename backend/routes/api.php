@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\v1\AppointmentBookingController;
 use App\Http\Controllers\Api\v1\AvailabilityController;
+use App\Http\Controllers\Api\v1\MetaWhatsAppWebhookController;
 use App\Http\Controllers\Api\v1\PaymentController;
 use App\Http\Controllers\Api\v1\ServiceController;
 use App\Http\Controllers\Api\v1\TenantProfileController;
@@ -52,4 +53,8 @@ Route::prefix('v1')->group(function () {
 
     // Lista de Espera Inteligente
     Route::post('/waitlist/join', [WaitlistController::class, 'join']);
+
+    // Webhook Oficial Meta WhatsApp Cloud API
+    Route::get('/webhooks/whatsapp', [MetaWhatsAppWebhookController::class, 'verify']);
+    Route::post('/webhooks/whatsapp', [MetaWhatsAppWebhookController::class, 'handle']);
 });

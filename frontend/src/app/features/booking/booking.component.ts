@@ -756,12 +756,21 @@ export class BookingComponent implements OnInit {
     });
   }
 
+  private resolveSalonWhatsAppPhone(): string {
+    const raw = this.salonProfile()?.whatsapp_number || environment.paolaWhatsApp || '573106080402';
+    const clean = raw.replace(/\D/g, '');
+    if (clean.length === 10 && clean.startsWith('3')) {
+      return `57${clean}`;
+    }
+    return clean;
+  }
+
   getWhatsAppShareUrl(): string {
     const res = this.bookingResult() as any;
     if (!res) return '';
-    const phone = environment.paolaWhatsApp;
+    const phone = this.resolveSalonWhatsAppPhone();
     const dateVal = res.booking_date || res.date || '';
-    const msg = `Hola Paola, acabo de reservar mi cita #${res.appointment_number} para ${res.service_name} el día ${dateVal} a las ${res.start_time}. Mi nombre es ${res.client_name}.`;
+    const msg = `Hola, acabo de reservar mi cita #${res.appointment_number} para ${res.service_name} el día ${dateVal} a las ${res.start_time}. Mi nombre es ${res.client_name}.`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   }
 
@@ -909,9 +918,9 @@ export class BookingComponent implements OnInit {
 
   getLookupWhatsAppUrl(res: any): string {
     if (!res) return '';
-    const phone = environment.paolaWhatsApp;
+    const phone = this.resolveSalonWhatsAppPhone();
     const dateVal = res.booking_date || res.date || '';
-    const msg = `Hola Paola, confirmo mi asistencia a mi cita #${res.appointment_number} de ${res.service_name || res.service?.name} para el día ${dateVal} a las ${res.start_time}. Mi nombre es ${res.client_name}.`;
+    const msg = `Hola, confirmo mi asistencia a mi cita #${res.appointment_number} de ${res.service_name || res.service?.name} para el día ${dateVal} a las ${res.start_time}. Mi nombre es ${res.client_name}.`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   }
 }
