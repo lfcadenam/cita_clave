@@ -1064,8 +1064,9 @@ class WhatsAppNotificationService
             190 => 'El Access Token de Meta ha expirado o es inválido. Genera un Token Permanente de Usuario del Sistema en Meta Business Suite.',
             131030 => 'El número destinatario no está en la lista de números de prueba permitidos (Modo Sandbox de Meta). Agrégalo en Meta for Developers > WhatsApp > Configuración de la API (campo "Para" / Manage phone number list) o pasa el número a Producción.',
             131047, 131026 => 'Han pasado más de 24 horas desde el último mensaje del destinatario. Para iniciar conversaciones fuera de la ventana de 24h, Meta exige usar una Plantilla aprobada (type: template).',
+            131058 => 'La plantilla "hello_world" sólo está permitida por Meta en números públicos de prueba (sandbox). Al estar usando un número real o Phone Number ID de producción, Meta bloquea "hello_world". Debes usar una plantilla propia aprobada en tu Meta WhatsApp Manager (por ejemplo: "reserva_confirmada", "recordatorio_cita_24h" o "cita_recibida") con su idioma correspondiente (ej: "es_CO" o "es").',
             132000, 132001 => 'La plantilla solicitada no existe o aún no está aprobada en el idioma indicado dentro de Meta WhatsApp Manager.',
-            131009, 100 => 'Parámetro inválido en la petición a Meta Graph API. Verifica el formato del teléfono o los parámetros de la plantilla.',
+            131009, 100 => 'Parámetro inválido en la petición a Meta Graph API (#100). Causas principales: 1) El número destinatario es el mismo número comercial de WhatsApp del salón (Meta no permite auto-mensajes). 2) La cantidad de variables enviadas no coincide con las definidas en la plantilla en WhatsApp Manager (ej. enviar 5 variables a una plantilla de 4 o sin variables).',
             default => null,
         };
 
@@ -1237,6 +1238,11 @@ class WhatsAppNotificationService
     public function sanitizePhoneNumber(string $phone): string
     {
         $clean = preg_replace('/\D/', '', $phone);
+
+        // Si empieza por 0 y luego 3 (ej: 0310...), quitar el 0 inicial
+        if (strlen($clean) === 11 && str_starts_with($clean, '03')) {
+            $clean = substr($clean, 1);
+        }
 
         // Si tiene 10 dígitos (celular de Colombia ej: 310...), anteponer '57'
         if (strlen($clean) === 10 && str_starts_with($clean, '3')) {

@@ -1166,12 +1166,1007 @@
             background: #182234 !important;
             border-color: rgba(255, 255, 255, 0.08) !important;
         }
+
+        /* ==========================================================================
+           VETSYSTEMSAAS / NUVEX MODERN CURVE UI - HYBRID DASHBOARD STYLES
+           ========================================================================== */
+        .vet-header-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .vet-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #00875a;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+            margin: 0;
+        }
+        .dark .vet-title {
+            color: #10b981;
+        }
+        .vet-subtitle {
+            font-size: 13.5px;
+            color: #64748b;
+            margin-top: 4px;
+            margin-bottom: 0;
+        }
+        .dark .vet-subtitle {
+            color: #94a3b8;
+        }
+        .vet-header-actions {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .vet-pill-segmented {
+            display: inline-flex;
+            background: #f1f5f9;
+            padding: 3px;
+            border-radius: 9999px;
+            border: 1px solid #e2e8f0;
+        }
+        .dark .vet-pill-segmented {
+            background: #1e293b;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+        .vet-pill-btn {
+            padding: 7px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            text-decoration: none;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dark .vet-pill-btn {
+            color: #94a3b8;
+        }
+        .vet-pill-btn.active, .vet-pill-btn:hover {
+            color: #0f172a;
+        }
+        .dark .vet-pill-btn.active, .dark .vet-pill-btn:hover {
+            color: #ffffff;
+        }
+        .vet-pill-btn.active {
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .dark .vet-pill-btn.active {
+            background: #0f172a;
+        }
+        .vet-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .dark .vet-filter-btn {
+            background: #1e293b;
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+        }
+        .vet-filter-btn:hover, .vet-filter-btn.active {
+            border-color: #00875a;
+            color: #00875a;
+        }
+        .dark .vet-filter-btn:hover, .dark .vet-filter-btn.active {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        .vet-btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 20px;
+            border-radius: 9999px;
+            background: #00875a;
+            color: #ffffff;
+            font-size: 13.5px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0, 135, 90, 0.25);
+            transition: all 0.15s ease;
+        }
+        .vet-btn-primary:hover {
+            background: #00734c;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0, 135, 90, 0.35);
+        }
+        .vet-filters-bar {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        }
+        .dark .vet-filters-bar {
+            background: #1e293b;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+        .vet-middle-grid {
+            display: grid;
+            grid-template-columns: 290px minmax(0, 1fr);
+            gap: 22px;
+            margin-bottom: 22px;
+        }
+        @media (max-width: 1024px) {
+            .vet-middle-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .vet-left-col {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .vet-card {
+            background: #ffffff;
+            border-radius: 22px;
+            border: 1px solid #edf2f7;
+            box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+        }
+        .dark .vet-card {
+            background: #1e293b;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        .vet-card-hoy {
+            padding: 20px 22px;
+        }
+        .vet-card-header-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #94a3b8;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .vet-stat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .vet-stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .vet-stat-name {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .dark .vet-stat-name {
+            color: #cbd5e1;
+        }
+        .vet-stat-badge {
+            font-size: 12px;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 8px;
+            min-width: 32px;
+            text-align: center;
+        }
+        .badge-emerald {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .dark .badge-emerald {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+        }
+        .badge-amber {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .dark .badge-amber {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fde68a;
+        }
+        .badge-rose {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .dark .badge-rose {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+        }
+        .vet-card-spotlight {
+            background: linear-gradient(145deg, #00875a 0%, #006644 100%);
+            border-radius: 22px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 190px;
+            box-shadow: 0 8px 24px -4px rgba(0, 135, 90, 0.28);
+        }
+        .vet-spotlight-watermark {
+            position: absolute;
+            right: -12px;
+            bottom: -16px;
+            width: 120px;
+            height: 120px;
+            opacity: 0.12;
+            pointer-events: none;
+            color: #ffffff;
+        }
+        .vet-spotlight-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: space-between;
+            gap: 14px;
+        }
+        .vet-spotlight-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+        .vet-spotlight-body {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.92);
+            line-height: 1.45;
+            margin: 0;
+        }
+        .vet-spotlight-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            color: #ffffff;
+            border-radius: 9999px;
+            padding: 8px 18px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s ease;
+            width: fit-content;
+        }
+        .vet-spotlight-btn:hover {
+            background: #ffffff;
+            color: #00875a;
+        }
+        .vet-table-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .vet-table-header-title {
+            padding: 18px 22px 14px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .dark .vet-table-header-title {
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        .vet-table-title-text {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .dark .vet-table-title-text {
+            color: #f8fafc;
+        }
+        .vet-table-header-sub {
+            font-size: 12px;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+        .vet-table-responsive {
+            overflow-x: auto;
+            flex: 1;
+        }
+        .vet-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        .vet-table th {
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border-bottom: 1px solid #f1f5f9;
+            background: #fafbfc;
+        }
+        .dark .vet-table th {
+            background: #182234;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        .vet-table td {
+            padding: 13px 16px;
+            border-bottom: 1px solid #f8fafc;
+            vertical-align: middle;
+        }
+        .dark .vet-table td {
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+        .vet-table-row {
+            cursor: pointer;
+            transition: background 0.12s ease;
+        }
+        .vet-table-row:hover {
+            background: #f8fafc;
+        }
+        .dark .vet-table-row:hover {
+            background: #182234;
+        }
+        .vet-pill-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 11px;
+            border-radius: 9999px;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+        .pill-status-confirmed {
+            background: #e6f7f0;
+            color: #00875a;
+        }
+        .dark .pill-status-confirmed {
+            background: rgba(0, 135, 90, 0.15);
+            color: #6ee7b7;
+        }
+        .pill-status-pending {
+            background: #fef9ec;
+            color: #d97706;
+        }
+        .dark .pill-status-pending {
+            background: rgba(217, 119, 6, 0.15);
+            color: #fde68a;
+        }
+        .pill-status-cancelled {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        .dark .pill-status-cancelled {
+            background: rgba(220, 38, 38, 0.15);
+            color: #fca5a5;
+        }
+        .pill-status-completed {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        .dark .pill-status-completed {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .dot-confirmed { background: #00875a; }
+        .dot-pending { background: #d97706; }
+        .dot-cancelled { background: #dc2626; }
+        .dot-completed { background: #2563eb; }
+        .vet-table-footer {
+            padding: 13px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #f1f5f9;
+            background: #ffffff;
+        }
+        .dark .vet-table-footer {
+            background: #1e293b;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        .vet-footer-text {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        .vet-pagination-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .vet-page-nav-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            cursor: pointer;
+            transition: 0.15s ease;
+        }
+        .dark .vet-page-nav-btn {
+            background: #182234;
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+        }
+        .vet-page-nav-btn:hover:not(:disabled) {
+            border-color: #00875a;
+            color: #00875a;
+        }
+        .vet-page-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+        .vet-card-semanal {
+            padding: 22px;
+        }
+        .vet-semanal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .vet-semanal-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        .dark .vet-semanal-title {
+            color: #f8fafc;
+        }
+        .vet-semanal-nav {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .vet-semanal-range {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #64748b;
+        }
+        .dark .vet-semanal-range {
+            color: #94a3b8;
+        }
+        .vet-nav-arrows {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .vet-nav-btn {
+            height: 30px;
+            padding: 0 10px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s ease;
+        }
+        .dark .vet-nav-btn {
+            background: #182234;
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+        }
+        .vet-nav-btn:hover {
+            border-color: #00875a;
+            color: #00875a;
+        }
+        .dark .vet-nav-btn:hover {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        .vet-week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            border: 1px solid #f1f5f9;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+        .dark .vet-week-grid {
+            border-color: rgba(255, 255, 255, 0.06);
+            background: #1e293b;
+        }
+        @media (max-width: 900px) {
+            .vet-week-grid {
+                display: flex;
+                overflow-x: auto;
+            }
+            .vet-day-col {
+                min-width: 140px;
+            }
+        }
+        .vet-day-col {
+            border-right: 1px solid #f1f5f9;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .dark .vet-day-col {
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        .vet-day-col:last-child {
+            border-right: none;
+        }
+        .vet-day-col:hover {
+            background: #fafbfc;
+        }
+        .dark .vet-day-col:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .vet-day-col.is-today {
+            background: #f7fdfa;
+        }
+        .dark .vet-day-col.is-today {
+            background: rgba(0, 135, 90, 0.04);
+        }
+        .vet-day-header {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .dark .vet-day-header {
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        .vet-day-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+        }
+        .vet-day-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: #334155;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dark .vet-day-number {
+            color: #cbd5e1;
+        }
+        .vet-day-number.today-pill {
+            background: #00875a;
+            color: #ffffff;
+            border-radius: 50%;
+        }
+        .vet-day-events {
+            padding: 8px 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+        .vet-event-card {
+            padding: 7px 9px;
+            border-radius: 9px;
+            border-left-width: 3.5px;
+            border-left-style: solid;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            cursor: pointer;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+        }
+        .vet-event-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+        }
+        .vet-event-time-client {
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .vet-event-service {
+            font-size: 10px;
+            opacity: 0.85;
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 
     <div class="salonesgo-container">
-        
-        <!-- 2-COLUMN MAIN WORKSPACE -->
-        <div class="salonesgo-grid-layout">
+
+        <!-- BARRA SUPERIOR VETSYSTEMSAAS / NUVEX (SIEMPRE VISIBLE) -->
+        <div class="vet-header-wrap">
+            <div>
+                <h1 class="vet-title">Citas</h1>
+                <p class="vet-subtitle">Gestión y programación de citas y tratamientos</p>
+            </div>
+            <div class="vet-header-actions">
+                <!-- Selector Segmentado de Vistas -->
+                <div class="vet-pill-segmented">
+                    <a href="{{ \App\Filament\Resources\AppointmentResource::getUrl('index') }}" class="vet-pill-btn">
+                        Lista
+                    </a>
+                    <button type="button" wire:click="setViewMode('hibrido')" class="vet-pill-btn {{ $viewMode === 'hibrido' ? 'active' : '' }}">
+                        Calendario
+                    </button>
+                    <button type="button" wire:click="setViewMode('month')" class="vet-pill-btn {{ $viewMode === 'month' ? 'active' : '' }}">
+                        Mes
+                    </button>
+                    <button type="button" wire:click="setViewMode('week')" class="vet-pill-btn {{ $viewMode === 'week' ? 'active' : '' }}">
+                        Semana
+                    </button>
+                </div>
+
+                <!-- Botón Filtros -->
+                <button type="button" wire:click="toggleFilters" class="vet-filter-btn {{ $showFilters ? 'active' : '' }}">
+                    <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    <span>Filtros</span>
+                    @if($statusFilter !== 'all' || $serviceFilter !== 'all')
+                        <span style="width: 7px; height: 7px; border-radius: 50%; background: #00875a; display: inline-block;"></span>
+                    @endif
+                </button>
+
+                <!-- Botón Nueva Cita -->
+                <button type="button" wire:click="mountAction('newAppointment')" class="vet-btn-primary">
+                    <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span>+ Nueva Cita</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- BARRA DESPLEGABLE DE FILTROS -->
+        @if($showFilters)
+            <div class="vet-filters-bar">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span>Estado:</span>
+                    <select wire:model.live="statusFilter" class="filter-select-input" style="padding: 6px 12px; font-size: 12.5px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                        <option value="all">Todas las Citas</option>
+                        <option value="CONFIRMED">Confirmadas</option>
+                        <option value="PENDING_VERIFICATION">Pendientes Nequi</option>
+                        <option value="PENDING_DEPOSIT">Pendientes Abono</option>
+                        <option value="COMPLETED">Completadas</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span>Servicio:</span>
+                    <select wire:model.live="serviceFilter" class="filter-select-input" style="padding: 6px 12px; font-size: 12.5px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                        <option value="all">Todos los Servicios</option>
+                        @foreach($services as $svc)
+                            <option value="{{ $svc->id }}">{{ $svc->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @if($statusFilter !== 'all' || $serviceFilter !== 'all')
+                    <button type="button" wire:click="$set('statusFilter', 'all'); $set('serviceFilter', 'all');" style="padding: 6px 12px; font-size: 12px; border-radius: 8px; background: #fee2e2; color: #991b1b; border: none; cursor: pointer; font-weight: 600;">
+                        Limpiar Filtros
+                    </button>
+                @endif
+            </div>
+        @endif
+
+        @if($viewMode === 'hibrido')
+            <!-- ==============================================================
+                 VISTA HÍBRIDA OFICIAL SOLICITADA EN EL CAPTURE
+                 ============================================================== -->
+            
+            <!-- SECCIÓN MEDIA: DOS COLUMNAS (HOY/RECORDATORIO + TABLA CITAS DE HOY) -->
+            <div class="vet-middle-grid">
+                
+                <!-- COLUMNA IZQUIERDA: RESUMEN HOY + SPOTLIGHT CARD RECORDATORIO -->
+                <div class="vet-left-col">
+                    
+                    <!-- Tarjeta HOY -->
+                    <div class="vet-card vet-card-hoy">
+                        <div class="vet-card-header-label">HOY</div>
+                        <div class="vet-stat-list">
+                            <div class="vet-stat-row">
+                                <span class="vet-stat-name">Confirmadas</span>
+                                <span class="vet-stat-badge badge-emerald">{{ str_pad($data['todayConfirmed'], 2, '0', STR_PAD_LEFT) }}</span>
+                            </div>
+                            <div class="vet-stat-row">
+                                <span class="vet-stat-name">Pendientes</span>
+                                <span class="vet-stat-badge badge-amber">{{ str_pad($data['todayPending'], 2, '0', STR_PAD_LEFT) }}</span>
+                            </div>
+                            <div class="vet-stat-row">
+                                <span class="vet-stat-name">Canceladas</span>
+                                <span class="vet-stat-badge badge-rose">{{ str_pad($data['todayCancelled'], 2, '0', STR_PAD_LEFT) }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Recordatorio (Spotlight Card) -->
+                    <div class="vet-card-spotlight">
+                        <div class="vet-spotlight-watermark">
+                            <svg fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+                            </svg>
+                        </div>
+                        <div class="vet-spotlight-content">
+                            <div>
+                                <h3 class="vet-spotlight-title">Recordatorio</h3>
+                                @if($data['todaySpotlight'])
+                                    <p class="vet-spotlight-body" style="margin-top: 8px;">
+                                        {{ $data['todaySpotlight']->service?->name ?? 'Cita programada' }} para {{ $data['todaySpotlight']->client_name }} a las {{ substr($data['todaySpotlight']->start_time, 0, 5) }}
+                                    </p>
+                                @else
+                                    <p class="vet-spotlight-body" style="margin-top: 8px;">
+                                        No hay más citas pendientes agendadas para el día de hoy.
+                                    </p>
+                                @endif
+                            </div>
+                            <div>
+                                @if($data['todaySpotlight'])
+                                    <button type="button" 
+                                            wire:click="selectAppointment({{ $data['todaySpotlight']->id }})" 
+                                            class="vet-spotlight-btn">
+                                        Ver Detalles
+                                    </button>
+                                @else
+                                    <button type="button" 
+                                            wire:click="mountAction('newAppointment')" 
+                                            class="vet-spotlight-btn">
+                                        + Nueva Cita
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- COLUMNA DERECHA: TABLA DE CITAS DE HOY -->
+                <div class="vet-card vet-table-card">
+                    <div class="vet-table-header-title">
+                        <span class="vet-table-title-text">Citas de Hoy</span>
+                        <span class="vet-table-header-sub">{{ $data['todayTotal'] }} citas registradas hoy</span>
+                    </div>
+
+                    <div class="vet-table-responsive">
+                        <table class="vet-table">
+                            <thead>
+                                <tr>
+                                    <th>HORA</th>
+                                    <th>CLIENTA / CLIENTE</th>
+                                    <th>CONTACTO / TEL</th>
+                                    <th>SERVICIO</th>
+                                    <th>ESTADO</th>
+                                    <th style="text-align: right;">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($data['todayAppointments'] as $apt)
+                                    @php
+                                        $statusVal = $apt->status->value ?? 'CONFIRMED';
+                                    @endphp
+                                    <tr wire:click="selectAppointment({{ $apt->id }})" class="vet-table-row">
+                                        <td style="font-weight: 700; color: #334155; white-space: nowrap; font-size: 13px;">
+                                            {{ substr($apt->start_time, 0, 5) }}
+                                        </td>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <div style="width: 32px; height: 32px; border-radius: 50%; background: #e6f7f0; color: #00875a; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; flex-shrink: 0;">
+                                                    {{ strtoupper(substr($apt->client_name, 0, 1)) }}
+                                                </div>
+                                                <div>
+                                                    <div style="font-weight: 700; color: #1e293b; font-size: 13.5px;">
+                                                        {{ $apt->client_name }}
+                                                    </div>
+                                                    @if($apt->notes)
+                                                        <div style="font-size: 11px; color: #94a3b8; max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                            {{ $apt->notes }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="font-size: 12.5px; color: #475569;">
+                                            @if($apt->client_phone)
+                                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $apt->client_phone) }}" 
+                                                   target="_blank" 
+                                                   wire:click.stop 
+                                                   style="color: inherit; text-decoration: none; font-weight: 500;"
+                                                   title="Escribir por WhatsApp">
+                                                    {{ $apt->client_phone }}
+                                                </a>
+                                            @else
+                                                <span style="color: #cbd5e1;">-</span>
+                                            @endif
+                                        </td>
+                                        <td style="font-size: 13px; font-weight: 500; color: #334155;">
+                                            {{ $apt->service?->name ?? 'Servicio' }}
+                                        </td>
+                                        <td>
+                                            @if($statusVal === 'CONFIRMED')
+                                                <span class="vet-pill-status pill-status-confirmed">
+                                                    <span class="status-dot dot-confirmed"></span> Confirmado
+                                                </span>
+                                            @elseif($statusVal === 'PENDING_VERIFICATION' || $statusVal === 'PENDING_DEPOSIT')
+                                                <span class="vet-pill-status pill-status-pending">
+                                                    <span class="status-dot dot-pending"></span> Pendiente
+                                                </span>
+                                            @elseif($statusVal === 'CANCELLED')
+                                                <span class="vet-pill-status pill-status-cancelled">
+                                                    <span class="status-dot dot-cancelled"></span> Cancelado
+                                                </span>
+                                            @elseif($statusVal === 'COMPLETED')
+                                                <span class="vet-pill-status pill-status-completed">
+                                                    <span class="status-dot dot-completed"></span> Completado
+                                                </span>
+                                            @else
+                                                <span class="vet-pill-status">
+                                                    {{ $apt->status->label() }}
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td style="text-align: right;" wire:click.stop>
+                                            <button type="button" 
+                                                    wire:click="selectAppointment({{ $apt->id }})" 
+                                                    style="background: transparent; border: none; padding: 4px; cursor: pointer; color: #94a3b8; border-radius: 6px;"
+                                                    title="Ver detalles">
+                                                <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; padding: 36px 16px; color: #94a3b8; font-size: 13px;">
+                                            No hay citas registradas para hoy en este filtro.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- FOOTER TABLA CON PAGINACIÓN -->
+                    <div class="vet-table-footer">
+                        <span class="vet-footer-text">
+                            Mostrando {{ count($data['todayAppointments']) }} de {{ $data['todayTotal'] }} citas hoy
+                        </span>
+                        <div class="vet-pagination-group">
+                            <button type="button" 
+                                    wire:click="prevTodayPage" 
+                                    @if($todayPage <= 1) disabled @endif
+                                    class="vet-page-nav-btn"
+                                    title="Página anterior">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <span style="font-size: 12px; font-weight: 700; color: #64748b;">
+                                {{ $todayPage }} / {{ $data['todayMaxPages'] }}
+                            </span>
+                            <button type="button" 
+                                    wire:click="nextTodayPage({{ $data['todayMaxPages'] }})" 
+                                    @if($todayPage >= $data['todayMaxPages']) disabled @endif
+                                    class="vet-page-nav-btn"
+                                    title="Página siguiente">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SECCIÓN INFERIOR: CALENDARIO SEMANAL COMPLETO -->
+            <div class="vet-card vet-card-semanal">
+                <div class="vet-semanal-header">
+                    <div>
+                        <h2 class="vet-semanal-title">Calendario Semanal</h2>
+                    </div>
+                    <div class="vet-semanal-nav">
+                        <span class="vet-semanal-range">{{ $data['title'] }}</span>
+                        <div class="vet-nav-arrows">
+                            <button type="button" wire:click="previousPeriod" class="vet-nav-btn" title="Semana anterior">
+                                <svg style="width: 13px; height: 13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <button type="button" wire:click="goToToday" class="vet-nav-btn" style="padding: 0 10px; font-weight: 700;" title="Ir a hoy">
+                                Hoy
+                            </button>
+                            <button type="button" wire:click="nextPeriod" class="vet-nav-btn" title="Semana siguiente">
+                                <svg style="width: 13px; height: 13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid de 7 Columnas de Días (LUN a DOM) -->
+                <div class="vet-week-grid">
+                    @foreach($data['days'] as $day)
+                        <div class="vet-day-col {{ $day['isToday'] ? 'is-today' : '' }}" wire:click="openDayModal('{{ $day['date'] }}')">
+                            <!-- Cabecera de Día -->
+                            <div class="vet-day-header">
+                                <span class="vet-day-name">{{ strtoupper($day['dayName']) }}</span>
+                                <span class="vet-day-number {{ $day['isToday'] ? 'today-pill' : '' }}">
+                                    {{ $day['dayNumber'] }}
+                                </span>
+                            </div>
+
+                            <!-- Listado de Citas del Día -->
+                            <div class="vet-day-events">
+                                @forelse($day['appointments'] as $apt)
+                                    @php
+                                        $theme = $apt->service_theme ?? \App\Filament\Pages\AppointmentCalendarPage::getServiceTheme($apt->service, $apt->service_id);
+                                    @endphp
+                                    <div wire:click.stop="selectAppointment({{ $apt->id }})" 
+                                         class="vet-event-card"
+                                         style="background-color: {{ $theme['bg'] ?? '#f0fdf4' }}; border-left-color: {{ $theme['stripe'] ?? '#00875a' }};"
+                                         title="{{ $apt->service?->name }} • {{ $apt->client_name }} ({{ substr($apt->start_time, 0, 5) }})">
+                                        <div class="vet-event-time-client" style="color: {{ $theme['text_title'] ?? '#065f46' }};">
+                                            <span>{{ substr($apt->start_time, 0, 5) }}</span>
+                                            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">- {{ $apt->client_name }}</span>
+                                        </div>
+                                        <div class="vet-event-service" style="color: {{ $theme['text_sub'] ?? '#047857' }};">
+                                            {{ $apt->service?->name ?? 'Servicio' }}
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="vet-day-empty"></div>
+                                @endforelse
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+        @else
+            <!-- 2-COLUMN MAIN WORKSPACE -->
+            <div class="salonesgo-grid-layout">
             
             <!-- LEFT CONTROL & FILTERS PANEL (ORGANIZED SAAS CARDS) -->
             <div class="salonesgo-left-panel">
@@ -1490,6 +2485,7 @@
             </div>
 
         </div>
+        @endif
 
     </div>
 

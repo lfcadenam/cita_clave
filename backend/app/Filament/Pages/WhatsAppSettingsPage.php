@@ -33,8 +33,8 @@ class WhatsAppSettingsPage extends Page
     // Test form
     public string $test_phone = '';
     public string $test_mode = 'template'; // 'template' o 'text'
-    public string $test_template_name = 'jaspers_market_order_confirmation_v1';
-    public string $test_template_lang = 'en_US';
+    public string $test_template_name = 'reserva_confirmada';
+    public string $test_template_lang = 'es_CO';
     public ?string $test_custom_message = '';
 
     // Status state
@@ -168,28 +168,76 @@ class WhatsAppSettingsPage extends Page
         $service = app(WhatsAppNotificationService::class);
         $tenant = $this->getTenant();
 
+        // Sincronizar credenciales del formulario en el objeto tenant para que el test use siempre los datos visibles en pantalla
+        if ($tenant) {
+            $tenant->whatsapp_driver = $this->whatsapp_driver;
+            if (!empty($this->meta_phone_number_id)) {
+                $tenant->meta_phone_number_id = trim((string) $this->meta_phone_number_id);
+            }
+            if (!empty($this->meta_waba_id)) {
+                $tenant->meta_waba_id = trim((string) $this->meta_waba_id);
+            }
+            if (!empty($this->meta_access_token)) {
+                $tenant->meta_access_token = trim((string) $this->meta_access_token);
+            }
+            if (!empty($this->meta_verify_token)) {
+                $tenant->meta_verify_token = trim((string) $this->meta_verify_token);
+            }
+            if (!empty($this->whatsapp_number)) {
+                $tenant->whatsapp_number = trim((string) $this->whatsapp_number);
+            }
+        }
+
+        $destClean = $service->sanitizePhoneNumber($this->test_phone);
+        $businessPhoneClean = $service->sanitizePhoneNumber((string) ($this->whatsapp_number ?: $tenant?->whatsapp_number ?: config('whatsapp.admin_phone', '')));
+
+        if (!empty($businessPhoneClean) && $destClean === $businessPhoneClean) {
+            $this->lastTestSuccess = false;
+            $this->lastTestResult = "⚠️ Meta API Error (#100): El teléfono destinatario (+{$destClean}) es el mismo número registrado como WhatsApp Business de tu salón. Meta no permite que una cuenta comercial se envíe mensajes a sí misma. Por favor ingresa un número de celular diferente (por ejemplo, tu móvil personal o el de un cliente/amigo).";
+            Notification::make()
+                ->title('Número de Destino Inválido')
+                ->body('No puedes enviarte un mensaje a la misma línea comercial del salón (Error #100). Ingresa otro número de celular.')
+                ->warning()
+                ->send();
+            return;
+        }
+
         $this->lastTestResult = 'Enviando...';
         $this->lastTestSuccess = null;
 
         if ($this->whatsapp_driver === 'meta' && $this->test_mode === 'template') {
-            $tpl = trim($this->test_template_name) ?: 'jaspers_market_order_confirmation_v1';
+            $tpl = trim($this->test_template_name) ?: 'reserva_confirmada';
+            if ($tpl === 'hello_world') {
+                $this->lastTestSuccess = false;
+                $this->lastTestResult = "Meta API Error (#131058): La plantilla 'hello_world' solo está permitida por Meta en números públicos de prueba (sandbox). Al estar usando un número real o Phone Number ID de producción, Meta bloquea 'hello_world'. Debes seleccionar una plantilla propia aprobada en tu WhatsApp Manager (ej: 'reserva_confirmada', 'cita_recibida', 'recordatorio_cita_24h') con idioma 'es_CO' o 'es'.";
+                Notification::make()
+                    ->title('Plantilla hello_world No Permitida en Números Reales')
+                    ->body('Meta bloquea hello_world en números reales (Error #131058). Usa una plantilla propia aprobada como "reserva_confirmada" o "cita_recibida".')
+                    ->danger()
+                    ->send();
+                return;
+            }
             if ($tpl === 'eserva_confirmada') {
                 $tpl = 'reserva_confirmada';
                 $this->test_template_name = 'reserva_confirmada';
             }
-            $lang = trim($this->test_template_lang) ?: 'en_US';
+            $lang = trim($this->test_template_lang) ?: 'es_CO';
             $sampleAppt = \App\Models\Appointment::with('service')->latest()->first();
             $apptNum = $sampleAppt?->appointment_number ?? 'PA-261013-MSO7';
             $clientName = $sampleAppt?->client_name ?? 'Vivian Mohnblatt';
             $serviceName = $sampleAppt?->service?->name ?? 'Limpieza Pedicura';
             $dateStr = now()->addDay()->format('d/m/Y') . ' a las 10:00 AM';
             $confirmUrl = url("/reserva/confirmacion/{$apptNum}");
+            $salonName = $tenant?->name ?? 'La Belle Nails';
+            $tomorrowDate = now()->addDay()->format('d/m/Y');
 
             if ($tpl === 'jaspers_market_order_confirmation_v1') {
-                $bodyParams = [
-                    $clientName,
-                    "#{$apptNum} ({$serviceName})",
-                    "{$dateStr} - Confirma tu asistencia en: {$confirmUrl}",
+                $paramVariants = [
+                    [
+                        $clientName,
+                        "#{$apptNum} ({$serviceName})",
+                        "{$dateStr} - Confirma tu asistencia en: {$confirmUrl}",
+                    ],
                 ];
                 $langsToTry = [$lang, 'en_US'];
             } elseif (in_array($tpl, ['reserva_confirmada', 'confirmacion_cita_salon', 'recordatorio_cita_24h', 'cita_recibida', 'cita_confirmada_abono'])) {
@@ -197,31 +245,48 @@ class WhatsAppSettingsPage extends Page
                     $lang = 'es_CO';
                     $this->test_template_lang = 'es_CO';
                 }
-                $bodyParams = [
-                    $clientName,
-                    $apptNum,
-                    $serviceName,
-                    $dateStr,
-                    $confirmUrl,
+                // Variantes adaptativas de parámetros: 5, 4 (guía oficial Nuvex), 3, 2, 1 o 0 variables
+                $paramVariants = [
+                    [$clientName, $apptNum, $serviceName, $dateStr, $confirmUrl],
+                    [$clientName, $salonName, $tomorrowDate, '10:00 AM'],
+                    [$clientName, $serviceName, $dateStr, $confirmUrl],
+                    [$clientName, $serviceName, $dateStr],
+                    [$clientName, $dateStr],
+                    [$clientName],
+                    [],
                 ];
-                $langsToTry = array_values(array_unique([$lang, 'es_CO', 'es', 'es_ES']));
+                $langsToTry = array_values(array_unique([$lang, 'es_CO', 'es']));
             } else {
-                $bodyParams = [];
+                $paramVariants = [
+                    [$clientName, $apptNum, $serviceName, $dateStr, $confirmUrl],
+                    [$clientName, $salonName, $tomorrowDate, '10:00 AM'],
+                    [],
+                ];
                 $langsToTry = [$lang];
             }
 
             $result = ['success' => false, 'message' => ''];
             foreach ($langsToTry as $tryLang) {
-                $result = $service->sendTemplateViaMetaWithDetails(
-                    phone: $this->test_phone,
-                    templateName: $tpl,
-                    bodyParameters: $bodyParams,
-                    languageCode: $tryLang,
-                    tenant: $tenant
-                );
-                if ($result['success'] ?? false) {
-                    $this->test_template_lang = $tryLang;
-                    break;
+                foreach ($paramVariants as $variant) {
+                    $result = $service->sendTemplateViaMetaWithDetails(
+                        phone: $this->test_phone,
+                        templateName: $tpl,
+                        bodyParameters: $variant,
+                        languageCode: $tryLang,
+                        tenant: $tenant
+                    );
+
+                    if ($result['success'] ?? false) {
+                        $this->test_template_lang = $tryLang;
+                        $varCount = count($variant);
+                        $result['message'] .= " (Variables adaptadas automáticamente: {$varCount}).";
+                        break 2;
+                    }
+
+                    // Si el error no fue 100 (Invalid parameter), no es por número de variables, no insistir en más variantes
+                    if ((int) ($result['error_code'] ?? 0) !== 100) {
+                        break;
+                    }
                 }
             }
 

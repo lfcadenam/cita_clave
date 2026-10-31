@@ -571,7 +571,7 @@
                         <div>
                             <label class="nuvex-wa-label">Celular de Destino</label>
                             <input type="text" wire:model="test_phone" placeholder="Ej: 3106080402" class="nuvex-wa-input">
-                            <span class="nuvex-wa-hint">Se normalizará automáticamente al formato internacional (+57).</span>
+                            <span class="nuvex-wa-hint">Se normalizará a formato internacional (+57). <strong>Importante:</strong> Debe ser un celular personal o de prueba diferente al número comercial del salón (Meta rechaza el auto-envío).</span>
                         </div>
 
                         @if($whatsapp_driver === 'meta')
@@ -595,15 +595,21 @@
                                     <div class="nuvex-wa-row-2">
                                         <div>
                                             <label class="nuvex-wa-label">Nombre Plantilla</label>
-                                            <input type="text" wire:model="test_template_name" placeholder="hello_world" class="nuvex-wa-input is-mono">
+                                            <input type="text" wire:model="test_template_name" placeholder="reserva_confirmada" class="nuvex-wa-input is-mono">
                                         </div>
                                         <div>
                                             <label class="nuvex-wa-label">Código Idioma</label>
-                                            <input type="text" wire:model="test_template_lang" placeholder="en_US" class="nuvex-wa-input is-mono">
+                                            <input type="text" wire:model="test_template_lang" placeholder="es_CO" class="nuvex-wa-input is-mono">
                                         </div>
                                     </div>
-                                    <span class="nuvex-wa-hint" style="margin-top:0;">
-                                        Meta incluye de fábrica la plantilla <code>hello_world</code> (idioma <code>en_US</code>) aprobada en todas las cuentas para validar el API al instante.
+                                    <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                                        <span style="font-size: 11px; color: var(--nuvex-wa-text-dim, #64748b);">Plantillas rápidas:</span>
+                                        <button type="button" wire:click="$set('test_template_name', 'reserva_confirmada'); $set('test_template_lang', 'es_CO')" style="font-size: 11px; padding: 3px 8px; border-radius: 9999px; background: rgba(0,201,117,0.12); color: #00874e; border: 1px solid rgba(0,201,117,0.25); cursor: pointer; font-weight: 500;">reserva_confirmada</button>
+                                        <button type="button" wire:click="$set('test_template_name', 'cita_recibida'); $set('test_template_lang', 'es_CO')" style="font-size: 11px; padding: 3px 8px; border-radius: 9999px; background: rgba(0,201,117,0.12); color: #00874e; border: 1px solid rgba(0,201,117,0.25); cursor: pointer; font-weight: 500;">cita_recibida</button>
+                                        <button type="button" wire:click="$set('test_template_name', 'recordatorio_cita_24h'); $set('test_template_lang', 'es_CO')" style="font-size: 11px; padding: 3px 8px; border-radius: 9999px; background: rgba(0,201,117,0.12); color: #00874e; border: 1px solid rgba(0,201,117,0.25); cursor: pointer; font-weight: 500;">recordatorio_cita_24h</button>
+                                    </div>
+                                    <span class="nuvex-wa-hint" style="margin-top:8px;">
+                                        💡 <strong>Nota sobre números reales:</strong> Meta bloquea la plantilla <code>hello_world</code> en números de producción (Error #131058). Para realizar pruebas en vivo en tu línea real, usa una plantilla aprobada en tu WhatsApp Manager (como <code>reserva_confirmada</code>) en idioma <code>es_CO</code> o <code>es</code>.
                                     </span>
                                 </div>
                             @endif

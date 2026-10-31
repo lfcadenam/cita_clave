@@ -40,10 +40,19 @@ class AppointmentCalendarPage extends Page
     protected string $view = 'filament.pages.appointment-calendar';
 
     public string $currentDate = '';
-    public string $viewMode = 'month'; // 'month', 'week', 'day'
+    public string $viewMode = 'hibrido'; // 'hibrido', 'month', 'week', 'day'
     public string $statusFilter = 'all';
     public string $serviceFilter = 'all';
+    public bool $showFilters = false;
     
+    public int $todayPage = 1;
+    public int $todayPerPage = 4;
+
+    public function toggleFilters(): void
+    {
+        $this->showFilters = !$this->showFilters;
+    }
+
     public ?int $selectedAppointmentId = null;
     public bool $showDetailModal = false;
     public bool $showNequiModal = false;
@@ -51,6 +60,20 @@ class AppointmentCalendarPage extends Page
     public string $selectedDayDate = '';
     public string $verificationNotes = '';
     public string $cancellationReason = '';
+
+    public function prevTodayPage(): void
+    {
+        if ($this->todayPage > 1) {
+            $this->todayPage--;
+        }
+    }
+
+    public function nextTodayPage(int $maxPages = 99): void
+    {
+        if ($this->todayPage < $maxPages) {
+            $this->todayPage++;
+        }
+    }
 
     public function mount(): void
     {
@@ -132,7 +155,7 @@ class AppointmentCalendarPage extends Page
 
     public function setViewMode(string $mode): void
     {
-        if (in_array($mode, ['month', 'week', 'day'])) {
+        if (in_array($mode, ['hibrido', 'month', 'week', 'day'])) {
             $this->viewMode = $mode;
         }
     }
@@ -153,7 +176,7 @@ class AppointmentCalendarPage extends Page
         $date = Carbon::parse($this->currentDate);
         if ($this->viewMode === 'month') {
             $this->currentDate = $date->subMonth()->startOfMonth()->toDateString();
-        } elseif ($this->viewMode === 'week') {
+        } elseif ($this->viewMode === 'week' || $this->viewMode === 'hibrido') {
             $this->currentDate = $date->subWeek()->startOfWeek(Carbon::MONDAY)->toDateString();
         } else {
             $this->currentDate = $date->subDay()->toDateString();
@@ -165,7 +188,7 @@ class AppointmentCalendarPage extends Page
         $date = Carbon::parse($this->currentDate);
         if ($this->viewMode === 'month') {
             $this->currentDate = $date->addMonth()->startOfMonth()->toDateString();
-        } elseif ($this->viewMode === 'week') {
+        } elseif ($this->viewMode === 'week' || $this->viewMode === 'hibrido') {
             $this->currentDate = $date->addWeek()->startOfWeek(Carbon::MONDAY)->toDateString();
         } else {
             $this->currentDate = $date->addDay()->toDateString();
@@ -361,10 +384,16 @@ class AppointmentCalendarPage extends Page
             $startDate = $baseDate->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY);
             $endDate = $baseDate->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY);
             $title = $baseDate->locale('es')->isoFormat('MMMM YYYY');
-        } elseif ($this->viewMode === 'week') {
+        } elseif ($this->viewMode === 'week' || $this->viewMode === 'hibrido') {
             $startDate = $baseDate->copy()->startOfWeek(Carbon::MONDAY);
             $endDate = $baseDate->copy()->endOfWeek(Carbon::SUNDAY);
-            $title = 'Semana del ' . $startDate->locale('es')->isoFormat('D [de] MMMM') . ' al ' . $endDate->locale('es')->isoFormat('D [de] MMMM, YYYY');
+            $monthStart = $startDate->locale('es')->isoFormat('MMMM');
+            $monthEnd = $endDate->locale('es')->isoFormat('MMMM');
+            if ($startDate->month === $endDate->month) {
+                $title = ucfirst($monthStart) . ' ' . $startDate->day . '-' . $endDate->day . ', ' . $startDate->year;
+            } else {
+                $title = ucfirst($monthStart) . ' ' . $startDate->day . ' - ' . ucfirst($monthEnd) . ' ' . $endDate->day . ', ' . $startDate->year;
+            }
         } else {
             $startDate = $baseDate->copy()->startOfDay();
             $endDate = $baseDate->copy()->endOfDay();
@@ -566,6 +595,28 @@ class AppointmentCalendarPage extends Page
             ];
         }
 
+        // Today's dedicated data for the Hybrid Dashboard View
+        $todayStr = now()->toDateString();
+        $allToday = Appointment::with(['service', 'customer'])
+            ->whereDate('appointment_date', $todayStr)
+            ->orderBy('start_time')
+            ->get();
+
+        $todayConfirmed = $allToday->where('status', AppointmentStatus::CONFIRMED)->count();
+        $todayPending = $allToday->whereIn('status', [AppointmentStatus::PENDING_VERIFICATION, AppointmentStatus::PENDING_DEPOSIT])->count();
+        $todayCancelled = Appointment::whereDate('appointment_date', $todayStr)
+            ->where('status', AppointmentStatus::CANCELLED)
+            ->count();
+        $todayTotal = $allToday->count();
+
+        // Spotlight Reminder: Next upcoming appointment or priority one
+        $currentTime = now()->format('H:i:s');
+        $todaySpotlight = $allToday->first(function ($apt) use ($currentTime) {
+            return $apt->start_time >= $currentTime && $apt->status !== AppointmentStatus::CANCELLED;
+        }) ?? $allToday->first();
+
+        $todayPaginated = $allToday->forPage($this->todayPage, $this->todayPerPage)->values();
+
         return [
             'title' => ucfirst($title),
             'startDate' => $startDate->toDateString(),
@@ -577,6 +628,15 @@ class AppointmentCalendarPage extends Page
             'confirmedCount' => $appointments->where('status', AppointmentStatus::CONFIRMED)->count(),
             'pendingCount' => $appointments->where('status', AppointmentStatus::PENDING_VERIFICATION)->count(),
             'completedCount' => $appointments->where('status', AppointmentStatus::COMPLETED)->count(),
+            // Hybrid View additions
+            'todayStr' => $todayStr,
+            'todayConfirmed' => $todayConfirmed,
+            'todayPending' => $todayPending,
+            'todayCancelled' => $todayCancelled,
+            'todayTotal' => $todayTotal,
+            'todayAppointments' => $todayPaginated,
+            'todaySpotlight' => $todaySpotlight,
+            'todayMaxPages' => max(1, (int) ceil($todayTotal / $this->todayPerPage)),
         ];
     }
 

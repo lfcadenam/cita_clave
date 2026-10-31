@@ -12,7 +12,7 @@ class TestWhatsAppNotificationCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'whatsapp:test {phone : Número de teléfono celular (ej: 3106080402)} {--message= : Mensaje personalizado de prueba} {--template= : Nombre de plantilla Meta a enviar (ej: hello_world)} {--lang= : Código de idioma de la plantilla (ej: es, en_US)}';
+    protected $signature = 'whatsapp:test {phone : Número de teléfono celular (ej: 3106080402)} {--message= : Mensaje personalizado de prueba} {--template= : Nombre de plantilla Meta a enviar (ej: reserva_confirmada)} {--lang= : Código de idioma de la plantilla (ej: es_CO, es)}';
 
     /**
      * The console command description.

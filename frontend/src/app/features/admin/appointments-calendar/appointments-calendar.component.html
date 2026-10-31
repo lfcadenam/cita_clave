@@ -1,0 +1,654 @@
+<div class="min-h-screen bg-[#F3FBF7] text-slate-800 font-sans antialiased flex flex-col lg:flex-row p-3 sm:p-5 lg:p-6 gap-5 lg:gap-6 selection:bg-[#E6F7F2] selection:text-[#065F46]">
+
+  <!-- ========================================================================= -->
+  <!-- 1. LEFT FLOATING CAPSULE SIDEBAR (NUVEX MODERN CURVE UI)                  -->
+  <!-- ========================================================================= -->
+  <aside class="w-full lg:w-64 shrink-0 flex flex-col justify-between bg-white rounded-3xl border border-emerald-100/70 p-5 shadow-xs shadow-emerald-950/5">
+    
+    <div>
+      <!-- Brand & Clinic Badge -->
+      <div class="flex items-center gap-2.5 pb-6 border-b border-slate-100">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#00C975] to-[#059669] flex items-center justify-center text-white shadow-xs shrink-0">
+          <!-- Paw & Cross Icon -->
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 13a4.5 4.5 0 0 0-4.5 4.5c0 2 2.5 4.5 4.5 4.5s4.5-2.5 4.5-4.5A4.5 4.5 0 0 0 12 13ZM6.5 11A2.5 2.5 0 1 0 9 8.5 2.5 2.5 0 0 0 6.5 11Zm11 0A2.5 2.5 0 1 0 15 8.5a2.5 2.5 0 0 0 2.5 2.5ZM4 16a2 2 0 1 0 2-2 2 2 0 0 0-2 2Zm14 0a2 2 0 1 0 2-2 2 2 0 0 0-2 2Z"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <span class="font-bold text-sm text-slate-900 leading-tight block truncate">{{ systemBrand() }}</span>
+          <span class="text-[11px] font-semibold text-emerald-600 tracking-wide uppercase block truncate">{{ clinicName() }}</span>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="mt-6 flex flex-col gap-1.5">
+        
+        <!-- Dashboard -->
+        <button type="button" 
+                (click)="activeNav.set('dashboard')"
+                [ngClass]="activeNav() === 'dashboard' ? 'bg-[#ECFDF5] text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 font-medium'"
+                class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs sm:text-sm transition-all duration-150 text-left cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+          </svg>
+          <span>Dashboard</span>
+        </button>
+
+        <!-- Clientes -->
+        <button type="button" 
+                (click)="activeNav.set('clientes')"
+                [ngClass]="activeNav() === 'clientes' ? 'bg-[#ECFDF5] text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 font-medium'"
+                class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs sm:text-sm transition-all duration-150 text-left cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+          <span>Clientes</span>
+        </button>
+
+        <!-- Mascotas -->
+        <button type="button" 
+                (click)="activeNav.set('mascotas')"
+                [ngClass]="activeNav() === 'mascotas' ? 'bg-[#ECFDF5] text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 font-medium'"
+                class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs sm:text-sm transition-all duration-150 text-left cursor-pointer">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 13a4.5 4.5 0 0 0-4.5 4.5c0 2 2.5 4.5 4.5 4.5s4.5-2.5 4.5-4.5A4.5 4.5 0 0 0 12 13ZM6.5 11A2.5 2.5 0 1 0 9 8.5 2.5 2.5 0 0 0 6.5 11Zm11 0A2.5 2.5 0 1 0 15 8.5a2.5 2.5 0 0 0 2.5 2.5ZM4 16a2 2 0 1 0 2-2 2 2 0 0 0-2 2Zm14 0a2 2 0 1 0 2-2 2 2 0 0 0-2 2Z"/>
+          </svg>
+          <span>Mascotas</span>
+        </button>
+
+        <!-- Citas (Selected / Active) -->
+        <button type="button" 
+                (click)="activeNav.set('citas')"
+                [ngClass]="activeNav() === 'citas' ? 'bg-[#D1FAE5]/80 text-[#047857] font-bold shadow-2xs ring-1 ring-[#00C975]/30' : 'text-slate-600 hover:bg-slate-50 font-medium'"
+                class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs sm:text-sm transition-all duration-150 text-left cursor-pointer">
+          <svg class="w-5 h-5 text-[#047857]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span>Citas</span>
+        </button>
+
+        <!-- Facturación -->
+        <button type="button" 
+                (click)="activeNav.set('facturacion')"
+                [ngClass]="activeNav() === 'facturacion' ? 'bg-[#ECFDF5] text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 font-medium'"
+                class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs sm:text-sm transition-all duration-150 text-left cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
+          </svg>
+          <span>Facturación</span>
+        </button>
+
+        <!-- Configuración -->
+        <button type="button" 
+                (click)="activeNav.set('configuracion')"
+                [ngClass]="activeNav() === 'configuracion' ? 'bg-[#ECFDF5] text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 font-medium'"
+                class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs sm:text-sm transition-all duration-150 text-left cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>Configuración</span>
+        </button>
+
+      </nav>
+    </div>
+
+    <!-- Client-Facing Quick Link -->
+    <div class="pt-6 border-t border-slate-100 hidden lg:block">
+      <a routerLink="/" 
+         target="_blank" 
+         class="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-slate-50 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 text-xs font-semibold transition-colors">
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+          </svg>
+          <span>Portal Público</span>
+        </span>
+        <span class="text-[10px] text-slate-400">Abrir &rarr;</span>
+      </a>
+    </div>
+
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN DASHBOARD CONTENT AREA                                            -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 flex flex-col gap-6 min-w-0">
+
+    <!-- Top Bar: Clinic Identity & User Profile -->
+    <header class="flex items-center justify-between gap-4 bg-white/60 backdrop-blur-md rounded-2xl px-5 py-3 border border-emerald-100/50">
+      
+      <!-- Breadcrumb / Location Badge -->
+      <div class="flex items-center gap-2 text-xs">
+        <span class="font-bold text-slate-700">{{ systemBrand() }}</span>
+        <span class="text-slate-300">/</span>
+        <span class="text-emerald-700 font-semibold">{{ clinicName() }}</span>
+      </div>
+
+      <!-- User & Alerts Area -->
+      <div class="flex items-center gap-4 shrink-0">
+        
+        <!-- Notification Bell -->
+        <button type="button" 
+                class="relative w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-emerald-600 hover:border-emerald-200 transition-colors cursor-pointer shadow-2xs">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
+        </button>
+
+        <!-- User Chip -->
+        <div class="flex items-center gap-3 pl-2 border-l border-slate-200">
+          <div class="text-right hidden sm:block leading-tight">
+            <div class="text-xs font-bold text-slate-900">{{ doctorProfile().name }}</div>
+            <div class="text-[10px] font-semibold text-emerald-600 tracking-wider uppercase">{{ doctorProfile().role }}</div>
+          </div>
+          <div class="relative">
+            <img [src]="doctorProfile().avatar" 
+                 [alt]="doctorProfile().name" 
+                 class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-xs"
+                 (error)="$any($event.target).src='https://ui-avatars.com/api/?name=Breyner+Ustariz&background=00C975&color=fff'" />
+            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+          </div>
+        </div>
+
+      </div>
+
+    </header>
+
+    <!-- Page Header: Title & Capsule Segmented Controls -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <span>Citas</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+          Gestión y programación de consultas veterinarias
+        </p>
+      </div>
+
+      <!-- Controls: [Lista | Calendario] Pill Switch & Filter Button -->
+      <div class="flex items-center gap-3">
+        
+        <!-- Segmented Capsule Control -->
+        <div class="bg-white p-1 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center">
+          <button type="button" 
+                  (click)="setView('lista')"
+                  [ngClass]="activeView() === 'lista' ? 'bg-[#ECFDF5] text-emerald-800 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-medium'"
+                  class="px-4 py-1.5 rounded-xl text-xs transition-all duration-150 cursor-pointer">
+            Lista
+          </button>
+          <button type="button" 
+                  (click)="setView('hibrido')"
+                  [ngClass]="activeView() === 'hibrido' || activeView() === 'calendario' ? 'bg-[#ECFDF5] text-emerald-800 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-medium'"
+                  class="px-4 py-1.5 rounded-xl text-xs transition-all duration-150 cursor-pointer">
+            Calendario
+          </button>
+        </div>
+
+        <!-- Filtros Button -->
+        <button type="button" 
+                (click)="toggleFilterModal()"
+                class="inline-flex items-center gap-1.5 px-4 py-2 bg-white rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-2xs transition-colors cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+          </svg>
+          <span>Filtros</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- 3. TOP SECTION: HOY STATS + SPOTLIGHT REMINDER + DAILY CITAS TABLE      -->
+    <!-- ======================================================================= -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+      
+      <!-- Left Column: Metrics Card & Spotlight Card (4 cols) -->
+      <div class="xl:col-span-4 flex flex-col gap-4">
+        
+        <!-- Card "HOY" -->
+        <div class="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-2xs">
+          <div class="text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-3">
+            HOY
+          </div>
+          <div class="flex flex-col gap-2.5">
+            <!-- Confirmadas -->
+            <div class="flex items-center justify-between py-1">
+              <span class="text-xs sm:text-sm font-semibold text-slate-700">Confirmadas</span>
+              <span class="px-2.5 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] font-bold text-xs">
+                {{ stats().confirmadas < 10 ? '0' + stats().confirmadas : stats().confirmadas }}
+              </span>
+            </div>
+            <!-- Pendientes -->
+            <div class="flex items-center justify-between py-1">
+              <span class="text-xs sm:text-sm font-semibold text-slate-700">Pendientes</span>
+              <span class="px-2.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] font-bold text-xs">
+                {{ stats().pendientes < 10 ? '0' + stats().pendientes : stats().pendientes }}
+              </span>
+            </div>
+            <!-- Canceladas -->
+            <div class="flex items-center justify-between py-1">
+              <span class="text-xs sm:text-sm font-semibold text-slate-700">Canceladas</span>
+              <span class="px-2.5 py-0.5 rounded-full bg-[#FFE4E6] text-[#BE123C] font-bold text-xs">
+                {{ stats().canceladas < 10 ? '0' + stats().canceladas : stats().canceladas }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spotlight Card "Recordatorio" (Deep Emerald Accent) -->
+        <div class="relative overflow-hidden bg-gradient-to-br from-[#009668] to-[#007F58] rounded-3xl p-5 text-white shadow-md shadow-emerald-950/10">
+          
+          <!-- Subtle Paw Background Watermark -->
+          <svg class="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 pointer-events-none" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 13a4.5 4.5 0 0 0-4.5 4.5c0 2 2.5 4.5 4.5 4.5s4.5-2.5 4.5-4.5A4.5 4.5 0 0 0 12 13ZM6.5 11A2.5 2.5 0 1 0 9 8.5 2.5 2.5 0 0 0 6.5 11Zm11 0A2.5 2.5 0 1 0 15 8.5a2.5 2.5 0 0 0 2.5 2.5ZM4 16a2 2 0 1 0 2-2 2 2 0 0 0-2 2Zm14 0a2 2 0 1 0 2-2 2 2 0 0 0-2 2Z"/>
+          </svg>
+
+          <div class="relative z-10">
+            <h3 class="font-bold text-base tracking-tight mb-1 text-white">
+              {{ spotlightReminder().title }}
+            </h3>
+            <p class="text-white/90 text-xs sm:text-sm leading-relaxed mb-4 font-normal">
+              {{ spotlightReminder().highlight }}
+            </p>
+
+            <button type="button" 
+                    (click)="openReminderModal()"
+                    class="px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-xs text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer border border-white/20">
+              Ver Detalles
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Right Column: Daily Appointments Table (8 cols) -->
+      <div class="xl:col-span-8 bg-white rounded-3xl border border-slate-200/80 shadow-2xs overflow-hidden">
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <th class="py-3.5 px-4 sm:px-5">HORA</th>
+                <th class="py-3.5 px-4">MASCOTA</th>
+                <th class="py-3.5 px-4">PROPIETARIO</th>
+                <th class="py-3.5 px-4">SERVICIO</th>
+                <th class="py-3.5 px-4">ESTADO</th>
+                <th class="py-3.5 px-4 text-right"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">
+              <tr *ngFor="let cita of paginatedTodayAppointments()" 
+                  (click)="openCitaDetalle(cita)"
+                  class="hover:bg-slate-50/80 transition-colors cursor-pointer group">
+                
+                <!-- Hora -->
+                <td class="py-3.5 px-4 sm:px-5 font-semibold text-slate-800 whitespace-nowrap">
+                  {{ cita.time }}
+                </td>
+
+                <!-- Mascota con Icono de Huellita -->
+                <td class="py-3.5 px-4">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 13a4.5 4.5 0 0 0-4.5 4.5c0 2 2.5 4.5 4.5 4.5s4.5-2.5 4.5-4.5A4.5 4.5 0 0 0 12 13ZM6.5 11A2.5 2.5 0 1 0 9 8.5 2.5 2.5 0 0 0 6.5 11Zm11 0A2.5 2.5 0 1 0 15 8.5a2.5 2.5 0 0 0 2.5 2.5ZM4 16a2 2 0 1 0 2-2 2 2 0 0 0-2 2Zm14 0a2 2 0 1 0 2-2 2 2 0 0 0-2 2Z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <div class="font-bold text-slate-900 leading-tight">{{ cita.petName }}</div>
+                      <div class="text-[11px] text-slate-500">{{ cita.species }} ({{ cita.breed }})</div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Propietario -->
+                <td class="py-3.5 px-4 font-medium text-slate-700 whitespace-nowrap">
+                  {{ cita.ownerName }}
+                </td>
+
+                <!-- Servicio -->
+                <td class="py-3.5 px-4 text-slate-600 whitespace-nowrap font-medium">
+                  {{ cita.service }}
+                </td>
+
+                <!-- Estado (Badge Soft Nuvex) -->
+                <td class="py-3.5 px-4 whitespace-nowrap">
+                  <span [ngClass]="getStatusBadgeClass(cita.status)"
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold">
+                    <span [ngClass]="getStatusDotClass(cita.status)" class="w-1.5 h-1.5 rounded-full"></span>
+                    <span class="capitalize">{{ cita.status }}</span>
+                  </span>
+                </td>
+
+                <!-- Acción (3 dots) -->
+                <td class="py-3.5 px-4 text-right">
+                  <button type="button" 
+                          (click)="$event.stopPropagation(); openCitaDetalle(cita)" 
+                          class="w-7 h-7 rounded-lg hover:bg-slate-200/60 text-slate-400 hover:text-slate-600 inline-flex items-center justify-center transition-colors">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                    </svg>
+                  </button>
+                </td>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table Footer: Record count & Pagination -->
+        <div class="flex items-center justify-between px-5 py-3.5 border-t border-slate-100 bg-white">
+          <span class="text-xs text-slate-500 font-medium">
+            Mostrando {{ paginatedTodayAppointments().length }} de {{ totalFilteredCount() }} citas hoy
+          </span>
+
+          <div class="flex items-center gap-1.5">
+            <button type="button" 
+                    (click)="prevPage()"
+                    [disabled]="currentPage() === 1"
+                    class="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <button type="button" 
+                    (click)="nextPage()"
+                    [disabled]="currentPage() * pageSize() >= totalFilteredCount()"
+                    class="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- 4. BOTTOM SECTION: CALENDARIO SEMANAL (WEEKLY GRID)                      -->
+    <!-- ======================================================================= -->
+    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-2xs p-5 sm:p-6">
+      
+      <!-- Weekly Calendar Header -->
+      <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100 flex-wrap gap-3">
+        <h2 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+          Calendario Semanal
+        </h2>
+
+        <!-- Week Navigation & Range Title -->
+        <div class="flex items-center gap-3">
+          <span class="text-xs sm:text-sm font-semibold text-slate-600">
+            {{ weekRangeText() }}
+          </span>
+          <div class="flex items-center gap-1">
+            <button type="button" 
+                    (click)="prevWeek()" 
+                    title="Semana anterior"
+                    class="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <button type="button" 
+                    (click)="goToToday()" 
+                    title="Ir a hoy"
+                    class="px-2 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">
+              Hoy
+            </button>
+            <button type="button" 
+                    (click)="nextWeek()" 
+                    title="Semana siguiente"
+                    class="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7-Column Weekly Grid -->
+      <div class="grid grid-cols-7 gap-2 sm:gap-3">
+        
+        <!-- Day Columns (LUN to DOM) -->
+        <div *ngFor="let day of weekDays()" 
+             class="flex flex-col min-h-[220px] sm:min-h-[260px] bg-slate-50/50 rounded-2xl p-2 sm:p-2.5 border border-slate-100">
+          
+          <!-- Day Header -->
+          <div class="text-center pb-2 mb-2 border-b border-slate-200/60">
+            <div class="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              {{ day.dayName }}
+            </div>
+            <div [ngClass]="day.isToday ? 'w-6 h-6 sm:w-7 sm:h-7 bg-[#00C975] text-white rounded-full mx-auto flex items-center justify-center font-bold text-xs sm:text-sm shadow-xs' : 'font-semibold text-xs sm:text-sm text-slate-700 mt-0.5'">
+              {{ day.dayNumber }}
+            </div>
+          </div>
+
+          <!-- Appointments List in Day -->
+          <div class="flex-1 flex flex-col gap-2 overflow-y-auto">
+            
+            <div *ngFor="let appt of getAppointmentsForDay(day.dateStr)" 
+                 (click)="openCitaDetalle(appt)"
+                 [ngClass]="getCalendarCardClass(appt.status)"
+                 class="border-l-[3.5px] p-2 rounded-r-xl shadow-2xs transition-all duration-150 cursor-pointer">
+              
+              <div class="text-[11px] sm:text-xs font-bold leading-tight truncate">
+                {{ appt.time24 }} - {{ appt.petName }}
+              </div>
+              <div class="text-[10px] sm:text-[11px] opacity-80 truncate mt-0.5">
+                {{ appt.service }}
+              </div>
+
+            </div>
+
+            <!-- Empty slot placeholder if no appointments -->
+            <div *ngIf="getAppointmentsForDay(day.dateStr).length === 0" 
+                 class="flex-1 flex items-center justify-center text-slate-300 text-[11px] italic">
+              -
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- 5. MODAL DETALLE DE CITA (NUVEX CAPSULE UI MODAL)                         -->
+  <!-- ========================================================================= -->
+  <div *ngIf="selectedAppointment()" 
+       class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-slate-100 flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">
+            🐾
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900 leading-tight">
+              {{ selectedAppointment()?.petName }}
+            </h3>
+            <span class="text-xs text-slate-500">
+              {{ selectedAppointment()?.species }} ({{ selectedAppointment()?.breed }})
+            </span>
+          </div>
+        </div>
+        
+        <button type="button" 
+                (click)="closeCitaModal()" 
+                class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="flex flex-col gap-3 text-xs sm:text-sm">
+        <div class="flex justify-between py-1.5 border-b border-slate-50">
+          <span class="text-slate-500">Horario:</span>
+          <span class="font-bold text-slate-800">{{ selectedAppointment()?.time }} ({{ selectedAppointment()?.date }})</span>
+        </div>
+        <div class="flex justify-between py-1.5 border-b border-slate-50">
+          <span class="text-slate-500">Servicio:</span>
+          <span class="font-semibold text-slate-800">{{ selectedAppointment()?.service }}</span>
+        </div>
+        <div class="flex justify-between py-1.5 border-b border-slate-50">
+          <span class="text-slate-500">Propietario:</span>
+          <span class="font-semibold text-slate-800">{{ selectedAppointment()?.ownerName }}</span>
+        </div>
+        <div *ngIf="selectedAppointment()?.ownerPhone" class="flex justify-between py-1.5 border-b border-slate-50">
+          <span class="text-slate-500">Teléfono:</span>
+          <span class="font-semibold text-emerald-700">{{ selectedAppointment()?.ownerPhone }}</span>
+        </div>
+        <div class="flex justify-between py-1.5 border-b border-slate-50">
+          <span class="text-slate-500">Estado:</span>
+          <span [ngClass]="getStatusBadgeClass(selectedAppointment()!.status)"
+                class="px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize">
+            {{ selectedAppointment()?.status }}
+          </span>
+        </div>
+        <div class="flex justify-between py-1.5">
+          <span class="text-slate-500">Veterinario:</span>
+          <span class="font-semibold text-slate-800">{{ selectedAppointment()?.doctor }}</span>
+        </div>
+        <div *ngIf="selectedAppointment()?.notes" class="bg-slate-50 p-3 rounded-2xl text-xs text-slate-600 mt-1">
+          <span class="font-bold block text-slate-700 mb-0.5">Notas clínicas:</span>
+          {{ selectedAppointment()?.notes }}
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" 
+                (click)="closeCitaModal()"
+                class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">
+          Cerrar
+        </button>
+        <a *ngIf="selectedAppointment()?.ownerPhone" 
+           [href]="'https://wa.me/57' + selectedAppointment()?.ownerPhone" 
+           target="_blank"
+           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#00C975] hover:bg-[#059669] text-white text-xs font-bold shadow-xs">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.542 1.897.82 2.791.82h.001c3.181 0 5.768-2.586 5.768-5.766 0-3.18-2.587-5.766-5.769-5.766zm3.376 8.204c-.149.419-.747.781-1.026.832-.27.05-.62.072-1.808-.419-1.52-.628-2.502-2.18-2.578-2.282-.075-.102-.614-.817-.614-1.558 0-.741.388-1.106.526-1.255.138-.149.3-.186.4-.186.1 0 .2.001.288.006.094.005.218-.035.341.262.126.305.433 1.056.471 1.134.038.077.063.168.013.268-.05.101-.075.163-.15.251-.075.088-.158.197-.225.264-.075.075-.153.156-.066.305.087.149.387.639.83 1.033.57.507 1.051.664 1.2.739.149.075.237.063.325-.038.088-.101.376-.438.476-.588.1-.15.2-.125.338-.075.138.05.877.413 1.027.488.15.075.25.112.288.175.037.063.037.363-.112.782z"/>
+          </svg>
+          <span>WhatsApp</span>
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 6. MODAL DETALLE RECORDATORIO (CIRUGÍA / QUIRÓFANO)                       -->
+  <!-- ========================================================================= -->
+  <div *ngIf="showReminderModal()" 
+       class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-slate-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
+            ⚡
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900 leading-tight">
+              Cirugía Programada
+            </h3>
+            <span class="text-xs text-emerald-600 font-semibold">Prioridad Alta</span>
+          </div>
+        </div>
+        <button type="button" 
+                (click)="closeReminderModal()" 
+                class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="bg-emerald-50/70 border border-emerald-200/50 rounded-2xl p-4 text-xs sm:text-sm text-emerald-950 flex flex-col gap-2">
+        <div class="font-bold text-emerald-900 text-sm">{{ spotlightReminder().highlight }}</div>
+        <div><strong>Paciente:</strong> {{ spotlightReminder().pet }} ({{ spotlightReminder().species }})</div>
+        <div><strong>Propietario:</strong> {{ spotlightReminder().owner }} (Tel: {{ spotlightReminder().phone }})</div>
+        <div><strong>Especialista:</strong> {{ spotlightReminder().doctor }}</div>
+        <div class="pt-2 border-t border-emerald-200/40 text-emerald-800">{{ spotlightReminder().details }}</div>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button type="button" 
+                (click)="closeReminderModal()" 
+                class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800 transition-colors">
+          Entendido
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 7. MODAL FILTROS RÁPIDOS                                                 -->
+  <!-- ========================================================================= -->
+  <div *ngIf="showFilterModal()" 
+       class="fixed inset-0 z-50 bg-slate-900/30 backdrop-blur-2xs flex items-center justify-center p-4">
+    
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-xl border border-slate-100 flex flex-col gap-4">
+      
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <h3 class="font-bold text-sm text-slate-900">Filtrar Citas</h3>
+        <button type="button" (click)="toggleFilterModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+
+      <div class="flex flex-col gap-3 text-xs">
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Estado de Cita</label>
+          <select [(ngModel)]="filterStatus" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-emerald-500">
+            <option value="todos">Todos los estados</option>
+            <option value="confirmado">Confirmadas</option>
+            <option value="pendiente">Pendientes</option>
+            <option value="cancelado">Canceladas</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Búsqueda rápida</label>
+          <input type="text" 
+                 [(ngModel)]="searchQuery" 
+                 placeholder="Mascota, propietario o servicio..."
+                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-emerald-500" />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" 
+                (click)="filterStatus.set('todos'); searchQuery.set(''); toggleFilterModal()"
+                class="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 font-semibold">
+          Limpiar
+        </button>
+        <button type="button" 
+                (click)="toggleFilterModal()" 
+                class="px-4 py-1.5 bg-[#00C975] hover:bg-[#059669] text-white text-xs font-bold rounded-xl transition-colors">
+          Aplicar
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
