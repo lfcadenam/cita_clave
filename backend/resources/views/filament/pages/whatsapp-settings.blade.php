@@ -322,6 +322,32 @@
             background: #e2e8f0;
         }
 
+        @keyframes nuvex-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .nuvex-wa-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: nuvex-spin 0.65s linear infinite;
+        }
+        .nuvex-wa-spinner.is-dark {
+            border: 2px solid rgba(30, 58, 95, 0.25);
+            border-top-color: #1e3a5f;
+        }
+        .nuvex-wa-spinner.is-teal {
+            border: 2px solid rgba(13, 148, 136, 0.25);
+            border-top-color: #0d9488;
+        }
+        button:disabled {
+            opacity: 0.72;
+            cursor: not-allowed !important;
+        }
+
         .nuvex-wa-btn-dark {
             width: 100%;
             display: inline-flex;
@@ -446,9 +472,15 @@
             </div>
 
             <div>
-                <button wire:click="checkConnection" type="button" class="nuvex-wa-btn-secondary">
-                    <x-heroicon-o-arrow-path />
-                    <span>Verificar Estado en Vivo</span>
+                <button wire:click="checkConnection" type="button" class="nuvex-wa-btn-secondary" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="checkConnection" style="display:inline-flex; align-items:center; gap:6px;">
+                        <x-heroicon-o-arrow-path />
+                        <span>Verificar Estado en Vivo</span>
+                    </span>
+                    <span wire:loading wire:target="checkConnection" style="display:inline-flex; align-items:center; gap:6px;">
+                        <span class="nuvex-wa-spinner is-dark"></span>
+                        <span>Verificando...</span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -527,9 +559,15 @@
                         </div>
 
                         <div style="display:flex; justify-content:flex-end; padding-top:6px;">
-                            <button type="submit" class="nuvex-wa-btn-primary">
-                                <x-heroicon-o-check />
-                                <span>Guardar Parámetros de Conexión</span>
+                            <button type="submit" class="nuvex-wa-btn-primary" wire:loading.attr="disabled">
+                                <span wire:loading.remove wire:target="saveSettings" style="display:inline-flex; align-items:center; gap:6px;">
+                                    <x-heroicon-o-check />
+                                    <span>Guardar Parámetros de Conexión</span>
+                                </span>
+                                <span wire:loading wire:target="saveSettings" style="display:inline-flex; align-items:center; gap:6px;">
+                                    <span class="nuvex-wa-spinner"></span>
+                                    <span>Guardando Parámetros...</span>
+                                </span>
                             </button>
                         </div>
                     </form>
@@ -602,14 +640,42 @@
                                             <input type="text" wire:model="test_template_lang" placeholder="es_CO" class="nuvex-wa-input is-mono">
                                         </div>
                                     </div>
-                                    <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-                                        <span style="font-size: 11px; color: var(--nuvex-wa-text-dim, #64748b);">Plantillas rápidas:</span>
-                                        <button type="button" wire:click="$set('test_template_name', 'reserva_confirmada'); $set('test_template_lang', 'es_CO')" style="font-size: 11px; padding: 3px 8px; border-radius: 9999px; background: rgba(0,201,117,0.12); color: #00874e; border: 1px solid rgba(0,201,117,0.25); cursor: pointer; font-weight: 500;">reserva_confirmada</button>
-                                        <button type="button" wire:click="$set('test_template_name', 'cita_recibida'); $set('test_template_lang', 'es_CO')" style="font-size: 11px; padding: 3px 8px; border-radius: 9999px; background: rgba(0,201,117,0.12); color: #00874e; border: 1px solid rgba(0,201,117,0.25); cursor: pointer; font-weight: 500;">cita_recibida</button>
-                                        <button type="button" wire:click="$set('test_template_name', 'recordatorio_cita_24h'); $set('test_template_lang', 'es_CO')" style="font-size: 11px; padding: 3px 8px; border-radius: 9999px; background: rgba(0,201,117,0.12); color: #00874e; border: 1px solid rgba(0,201,117,0.25); cursor: pointer; font-weight: 500;">recordatorio_cita_24h</button>
+                                    <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between;">
+                                        <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+                                            <span style="font-size: 11px; color: var(--nuvex-wa-text-dim, #64748b);">Plantillas rápidas:</span>
+                                            <button type="button" wire:click="$set('test_template_name', 'reserva_confirmada'); $set('test_template_lang', 'es_CO')" style="font-size: 11px; padding: 3px 8px; border-radius: 9999px; background: rgba(0,201,117,0.12); color: #00874e; border: 1px solid rgba(0,201,117,0.25); cursor: pointer; font-weight: 500;">reserva_confirmada</button>
+                                            <button type="button" wire:click="$set('test_template_name', 'cita_recibida'); $set('test_template_lang', 'es_CO')" style="font-size: 11px; padding: 3px 8px; border-radius: 9999px; background: rgba(0,201,117,0.12); color: #00874e; border: 1px solid rgba(0,201,117,0.25); cursor: pointer; font-weight: 500;">cita_recibida</button>
+                                            <button type="button" wire:click="$set('test_template_name', 'recordatorio_cita_24h'); $set('test_template_lang', 'es_CO')" style="font-size: 11px; padding: 3px 8px; border-radius: 9999px; background: rgba(0,201,117,0.12); color: #00874e; border: 1px solid rgba(0,201,117,0.25); cursor: pointer; font-weight: 500;">recordatorio_cita_24h</button>
+                                        </div>
+                                        <button type="button" wire:click="syncMetaTemplates" class="nuvex-wa-btn-secondary" style="font-size: 11px; padding: 3px 9px;" wire:loading.attr="disabled">
+                                            <span wire:loading.remove wire:target="syncMetaTemplates" style="display:inline-flex; align-items:center; gap:4px;">
+                                                <x-heroicon-o-arrow-path style="width:13px; height:13px;" />
+                                                <span>Ver Plantillas de mi Meta</span>
+                                            </span>
+                                            <span wire:loading wire:target="syncMetaTemplates" style="display:inline-flex; align-items:center; gap:4px;">
+                                                <span class="nuvex-wa-spinner is-dark" style="width:11px; height:11px;"></span>
+                                                <span>Consultando...</span>
+                                            </span>
+                                        </button>
                                     </div>
+
+                                    @if(!empty($wabaTemplates))
+                                        <div style="margin-top: 10px; padding: 10px; background: #ffffff; border: 1px solid #ccece3; border-radius: 12px;">
+                                            <div style="font-size: 11px; font-weight: 700; color: #0f766e; margin-bottom: 6px;">
+                                                Plantillas encontradas en tu WABA (haz clic para usarla):
+                                            </div>
+                                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                                @foreach($wabaTemplates as $t)
+                                                    <button type="button" wire:click="selectTemplate('{{ $t['name'] }}', '{{ $t['language'] }}')" style="font-size: 11px; padding: 3px 9px; border-radius: 9999px; background: {{ $test_template_name === $t['name'] ? '#0d9488' : '#f0fdf4' }}; color: {{ $test_template_name === $t['name'] ? '#ffffff' : '#047857' }}; border: 1px solid #a7f3d0; cursor: pointer;">
+                                                        <strong>{{ $t['name'] }}</strong> ({{ $t['language'] }}) - {{ $t['status'] }}
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+
                                     <span class="nuvex-wa-hint" style="margin-top:8px;">
-                                        💡 <strong>Nota sobre números reales:</strong> Meta bloquea la plantilla <code>hello_world</code> en números de producción (Error #131058). Para realizar pruebas en vivo en tu línea real, usa una plantilla aprobada en tu WhatsApp Manager (como <code>reserva_confirmada</code>) en idioma <code>es_CO</code> o <code>es</code>.
+                                        💡 <strong>Nota sobre números reales:</strong> Meta bloquea la plantilla <code>hello_world</code> en números de producción (Error #131058). Usa el botón "Ver Plantillas de mi Meta" o ingresa el nombre exacto aprobado en tu WhatsApp Manager.
                                     </span>
                                 </div>
                             @endif
@@ -622,9 +688,15 @@
                             </div>
                         @endif
 
-                        <button type="submit" class="nuvex-wa-btn-dark">
-                            <x-heroicon-o-paper-airplane />
-                            <span>Ejecutar Test de Envío</span>
+                        <button type="submit" class="nuvex-wa-btn-dark" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="sendTestMessage" style="display:inline-flex; align-items:center; gap:8px;">
+                                <x-heroicon-o-paper-airplane />
+                                <span>Ejecutar Test de Envío</span>
+                            </span>
+                            <span wire:loading wire:target="sendTestMessage" style="display:inline-flex; align-items:center; gap:8px;">
+                                <span class="nuvex-wa-spinner"></span>
+                                <span>Enviando mensaje a WhatsApp...</span>
+                            </span>
                         </button>
                     </form>
 

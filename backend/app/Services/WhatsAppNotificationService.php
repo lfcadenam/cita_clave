@@ -1050,6 +1050,55 @@ class WhatsAppNotificationService
     }
 
     /**
+     * Consulta las plantillas oficiales registradas y aprobadas en la WABA de Meta.
+     */
+    public function getMetaTemplates(?Tenant $tenant = null): array
+    {
+        $creds = $this->resolveMetaCredentials(null, $tenant);
+        $apiUrl = $creds['api_url'];
+        $wabaId = $creds['waba_id'];
+        $token = $creds['access_token'];
+
+        if (empty($wabaId) || empty($token)) {
+            return [
+                'success' => false,
+                'message' => 'Falta WABA ID o Access Token para consultar las plantillas en Meta.',
+                'templates' => [],
+            ];
+        }
+
+        try {
+            $response = Http::withToken($token)
+                ->acceptJson()
+                ->timeout(10)
+                ->get("{$apiUrl}/{$wabaId}/message_templates", [
+                    'limit' => 50,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json()['data'] ?? [];
+                return [
+                    'success' => true,
+                    'templates' => $data,
+                ];
+            }
+
+            $parsed = $this->formatMetaError($response->status(), $response->json());
+            return [
+                'success' => false,
+                'message' => $parsed['message'],
+                'templates' => [],
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'success' => false,
+                'message' => 'Excepción conectando con Meta: ' . $e->getMessage(),
+                'templates' => [],
+            ];
+        }
+    }
+
+    /**
      * Traduce errores de Meta Graph API a diagnósticos claros en español.
      */
     protected function formatMetaError(int $httpStatus, mixed $body): array

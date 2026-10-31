@@ -45,6 +45,8 @@ class WhatsAppSettingsPage extends Page
     ];
     public ?string $lastTestResult = null;
     public ?bool $lastTestSuccess = null;
+    public array $wabaTemplates = [];
+    public bool $hasSyncedTemplates = false;
 
     public function mount(): void
     {
@@ -155,6 +157,53 @@ class WhatsAppSettingsPage extends Page
     }
 
     /**
+     * Sincroniza en vivo las plantillas registradas en la WABA de Meta.
+     */
+    public function syncMetaTemplates(): void
+    {
+        $service = app(WhatsAppNotificationService::class);
+        $tenant = $this->getTenant();
+        if ($tenant) {
+            $tenant->whatsapp_driver = $this->whatsapp_driver;
+            if (!empty($this->meta_phone_number_id)) {
+                $tenant->meta_phone_number_id = trim((string) $this->meta_phone_number_id);
+            }
+            if (!empty($this->meta_waba_id)) {
+                $tenant->meta_waba_id = trim((string) $this->meta_waba_id);
+            }
+            if (!empty($this->meta_access_token)) {
+                $tenant->meta_access_token = trim((string) $this->meta_access_token);
+            }
+        }
+
+        $res = $service->getMetaTemplates($tenant);
+        $this->hasSyncedTemplates = true;
+
+        if ($res['success']) {
+            $this->wabaTemplates = $res['templates'] ?? [];
+            $count = count($this->wabaTemplates);
+            Notification::make()
+                ->title("Plantillas Sincronizadas ({$count})")
+                ->body("Se obtuvieron {$count} plantillas oficiales registradas en Meta WhatsApp Manager.")
+                ->success()
+                ->send();
+        } else {
+            $this->wabaTemplates = [];
+            Notification::make()
+                ->title("Error al Consultar Plantillas")
+                ->body($res['message'] ?? 'No se pudieron consultar las plantillas de Meta.')
+                ->danger()
+                ->send();
+        }
+    }
+
+    public function selectTemplate(string $name, string $language): void
+    {
+        $this->test_template_name = $name;
+        $this->test_template_lang = $language;
+    }
+
+    /**
      * Envía un mensaje de prueba en vivo para confirmar la entrega.
      */
     public function sendTestMessage(): void
@@ -217,7 +266,7 @@ class WhatsAppSettingsPage extends Page
                     ->send();
                 return;
             }
-            if ($tpl === 'eserva_confirmada') {
+            if (in_array($tpl, ['reserva_confirma', 'eserva_confirmada', 'reserva_confirmad'])) {
                 $tpl = 'reserva_confirmada';
                 $this->test_template_name = 'reserva_confirmada';
             }
@@ -266,9 +315,11 @@ class WhatsAppSettingsPage extends Page
             }
 
             $result = ['success' => false, 'message' => ''];
+            $firstLangResult = null;
+
             foreach ($langsToTry as $tryLang) {
                 foreach ($paramVariants as $variant) {
-                    $result = $service->sendTemplateViaMetaWithDetails(
+                    $attempt = $service->sendTemplateViaMetaWithDetails(
                         phone: $this->test_phone,
                         templateName: $tpl,
                         bodyParameters: $variant,
@@ -276,18 +327,30 @@ class WhatsAppSettingsPage extends Page
                         tenant: $tenant
                     );
 
-                    if ($result['success'] ?? false) {
+                    if ($firstLangResult === null) {
+                        $firstLangResult = $attempt;
+                    }
+
+                    if ($attempt['success'] ?? false) {
                         $this->test_template_lang = $tryLang;
                         $varCount = count($variant);
-                        $result['message'] .= " (Variables adaptadas automáticamente: {$varCount}).";
+                        $attempt['message'] .= " (Variables adaptadas automáticamente: {$varCount}).";
+                        $result = $attempt;
                         break 2;
                     }
 
+                    $result = $attempt;
+
                     // Si el error no fue 100 (Invalid parameter), no es por número de variables, no insistir en más variantes
-                    if ((int) ($result['error_code'] ?? 0) !== 100) {
+                    if ((int) ($attempt['error_code'] ?? 0) !== 100) {
                         break;
                     }
                 }
+            }
+
+            // Si ambos fallaron y el usuario había pedido es_CO, priorizar mostrar el error del idioma solicitado (es_CO)
+            if (!($result['success'] ?? false) && $lang === 'es_CO' && $firstLangResult) {
+                $result = $firstLangResult;
             }
 
             // Si la plantilla en español sigue "En revisión" en Meta (#132001), informar con claridad
