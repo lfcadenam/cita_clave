@@ -266,11 +266,15 @@ class WhatsAppSettingsPage extends Page
                     ->send();
                 return;
             }
-            if (in_array($tpl, ['reserva_confirma', 'eserva_confirmada', 'reserva_confirmad'])) {
+            if (in_array($tpl, ['reserva_confirma', 'eserva_confirmada', 'reserva_confirmad']) || str_starts_with($tpl, 'reserva_confirm')) {
                 $tpl = 'reserva_confirmada';
                 $this->test_template_name = 'reserva_confirmada';
             }
             $lang = trim($this->test_template_lang) ?: 'es_CO';
+            if ($lang === 'es_ES') {
+                $lang = 'es_CO';
+                $this->test_template_lang = 'es_CO';
+            }
             $sampleAppt = \App\Models\Appointment::with('service')->latest()->first();
             $apptNum = $sampleAppt?->appointment_number ?? 'PA-261013-MSO7';
             $clientName = $sampleAppt?->client_name ?? 'Vivian Mohnblatt';

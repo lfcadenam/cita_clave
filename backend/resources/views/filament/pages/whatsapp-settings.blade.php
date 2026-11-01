@@ -477,7 +477,7 @@
                         <x-heroicon-o-arrow-path />
                         <span>Verificar Estado en Vivo</span>
                     </span>
-                    <span wire:loading wire:target="checkConnection" style="display:inline-flex; align-items:center; gap:6px;">
+                    <span wire:loading.inline-flex wire:target="checkConnection" style="display:none; align-items:center; gap:6px;">
                         <span class="nuvex-wa-spinner is-dark"></span>
                         <span>Verificando...</span>
                     </span>
@@ -564,7 +564,7 @@
                                     <x-heroicon-o-check />
                                     <span>Guardar Parámetros de Conexión</span>
                                 </span>
-                                <span wire:loading wire:target="saveSettings" style="display:inline-flex; align-items:center; gap:6px;">
+                                <span wire:loading.inline-flex wire:target="saveSettings" style="display:none; align-items:center; gap:6px;">
                                     <span class="nuvex-wa-spinner"></span>
                                     <span>Guardando Parámetros...</span>
                                 </span>
@@ -652,7 +652,7 @@
                                                 <x-heroicon-o-arrow-path style="width:13px; height:13px;" />
                                                 <span>Ver Plantillas de mi Meta</span>
                                             </span>
-                                            <span wire:loading wire:target="syncMetaTemplates" style="display:inline-flex; align-items:center; gap:4px;">
+                                            <span wire:loading.inline-flex wire:target="syncMetaTemplates" style="display:none; align-items:center; gap:4px;">
                                                 <span class="nuvex-wa-spinner is-dark" style="width:11px; height:11px;"></span>
                                                 <span>Consultando...</span>
                                             </span>
@@ -675,7 +675,7 @@
                                     @endif
 
                                     <span class="nuvex-wa-hint" style="margin-top:8px;">
-                                        💡 <strong>Nota sobre números reales:</strong> Meta bloquea la plantilla <code>hello_world</code> en números de producción (Error #131058). Usa el botón "Ver Plantillas de mi Meta" o ingresa el nombre exacto aprobado en tu WhatsApp Manager.
+                                        💡 <strong>Importante en el idioma:</strong> Tu plantilla en Meta está registrada como <em>Spanish (COL)</em>, por lo que el código obligatorio es <code>es_CO</code>. <strong>No uses <code>es_ES</code></strong> (España).
                                     </span>
                                 </div>
                             @endif
@@ -693,7 +693,7 @@
                                 <x-heroicon-o-paper-airplane />
                                 <span>Ejecutar Test de Envío</span>
                             </span>
-                            <span wire:loading wire:target="sendTestMessage" style="display:inline-flex; align-items:center; gap:8px;">
+                            <span wire:loading.inline-flex wire:target="sendTestMessage" style="display:none; align-items:center; gap:8px;">
                                 <span class="nuvex-wa-spinner"></span>
                                 <span>Enviando mensaje a WhatsApp...</span>
                             </span>
