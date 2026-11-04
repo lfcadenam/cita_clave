@@ -1467,45 +1467,34 @@ img.fi-logo-light {
 }
 
 /* ==========================================================================
-   17. PANTALLA DE LOGIN: FONDO DINÁMICO Y TECNOLÓGICO + TARJETA ESTILO CLARO
+   17. PANTALLA DE LOGIN: FONDO ELEGANTE NUVEX (SIN CUADRÍCULA, COLORES TENUES)
    ========================================================================== */
-/* Fondo Dinámico Cyber-Aurora Nuvex */
 .fi-simple-layout {
   min-height: 100vh !important;
-  background-color: #0b1329 !important;
+  background-color: #0c1322 !important;
   background-image: 
-    radial-gradient(circle at 18% 22%, rgba(0, 201, 117, 0.24) 0%, transparent 40%),
-    radial-gradient(circle at 82% 78%, rgba(6, 182, 212, 0.22) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(13, 148, 136, 0.16) 0%, transparent 55%),
-    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px) !important;
-  background-size: 100% 100%, 100% 100%, 100% 100%, 44px 44px, 44px 44px !important;
+    radial-gradient(circle at 20% 25%, rgba(13, 148, 136, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 75%, rgba(56, 189, 248, 0.06) 0%, transparent 55%),
+    radial-gradient(circle at 50% 45%, rgba(30, 58, 95, 0.16) 0%, transparent 60%),
+    linear-gradient(145deg, #090e1a 0%, #0c1322 50%, #0d1627 100%) !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
   position: relative !important;
   overflow-x: hidden !important;
-  animation: nuvexTechAurora 18s ease-in-out infinite alternate !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1.5rem !important;
 }
 
-@keyframes nuvexTechAurora {
-  0% {
-    background-position: 0% 0%, 0% 0%, 0% 0%, 0px 0px, 0px 0px;
-  }
-  50% {
-    background-position: 4% 6%, -4% -6%, 2% -2%, 22px 22px, 22px 22px;
-  }
-  100% {
-    background-position: -3% -5%, 5% 4%, -2% 3%, 44px 44px, 44px 44px;
-  }
-}
-
-/* Tarjeta Central en Estilo Claro Puro */
+/* Tarjeta Central en Estilo Claro Sobrio Nuvex */
 .fi-simple-main {
   background-color: #FFFFFF !important;
   border-radius: 28px !important;
   border: 1px solid rgba(226, 232, 240, 0.95) !important;
   box-shadow: 
-    0 25px 65px -12px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.9),
-    0 0 45px -8px rgba(0, 201, 117, 0.3) !important;
+    0 25px 50px -12px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.8) !important;
   padding: 38px 34px !important;
   color: #0f172a !important;
   position: relative !important;
