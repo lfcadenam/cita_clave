@@ -22,6 +22,7 @@
 *.sqlite-wal
 *.sqlite-shm
 **/database/database.sqlite*
+*.xlsx
 
 # Compiled & Build Output
 **/dist/

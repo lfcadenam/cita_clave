@@ -585,25 +585,32 @@ class WhatsAppNotificationService
                     Log::warning("[WhatsApp Meta] Plantilla '{$templateName}' aún en revisión o no disponible ({$tplRes['message']}). Usando plantilla preaprobada de respaldo con link...");
                 }
 
-                // Estrategia 2: Fallback garantizado a la plantilla preaprobada de Meta (jaspers_market_order_confirmation_v1)
-                // porque Meta bloquea mensajes de texto libre (type: text) si no hay ventana de 24h abierta con el destinatario.
+                // Estrategia 2: Fallback oficial a la plantilla aprobada en Meta para producción (confirmacion_cita)
                 $appointment->loadMissing('service');
+                $apptNum = (string) $appointment->appointment_number;
+                $clientName = explode(' ', trim((string) ($appointment->client_name ?: 'Clienta')))[0];
+                $serviceName = $appointment->service?->name ?? 'Servicio';
+                $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM') . ' a las ' . substr((string) $appointment->start_time, 0, 5);
                 $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
-                $sandboxParams = [
-                    trim((string) ($appointment->client_name ?: 'Clienta')),
-                    "#{$appointment->appointment_number} (" . ($appointment->service?->name ?? 'Cita') . ")",
-                    Carbon::parse($appointment->appointment_date)->format('d/m/Y') . ' ' . substr((string) $appointment->start_time, 0, 5) . " - Confirma tu asistencia en: {$voucherUrl}",
+
+                $fallbackParams = [
+                    $clientName,
+                    $apptNum,
+                    $serviceName,
+                    $dateFormatted,
+                    $voucherUrl,
                 ];
 
-                $sandboxRes = $this->sendTemplateViaMetaWithDetails(
+                $fallbackRes = $this->sendTemplateViaMetaWithDetails(
                     phone: $sanitizedPhone,
-                    templateName: 'jaspers_market_order_confirmation_v1',
-                    bodyParameters: $sandboxParams,
-                    languageCode: 'en_US',
-                    tenant: $appointment->tenant
+                    templateName: 'confirmacion_cita',
+                    bodyParameters: $fallbackParams,
+                    languageCode: 'es_CO',
+                    tenant: $appointment->tenant,
+                    buttonParameters: [$apptNum]
                 );
 
-                if ($sandboxRes['success']) {
+                if ($fallbackRes['success']) {
                     return true;
                 }
 

@@ -269,11 +269,13 @@ class AppointmentBookingController extends Controller
             $appointment->client_notes = $validated['client_notes'] ?? $appointment->client_notes;
             $appointment->payment_method = PaymentMethod::from($validated['payment_method']);
 
-            // Si es pago en local (clienta habitual sin abono)
-            if ($validated['payment_method'] === 'CASH_AT_LOCATION') {
+            // Si es pago en local o el monto de abono es 0 (clienta VIP / habitual / servicio sin anticipo)
+            $isZeroDeposit = ((float) $appointment->deposit_amount <= 0) || ((float) ($appointment->service?->deposit_amount ?? 0) <= 0);
+            if ($validated['payment_method'] === 'CASH_AT_LOCATION' || $isZeroDeposit) {
                 $appointment->deposit_amount = 0;
                 $appointment->deposit_paid = 0;
                 $appointment->balance_due = $appointment->total_amount;
+                $appointment->payment_method = PaymentMethod::CASH_AT_LOCATION;
                 $appointment->status = AppointmentStatus::CONFIRMED;
             } elseif ($request->hasFile('receipt')) {
                 $path = $request->file('receipt')->store('receipts', 'public');

@@ -622,7 +622,7 @@
                 </template>
                 <template x-if="!holdingSlot">
                     <span class="flex items-center gap-2">
-                        <span x-text="isClientFormValid() ? ('Continuar al Pago del Abono ($' + formatPrice(selectedService?.deposit_amount) + ' COP)') : 'Completa tu Nombre y WhatsApp para continuar'"></span>
+                        <span x-text="!isClientFormValid() ? 'Completa tu Nombre y WhatsApp para continuar' : (Number(selectedService?.deposit_amount || 0) <= 0 ? 'Continuar a Confirmar Cita (Sin Abono)' : ('Continuar al Pago del Abono ($' + formatPrice(selectedService?.deposit_amount) + ' COP)'))"></span>
                         <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                     </span>
                 </template>
@@ -630,12 +630,12 @@
         </div>
     </div>
 
-    <!-- STEP 4: HYBRID PAYMENT (NEQUI / BOLD) -->
+    <!-- STEP 4: HYBRID PAYMENT (NEQUI / BOLD) OR ZERO DEPOSIT DIRECT CONFIRMATION -->
     <div x-show="step === 4" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
         <div class="flex items-center justify-between mb-4">
             <div>
-                <h3 class=" font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">4. Método de Abono</h3>
-                <p class="text-xs text-slate-500 font-medium">Asegura tu cita con el pago del anticipo</p>
+                <h3 class=" font-bold text-xl sm:text-2xl text-slate-900 tracking-tight" x-text="Number(selectedService?.deposit_amount || 0) <= 0 ? '4. Confirmación de Cita' : '4. Método de Abono'"></h3>
+                <p class="text-xs text-slate-500 font-medium" x-text="Number(selectedService?.deposit_amount || 0) <= 0 ? 'Finaliza tu reserva sin necesidad de pago anticipado' : 'Asegura tu cita con el pago del anticipo'"></p>
             </div>
             <span class="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
                 <i data-lucide="clock" class="w-3.5 h-3.5"></i>
@@ -651,16 +651,47 @@
             </div>
             <div class="flex justify-between items-center text-xs text-[#1e3a5f] font-bold py-2.5 border-b border-slate-100">
                 <span>Monto de Abono a Pagar Hoy</span>
-                <span class=" text-lg text-[#0d9488]" x-text="'$' + formatPrice(selectedService?.deposit_amount) + ' COP'"></span>
+                <span class=" text-lg text-[#0d9488]" x-text="Number(selectedService?.deposit_amount || 0) <= 0 ? '$0 COP (Exento / Sin anticipo)' : ('$' + formatPrice(selectedService?.deposit_amount) + ' COP')"></span>
             </div>
             <div class="flex justify-between items-center text-xs text-slate-500 pt-2.5">
                 <span class="font-medium">Saldo Restante a Pagar en el Local</span>
-                <span class="font-bold text-slate-800  text-sm" x-text="'$' + formatPrice(selectedService?.base_price - selectedService?.deposit_amount) + ' COP'"></span>
+                <span class="font-bold text-slate-800  text-sm" x-text="'$' + formatPrice(Number(selectedService?.deposit_amount || 0) <= 0 ? selectedService?.base_price : (selectedService?.base_price - selectedService?.deposit_amount)) + ' COP'"></span>
             </div>
         </div>
 
-        <!-- Payment Method Tabs -->
-        <div class="grid grid-cols-2 gap-3 mb-6">
+        <!-- ZERO DEPOSIT / VIP DIRECT CONFIRMATION (NO COMPROBANTE / NO TRANSFERENCIA) -->
+        <div x-show="Number(selectedService?.deposit_amount || 0) <= 0" class="bg-gradient-to-br from-emerald-50/90 via-teal-50/50 to-white p-6 rounded-3xl border border-emerald-200/80 shadow-sm space-y-4 mb-6">
+            <div class="flex items-start gap-3.5">
+                <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 shadow-inner mt-0.5">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
+                </div>
+                <div>
+                    <h5 class="text-sm font-bold text-emerald-950">¡Esta cita no requiere abono previo!</h5>
+                    <p class="text-xs text-emerald-800/90 mt-1 leading-relaxed">
+                        No necesitas realizar ninguna transferencia ni adjuntar comprobante. Tu cupo quedará <strong>confirmado de inmediato</strong> y pagarás el total de 
+                        <strong x-text="'$' + formatPrice(selectedService?.base_price) + ' COP'"></strong> directamente en el salón al momento de tu cita.
+                    </p>
+                </div>
+            </div>
+
+            <button type="button"
+                    @click="submitZeroDepositBooking()"
+                    :disabled="submittingBooking"
+                    class="w-full py-4 rounded-full text-xs sm:text-sm font-bold bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-lg shadow-teal-500/25 transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
+                <template x-if="submittingBooking">
+                    <span class="flex items-center gap-2">
+                        <div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Confirmando tu reserva...</span>
+                    </span>
+                </template>
+                <template x-if="!submittingBooking">
+                    <span>✓ Confirmar Cita Inmediata</span>
+                </template>
+            </button>
+        </div>
+
+        <!-- Payment Method Tabs (ONLY SHOWN IF DEPOSIT > 0) -->
+        <div x-show="Number(selectedService?.deposit_amount || 0) > 0" class="grid grid-cols-2 gap-3 mb-6">
             <button type="button" @click="paymentMethod = 'NEQUI_TRANSFER'"
                     class="p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer"
                     :class="paymentMethod === 'NEQUI_TRANSFER' ? 'border-[#0d9488] bg-[#e6f7f2]/50 ring-2 ring-[#0d9488]/20 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'">
@@ -691,7 +722,7 @@
         </div>
 
         <!-- NEQUI TRANSFER INSTRUCTIONS & RECEIPT UPLOAD -->
-        <div x-show="paymentMethod === 'NEQUI_TRANSFER'" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+        <div x-show="Number(selectedService?.deposit_amount || 0) > 0 && paymentMethod === 'NEQUI_TRANSFER'" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
             <div class="p-4 rounded-2xl bg-purple-50/80 border border-purple-100">
                 <h5 class="text-xs font-bold text-purple-900 mb-1">Datos para la Transferencia Nequi:</h5>
                 <p class="text-xs text-purple-800"><span class="font-semibold">Titular:</span> {{ $nequiConfig['holder_name'] }}</p>
@@ -726,7 +757,7 @@
         </div>
 
         <!-- BOLD ONLINE PAYMENT BUTTON -->
-        <div x-show="paymentMethod === 'BOLD_ONLINE'" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm text-center space-y-4">
+        <div x-show="Number(selectedService?.deposit_amount || 0) > 0 && paymentMethod === 'BOLD_ONLINE'" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm text-center space-y-4">
             <div class="w-12 h-12 rounded-full bg-[#e6f7f2] text-[#0d9488] mx-auto flex items-center justify-center shadow-inner">
                 <i data-lucide="credit-card" class="w-6 h-6"></i>
             </div>
@@ -1289,6 +1320,38 @@ function bookingApp() {
             navigator.clipboard.writeText(number);
             this.copied = true;
             setTimeout(() => this.copied = false, 2500);
+        },
+
+        async submitZeroDepositBooking() {
+            this.submittingBooking = true;
+            this.saveProfileToLocalStorage();
+
+            const formData = new FormData();
+            formData.append('appointment_id', this.appointmentId);
+            formData.append('client_name', this.clientForm.name.trim());
+            formData.append('client_phone', this.cleanPhone(this.clientForm.phone));
+            formData.append('client_email', this.clientForm.email ? this.clientForm.email.trim() : '');
+            formData.append('client_notes', this.clientForm.notes || '');
+            formData.append('payment_method', 'CASH_AT_LOCATION');
+
+            try {
+                const res = await fetch('/api/v1/appointments/book', {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = `/reserva/confirmacion/${data.data.appointment_number}`;
+                } else {
+                    alert(data.message || 'Error al confirmar la cita.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error al confirmar la reserva.');
+            } finally {
+                this.submittingBooking = false;
+            }
         },
 
         async submitNequiBooking() {
