@@ -1467,200 +1467,197 @@ img.fi-logo-light {
 }
 
 /* ==========================================================================
-   17. PANTALLA DE LOGIN: GLASSMORPHISM & 3D LUMINOUS ORBS (NUVEX TECNOLOGÍA)
+   17. PANTALLA DE LOGIN: SPLIT-SCREEN CARD MINIMALISTA (FIGMA / NUVEX UI)
    ========================================================================== */
-.fi-simple-layout {
+.fi-simple-layout.nuvex-split-login-canvas {
   min-height: 100vh !important;
-  background-color: #08101d !important;
+  background-color: #F4F7FB !important;
   background-image: 
-    radial-gradient(circle at 50% 50%, #0e1e36 0%, #091322 65%, #050b14 100%) !important;
+    radial-gradient(circle at 12% 18%, rgba(6, 182, 212, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 88% 82%, rgba(13, 148, 136, 0.09) 0%, transparent 45%),
+    linear-gradient(135deg, #F0F4F8 0%, #F8FAFC 50%, #EEF2F6 100%) !important;
   background-size: 100% 100% !important;
-  background-repeat: no-repeat !important;
-  position: relative !important;
-  overflow: hidden !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 1.5rem !important;
-}
-
-/* Escena de Esferas 3D Flotantes (Solo en pantalla de login) */
-.nuvex-glass-orbs-scene {
-  display: none !important;
-}
-
-body:has(.fi-simple-layout) .nuvex-glass-orbs-scene,
-.fi-simple-layout .nuvex-glass-orbs-scene {
-  display: flex !important;
-  position: fixed !important;
-  inset: 0 !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-  align-items: center !important;
-  justify-content: center !important;
-  overflow: hidden !important;
-}
-
-.nuvex-orbs-anchor {
+  padding: 2.5rem 1.25rem !important;
   position: relative !important;
-  width: 440px !important;
-  height: 520px !important;
-  max-width: 90vw !important;
-  pointer-events: none !important;
+  box-sizing: border-box !important;
 }
 
-/* Esferas 3D Volumétricas con Iluminación Especular */
-.nuvex-3d-orb {
+/* Contenedor Exterior de la Tarjeta */
+.nuvex-split-outer-container {
+  width: 100% !important;
+  max-width: 1020px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+/* Tarjeta Principal Dividida en 2 Columnas */
+.nuvex-split-card {
+  width: 100% !important;
+  background: #FFFFFF !important;
+  border-radius: 36px !important;
+  box-shadow: 
+    0 25px 60px -15px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(226, 232, 240, 0.9) !important;
+  overflow: hidden !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1.05fr !important;
+  min-height: 590px !important;
+  position: relative !important;
+  transition: box-shadow 0.3s ease !important;
+}
+
+.nuvex-split-card:hover {
+  box-shadow: 
+    0 30px 70px -15px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(203, 213, 225, 0.9) !important;
+}
+
+/* COLUMNA IZQUIERDA: Panel Visual 3D Studio */
+.nuvex-split-visual-panel {
+  position: relative !important;
+  background-color: #EAF4FB !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  padding: 28px !important;
+  min-height: 380px !important;
+}
+
+.nuvex-visual-image-wrapper {
   position: absolute !important;
-  border-radius: 50% !important;
-  pointer-events: none !important;
-  will-change: transform !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1 !important;
 }
 
-/* 1. Esfera Superior Izquierda (Cian / Esmeralda luminoso) */
-.orb-top-left {
-  width: 220px !important;
-  height: 220px !important;
-  top: -85px !important;
-  left: -85px !important;
-  z-index: 2 !important;
-  background: radial-gradient(circle at 35% 28%, #a5f3fc 0%, #22d3ee 30%, #0d9488 65%, #042f2e 100%) !important;
-  box-shadow: 
-    0 0 55px rgba(6, 182, 212, 0.45),
-    inset -12px -12px 30px rgba(0, 0, 0, 0.65),
-    inset 12px 12px 25px rgba(255, 255, 255, 0.7) !important;
-  animation: nuvexOrbFloat1 10s ease-in-out infinite alternate !important;
+.nuvex-visual-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  transition: transform 12s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-/* 2. Esfera Inferior Izquierda (Azul Nuvex Eléctrico / Zafiro 3D) */
-.orb-bottom-left {
-  width: 290px !important;
-  height: 290px !important;
-  bottom: -60px !important;
-  left: -160px !important;
-  z-index: 2 !important;
-  background: radial-gradient(circle at 32% 28%, #93c5fd 0%, #3b82f6 35%, #1d4ed8 70%, #091a3e 100%) !important;
-  box-shadow: 
-    0 0 70px rgba(37, 99, 235, 0.4),
-    inset -15px -15px 40px rgba(0, 0, 0, 0.7),
-    inset 15px 15px 35px rgba(255, 255, 255, 0.55) !important;
-  animation: nuvexOrbFloat2 12s ease-in-out infinite alternate !important;
+.nuvex-split-card:hover .nuvex-visual-img {
+  transform: scale(1.04) !important;
 }
 
-/* 3. Esfera Lateral Derecha (Verde Esmeralda Nuvex) */
-.orb-middle-right {
-  width: 260px !important;
-  height: 260px !important;
-  top: 60px !important;
-  right: -145px !important;
-  z-index: 2 !important;
-  background: radial-gradient(circle at 35% 30%, #a7f3d0 0%, #00C975 35%, #059669 70%, #064e3b 100%) !important;
-  box-shadow: 
-    0 0 65px rgba(0, 201, 117, 0.45),
-    inset -14px -14px 38px rgba(0, 0, 0, 0.7),
-    inset 14px 14px 30px rgba(255, 255, 255, 0.65) !important;
-  animation: nuvexOrbFloat3 11s ease-in-out infinite alternate !important;
-}
-
-/* 4. Mini-esfera Inferior Derecha (Cian radiante en primer plano) */
-.orb-bottom-right {
-  width: 120px !important;
-  height: 120px !important;
-  bottom: -45px !important;
-  right: -45px !important;
-  z-index: 12 !important;
-  background: radial-gradient(circle at 30% 28%, #cffafe 0%, #22d3ee 40%, #0891b2 75%, #083344 100%) !important;
-  box-shadow: 
-    0 0 45px rgba(34, 211, 238, 0.55),
-    inset -6px -6px 20px rgba(0, 0, 0, 0.55),
-    inset 8px 8px 18px rgba(255, 255, 255, 0.75) !important;
-  animation: nuvexOrbFloat4 8s ease-in-out infinite alternate !important;
-}
-
-@keyframes nuvexOrbFloat1 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(6px, -10px) scale(1.02); }
-  100% { transform: translate(-6px, 8px) scale(0.98); }
-}
-
-@keyframes nuvexOrbFloat2 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-8px, -12px) scale(1.03); }
-  100% { transform: translate(8px, 6px) scale(0.97); }
-}
-
-@keyframes nuvexOrbFloat3 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(10px, -8px) scale(1.02); }
-  100% { transform: translate(-8px, 10px) scale(0.98); }
-}
-
-@keyframes nuvexOrbFloat4 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-5px, -8px) scale(1.05); }
-  100% { transform: translate(6px, 7px) scale(0.95); }
-}
-
-/* ==========================================================================
-   TARJETA CENTRAL GLASSMORPHISM (FROSTED GLASS OSCURO)
-   ========================================================================== */
-.fi-simple-main {
-  background: rgba(14, 23, 42, 0.62) !important;
-  backdrop-filter: blur(28px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
-  border-radius: 32px !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.32) !important;
-  box-shadow: 
-    0 30px 65px -12px rgba(0, 0, 0, 0.65),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.25) !important;
-  padding: 44px 38px !important;
-  color: #FFFFFF !important;
+/* Badge Glassmorphism Frosted Capsule Inferior */
+.nuvex-visual-frosted-capsule {
   position: relative !important;
-  z-index: 10 !important;
-  max-width: 440px !important;
+  z-index: 5 !important;
+  background: rgba(255, 255, 255, 0.52) !important;
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  border-radius: 22px !important;
+  padding: 18px 22px !important;
+  box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.10) !important;
+  text-align: center !important;
+}
+
+.nuvex-capsule-title {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 0.96rem !important;
+  margin: 0 0 3px 0 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.nuvex-capsule-desc {
+  color: #334155 !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  margin: 0 0 12px 0 !important;
+}
+
+.nuvex-capsule-dots {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+
+.nuvex-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: rgba(15, 23, 42, 0.25) !important;
+  transition: all 0.3s ease !important;
+}
+
+.nuvex-dot.active {
+  width: 20px !important;
+  border-radius: 9999px !important;
+  background: #0d9488 !important;
+}
+
+/* COLUMNA DERECHA: Formulario Minimalista Blanco */
+.nuvex-split-form-panel {
+  background: #FFFFFF !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 48px 46px !important;
+  box-sizing: border-box !important;
+}
+
+/* Reset del fi-simple-main para que no actúe como tarjeta aislada */
+.nuvex-split-form-panel .fi-simple-main {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
   width: 100% !important;
 }
 
-/* Header del Login */
+/* Header del Formulario */
 .fi-simple-header .fi-logo,
 header.fi-simple-header a {
   display: flex !important;
-  justify-content: center !important;
-  margin-bottom: 14px !important;
+  justify-content: flex-start !important;
+  margin-bottom: 16px !important;
 }
 
 .fi-simple-header img {
-  height: 58px !important;
-  max-height: 64px !important;
+  height: 48px !important;
+  max-height: 52px !important;
   width: auto !important;
-  margin: 0 auto !important;
-  filter: drop-shadow(0 4px 16px rgba(0, 201, 117, 0.45)) !important;
+  margin: 0 !important;
 }
 
 .fi-simple-header-heading,
 header.fi-simple-header h1 {
-  color: #FFFFFF !important;
+  color: #0f172a !important;
   font-weight: 800 !important;
   font-size: 1.65rem !important;
   letter-spacing: -0.025em !important;
-  text-align: center !important;
-  margin-top: 10px !important;
-  margin-bottom: 4px !important;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+  text-align: left !important;
+  margin-top: 6px !important;
+  margin-bottom: 6px !important;
 }
 
 .fi-simple-header-subheading,
 header.fi-simple-header p {
-  color: rgba(255, 255, 255, 0.7) !important;
-  text-align: center !important;
-  font-size: 0.9rem !important;
+  color: #64748b !important;
+  text-align: left !important;
+  font-size: 0.88rem !important;
+  margin-bottom: 22px !important;
 }
 
-/* Labels e Inputs en Cápsula Cian / Nuvex */
+/* Inputs y Labels */
 .fi-simple-main label,
 .fi-simple-main .fi-fo-field-wrp-label {
-  color: rgba(255, 255, 255, 0.88) !important;
+  color: #334155 !important;
   font-weight: 600 !important;
   font-size: 0.84rem !important;
 }
@@ -1668,81 +1665,108 @@ header.fi-simple-header p {
 .fi-simple-main input[type="text"],
 .fi-simple-main input[type="email"],
 .fi-simple-main input[type="password"] {
-  background-color: rgba(6, 182, 212, 0.22) !important;
-  color: #FFFFFF !important;
-  border: 1.5px solid rgba(6, 182, 212, 0.45) !important;
-  border-radius: 9999px !important;
+  background-color: #F8FAFC !important;
+  color: #0f172a !important;
+  border: 1.5px solid #E2E8F0 !important;
+  border-radius: 14px !important;
   font-size: 0.92rem !important;
   font-weight: 500 !important;
-  padding: 12px 22px !important;
-  backdrop-filter: blur(8px) !important;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.25), 0 2px 10px rgba(6, 182, 212, 0.12) !important;
+  padding: 12px 16px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
   transition: all 0.2s ease !important;
 }
 
 .fi-simple-main input[type="text"]::placeholder,
 .fi-simple-main input[type="email"]::placeholder,
 .fi-simple-main input[type="password"]::placeholder {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: #94a3b8 !important;
 }
 
 .fi-simple-main input[type="text"]:focus,
 .fi-simple-main input[type="email"]:focus,
 .fi-simple-main input[type="password"]:focus {
-  background-color: rgba(6, 182, 212, 0.36) !important;
-  border-color: #00C975 !important;
-  box-shadow: 0 0 0 3px rgba(0, 201, 117, 0.35), inset 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+  background-color: #FFFFFF !important;
+  border-color: #0d9488 !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.14) !important;
   outline: none !important;
 }
 
 /* Checkbox Recordarme & Links */
 .fi-simple-main .fi-checkbox-input,
 .fi-simple-main input[type="checkbox"] {
-  accent-color: #00C975 !important;
-  border-radius: 6px !important;
+  accent-color: #0d9488 !important;
+  border-radius: 4px !important;
 }
 
 .fi-simple-main a {
-  color: #22d3ee !important;
+  color: #0d9488 !important;
   font-weight: 600 !important;
+  font-size: 0.85rem !important;
   transition: color 0.15s ease !important;
 }
 
 .fi-simple-main a:hover {
-  color: #00C975 !important;
+  color: #0f766e !important;
   text-decoration: underline !important;
 }
 
-/* Botón Entrar (Cápsula Degradada Nuvex Esmeralda-Cian) */
+/* Botón Entrar (Estilo Nuvex Esmeralda Suave) */
 .fi-simple-main button[type="submit"],
 .fi-simple-main .fi-btn-color-primary {
-  background: linear-gradient(135deg, #00C975 0%, #0d9488 45%, #06b6d4 100%) !important;
+  background: linear-gradient(135deg, #0d9488 0%, #00C975 100%) !important;
   color: #FFFFFF !important;
-  font-weight: 800 !important;
-  font-size: 1rem !important;
-  letter-spacing: 0.02em !important;
-  border-radius: 9999px !important;
-  padding: 13px 28px !important;
-  box-shadow: 0 10px 25px -4px rgba(0, 201, 117, 0.5), 0 0 16px rgba(6, 182, 212, 0.35) !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  border-radius: 14px !important;
+  padding: 13px 24px !important;
+  box-shadow: 0 6px 18px -3px rgba(13, 148, 136, 0.35) !important;
   border: none !important;
   cursor: pointer !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   width: 100% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  margin-top: 8px !important;
+  margin-top: 10px !important;
+  transition: all 0.2s ease !important;
 }
 
 .fi-simple-main button[type="submit"]:hover,
 .fi-simple-main .fi-btn-color-primary:hover {
-  transform: translateY(-2px) scale(1.01) !important;
-  box-shadow: 0 14px 30px -4px rgba(0, 201, 117, 0.65), 0 0 24px rgba(6, 182, 212, 0.5) !important;
+  background: linear-gradient(135deg, #0f766e 0%, #00b368 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px -3px rgba(13, 148, 136, 0.45) !important;
 }
 
 .fi-simple-main button[type="submit"]:active,
 .fi-simple-main .fi-btn-color-primary:active {
-  transform: translateY(0) scale(0.99) !important;
+  transform: translateY(0) !important;
 }
+
+/* Responsividad Móvil */
+@media (max-width: 860px) {
+  .nuvex-split-card {
+    grid-template-columns: 1fr !important;
+    max-width: 480px !important;
+    border-radius: 28px !important;
+    min-height: auto !important;
+  }
+  .nuvex-split-visual-panel {
+    display: none !important;
+  }
+  .nuvex-split-form-panel {
+    padding: 38px 28px !important;
+  }
+  .fi-simple-header .fi-logo,
+  header.fi-simple-header a {
+    justify-content: center !important;
+  }
+  .fi-simple-header-heading,
+  header.fi-simple-header h1,
+  .fi-simple-header-subheading,
+  header.fi-simple-header p {
+    text-align: center !important;
+  }
+}
+
 
 

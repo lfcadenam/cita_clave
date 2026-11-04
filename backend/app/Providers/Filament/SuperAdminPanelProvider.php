@@ -30,10 +30,7 @@ class SuperAdminPanelProvider extends PanelProvider
             ->path('superadmin')
             ->login()
             ->brandName('Cita Clave | Nuvex SaaS')
-            ->brandLogo(fn () => request()->routeIs('filament.*.auth.*') || request()->routeIs('*login*') || request()->routeIs('*auth*')
-                ? asset('images/brand/citaclave-logo-dark.png')
-                : asset('images/brand/citaclave-logo-light.png')
-            )
+            ->brandLogo(fn () => asset('images/brand/citaclave-logo-light.png'))
             ->brandLogoHeight('3.8rem')
             ->favicon(fn () => asset('favicon.png'))
             ->font('Plus Jakarta Sans')
@@ -51,12 +48,6 @@ class SuperAdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn (): string => '<link rel="stylesheet" href="' . asset('css/nuvex-admin-theme.css') . '?v=' . (file_exists(public_path('css/nuvex-admin-theme.css')) ? filemtime(public_path('css/nuvex-admin-theme.css')) : time()) . '">'
-            )
-            ->renderHook(
-                PanelsRenderHook::BODY_START,
-                fn (): string => request()->routeIs('filament.*.auth.*') || request()->routeIs('*login*') || request()->routeIs('*auth*')
-                    ? view('filament.components.login-orbs')->render()
-                    : ''
             )
             ->navigationGroups([
                 NavigationGroup::make()
