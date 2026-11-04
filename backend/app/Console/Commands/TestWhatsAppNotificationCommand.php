@@ -54,7 +54,37 @@ class TestWhatsAppNotificationCommand extends Command
 
             if ($template) {
                 $this->line("Enviando plantilla '{$template}'...");
-                $result = $this->whatsAppService->sendTemplateViaMetaWithDetails($phone, $template, [], $this->option('lang'));
+                $params = match ($template) {
+                    'confirmacion_cita', 'reserva_confirmada' => [
+                        'Camila Morales',
+                        '1045',
+                        'Manicura Semipermanente',
+                        now()->addDay()->format('d/m/Y') . ' a las 10:00 AM',
+                        'https://labellenailsbog.com',
+                    ],
+                    'recordatorio_cita_24h' => [
+                        'Camila Morales',
+                        'Manicura Semipermanente',
+                        now()->addDay()->format('d/m/Y') . ' a las 10:00 AM',
+                        '$25.000 COP',
+                        'https://labellenailsbog.com',
+                    ],
+                    'cita_reagendada' => [
+                        'Camila Morales',
+                        '1045',
+                        'Manicura Semipermanente',
+                        now()->addDays(2)->format('d/m/Y') . ' a las 03:00 PM',
+                        'https://labellenailsbog.com',
+                    ],
+                    'cita_cancelada' => [
+                        'Camila Morales',
+                        '1045',
+                        'Manicura Semipermanente',
+                        now()->addDay()->format('d/m/Y') . ' a las 10:00 AM',
+                    ],
+                    default => ['Prueba', '1045', 'Servicio', 'Mañana', 'https://labellenailsbog.com'],
+                };
+                $result = $this->whatsAppService->sendTemplateViaMetaWithDetails($phone, $template, $params, $this->option('lang'));
                 return $this->report($result);
             }
         }

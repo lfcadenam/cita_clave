@@ -293,7 +293,7 @@ class WhatsAppSettingsPage extends Page
                     ],
                 ];
                 $langsToTry = [$lang, 'en_US'];
-            } elseif (in_array($tpl, ['reserva_confirmada', 'confirmacion_cita_salon', 'recordatorio_cita_24h', 'cita_recibida', 'cita_confirmada_abono'])) {
+            } elseif (in_array($tpl, ['confirmacion_cita', 'reserva_confirmada', 'confirmacion_cita_salon', 'recordatorio_cita_24h', 'cita_recibida', 'cita_confirmada_abono'])) {
                 if ($lang === 'en_US') {
                     $lang = 'es_CO';
                     $this->test_template_lang = 'es_CO';
@@ -328,7 +328,8 @@ class WhatsAppSettingsPage extends Page
                         templateName: $tpl,
                         bodyParameters: $variant,
                         languageCode: $tryLang,
-                        tenant: $tenant
+                        tenant: $tenant,
+                        buttonParameters: [$apptNum]
                     );
 
                     if ($firstLangResult === null) {

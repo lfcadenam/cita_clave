@@ -41,7 +41,8 @@ return [
             'appointment_cancelled' => env('WHATSAPP_TEMPLATE_CANCELLED', 'cita_cancelada'),
             'appointment_rescheduled' => env('WHATSAPP_TEMPLATE_RESCHEDULED', 'cita_reagendada'),
             'reminder_24h' => env('WHATSAPP_TEMPLATE_REMINDER_24H', 'recordatorio_cita_24h'),
-            'booking_confirmed' => env('WHATSAPP_TEMPLATE_BOOKING_CONFIRMED', 'reserva_confirmada'),
+            'booking_confirmed' => env('WHATSAPP_TEMPLATE_BOOKING_CONFIRMED', 'confirmacion_cita'),
+            'attendance_confirmed' => env('WHATSAPP_TEMPLATE_ATTENDANCE_CONFIRMED', 'confirmacion_cita'),
         ],
     ],
 ];

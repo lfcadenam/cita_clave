@@ -573,7 +573,8 @@ class WhatsAppNotificationService
                             templateName: $templateName,
                             bodyParameters: $templateParams,
                             languageCode: $langCode,
-                            tenant: $appointment->tenant
+                            tenant: $appointment->tenant,
+                            buttonParameters: [(string) ($appointment->appointment_number ?? '1')]
                         );
 
                         if ($tplRes['success']) {
@@ -905,7 +906,8 @@ class WhatsAppNotificationService
         string $templateName,
         array $bodyParameters = [],
         ?string $languageCode = null,
-        ?Tenant $tenant = null
+        ?Tenant $tenant = null,
+        array $buttonParameters = []
     ): array {
         $creds = $this->resolveMetaCredentials(null, $tenant);
         $apiUrl = $creds['api_url'];
@@ -931,6 +933,8 @@ class WhatsAppNotificationService
             ],
         ];
 
+        $components = [];
+
         if (!empty($bodyParameters)) {
             $formattedParams = [];
             foreach ($bodyParameters as $param) {
@@ -943,12 +947,30 @@ class WhatsAppNotificationService
                 ];
             }
 
-            $templatePayload['components'] = [
-                [
-                    'type' => 'body',
-                    'parameters' => $formattedParams,
-                ],
+            $components[] = [
+                'type' => 'body',
+                'parameters' => $formattedParams,
             ];
+        }
+
+        if (!empty($buttonParameters)) {
+            foreach ($buttonParameters as $btnIdx => $btnVal) {
+                $components[] = [
+                    'type' => 'button',
+                    'sub_type' => 'url',
+                    'index' => (string) $btnIdx,
+                    'parameters' => [
+                        [
+                            'type' => 'text',
+                            'text' => (string) $btnVal,
+                        ],
+                    ],
+                ];
+            }
+        }
+
+        if (!empty($components)) {
+            $templatePayload['components'] = $components;
         }
 
         $endpoint = "{$apiUrl}/{$phoneId}/messages";
@@ -977,6 +999,21 @@ class WhatsAppNotificationService
                     'wamid' => $wamid,
                     'data' => $json,
                 ];
+            }
+
+            // Si la plantilla requiere botón dinámico URL y no se incluyó, auto-reintentar con el ID/número de cita
+            $errorDetails = $json['error']['error_data']['details'] ?? '';
+            if (str_contains($errorDetails, 'Button at index 0 of type Url requires a parameter') && empty($buttonParameters)) {
+                $fallbackBtn = $bodyParameters[1] ?? '1';
+                Log::info("[WhatsApp Meta] Reintentando plantilla '{$templateName}' con parámetro de botón URL index 0 ({$fallbackBtn})...");
+                return $this->sendTemplateViaMetaWithDetails(
+                    $phone,
+                    $templateName,
+                    $bodyParameters,
+                    $languageCode,
+                    $tenant,
+                    [$fallbackBtn]
+                );
             }
 
             $parsedError = $this->formatMetaError($response->status(), $json);
