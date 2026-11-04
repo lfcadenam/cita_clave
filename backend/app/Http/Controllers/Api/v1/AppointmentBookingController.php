@@ -188,6 +188,10 @@ class AppointmentBookingController extends Controller
         }
         $request->merge($inputs);
 
+        if ($request->input('payment_method') === 'CASH') {
+            $request->merge(['payment_method' => 'CASH_AT_LOCATION']);
+        }
+
         $validated = $request->validate([
             'appointment_id' => 'nullable|integer|exists:appointments,id',
             'service_id' => 'required_without:appointment_id|integer|exists:services,id',
@@ -197,7 +201,7 @@ class AppointmentBookingController extends Controller
             'client_phone' => 'required|string|max:20',
             'client_email' => 'nullable|email|max:255',
             'client_notes' => 'nullable|string|max:1000',
-            'payment_method' => ['required', Rule::in(['NEQUI_TRANSFER', 'BOLD_ONLINE', 'CASH_AT_LOCATION'])],
+            'payment_method' => ['required', Rule::in(['NEQUI_TRANSFER', 'BOLD_ONLINE', 'CASH_AT_LOCATION', 'CASH'])],
             'receipt' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,pdf|max:10240', // Max 10MB
         ]);
 

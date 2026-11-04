@@ -116,6 +116,16 @@ export class BookingComponent implements OnInit {
     return !!this.salonProfile()?.is_bold_enabled;
   });
 
+  isDepositRequired = computed(() => {
+    if (this.isRecurringClient()) {
+      return false;
+    }
+    const svc = this.selectedService();
+    if (!svc) return false;
+    const deposit = Number(svc.deposit_amount || 0);
+    return deposit > 0;
+  });
+
   selectPaymentMethod(method: 'NEQUI' | 'BOLD'): void {
     if (method === 'BOLD' && !this.isBoldEnabled()) {
       return;
@@ -624,61 +634,7 @@ export class BookingComponent implements OnInit {
   }
 
   confirmRecurringBooking(): void {
-    if (!this.isStep3Valid() || this.isSubmitting()) {
-      return;
-    }
-
-    const svc = this.selectedService();
-    const slot = this.selectedSlot();
-    const date = this.selectedDate();
-    const formVal = this.clientForm.value;
-
-    if (!svc || !slot) {
-      return;
-    }
-
-    this.isSubmitting.set(true);
-    this.errorMessage.set(null);
-
-    this.api.createBooking({
-      service_id: svc.id,
-      booking_date: date,
-      start_time: slot.start_time,
-      client_name: formVal.name.trim(),
-      client_phone: formVal.phone.replace(/\D/g, ''),
-      client_email: formVal.email ? formVal.email.trim() : undefined,
-      client_notes: formVal.notes ? formVal.notes.trim() : '',
-      payment_method: 'CASH'
-    }).subscribe({
-      next: (res: AppointmentResponse) => {
-        this.isSubmitting.set(false);
-        if (res && res.data) {
-          this.bookingResult.set(res.data);
-          this.currentStep.set(5);
-          this.storage.saveProfile({
-            name: formVal.name.trim(),
-            phone: formVal.phone.replace(/\D/g, ''),
-            email: formVal.email ? formVal.email.trim() : '',
-            notes: formVal.notes ? formVal.notes.trim() : ''
-          });
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          this.errorMessage.set(res?.message || 'Ocurrió un error al procesar tu cita.');
-        }
-      },
-      error: (err: any) => {
-        this.isSubmitting.set(false);
-        let msg = 'Error al procesar la reserva. Verifica los datos e intenta de nuevo.';
-        if (err.error) {
-          if (err.error.message) msg = err.error.message;
-          if (err.error.errors && typeof err.error.errors === 'object') {
-            const errorDetails = Object.values(err.error.errors).flat().join(' ');
-            if (errorDetails) msg += ` (${errorDetails})`;
-          }
-        }
-        this.errorMessage.set(msg);
-      }
-    });
+    this.submitBooking();
   }
 
   submitBooking(): void {
@@ -701,15 +657,18 @@ export class BookingComponent implements OnInit {
       return;
     }
 
-    if (this.paymentMethod() === 'NEQUI' && !this.receiptFile) {
-      alert('Por favor adjunta el comprobante de transferencia Nequi para apartar tu cupo.');
-      return;
-    }
+    // Solo exigir comprobante y validar método si el servicio requiere abono
+    if (this.isDepositRequired()) {
+      if (this.paymentMethod() === 'NEQUI' && !this.receiptFile) {
+        alert('Por favor adjunta el comprobante de transferencia Nequi para apartar tu cupo.');
+        return;
+      }
 
-    if (this.paymentMethod() === 'BOLD' && !this.isBoldEnabled()) {
-      alert('La pasarela de pago en línea (Bold) no está habilitada para este salón.');
-      this.paymentMethod.set('NEQUI');
-      return;
+      if (this.paymentMethod() === 'BOLD' && !this.isBoldEnabled()) {
+        alert('La pasarela de pago en línea (Bold) no está habilitada para este salón.');
+        this.paymentMethod.set('NEQUI');
+        return;
+      }
     }
 
     const svc = this.selectedService()!;
@@ -720,22 +679,30 @@ export class BookingComponent implements OnInit {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
+    const paymentMethodToSend = this.isDepositRequired() ? this.paymentMethod() : 'CASH';
+
     this.api.createBooking({
       service_id: svc.id,
       booking_date: date,
       start_time: slot.start_time,
-      client_name: formVal.name,
-      client_phone: formVal.phone,
-      client_email: formVal.email,
-      client_notes: formVal.notes || '',
-      payment_method: this.paymentMethod(),
-      receipt_file: this.receiptFile || undefined
+      client_name: (formVal.name || '').trim(),
+      client_phone: (formVal.phone || '').replace(/\D/g, ''),
+      client_email: formVal.email ? formVal.email.trim() : undefined,
+      client_notes: formVal.notes ? formVal.notes.trim() : '',
+      payment_method: paymentMethodToSend,
+      receipt_file: this.isDepositRequired() ? (this.receiptFile || undefined) : undefined
     }).subscribe({
       next: (res: AppointmentResponse) => {
         this.isSubmitting.set(false);
         if (res && res.data) {
           this.bookingResult.set(res.data);
           this.currentStep.set(5);
+          this.storage.saveProfile({
+            name: (formVal.name || '').trim(),
+            phone: (formVal.phone || '').replace(/\D/g, ''),
+            email: formVal.email ? formVal.email.trim() : '',
+            notes: formVal.notes ? formVal.notes.trim() : ''
+          });
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           this.errorMessage.set(res?.message || 'Ocurrió un error al procesar tu cita.');

@@ -109,7 +109,14 @@ export class ApiService {
     if (request.client_email) formData.append('client_email', request.client_email);
     if (request.client_notes) formData.append('client_notes', request.client_notes);
     
-    const paymentMethod = request.payment_method === 'NEQUI' ? 'NEQUI_TRANSFER' : (request.payment_method === 'BOLD' ? 'BOLD_ONLINE' : request.payment_method);
+    let paymentMethod = request.payment_method as string;
+    if (paymentMethod === 'NEQUI') {
+      paymentMethod = 'NEQUI_TRANSFER';
+    } else if (paymentMethod === 'BOLD') {
+      paymentMethod = 'BOLD_ONLINE';
+    } else if (paymentMethod === 'CASH') {
+      paymentMethod = 'CASH_AT_LOCATION';
+    }
     formData.append('payment_method', paymentMethod);
     
     if (request.receipt_file) {
