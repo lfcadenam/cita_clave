@@ -44,6 +44,9 @@ class SuperAdminMultiTenantTest extends TestCase
         $responseTenants = $this->get('/superadmin/tenants');
         $responseTenants->assertSuccessful();
 
+        $responseEdit = $this->get("/superadmin/tenants/{$this->tenantPaola->id}/edit");
+        $responseEdit->assertSuccessful();
+
         $responseUsers = $this->get('/superadmin/super-admin-users');
         $responseUsers->assertSuccessful();
     }

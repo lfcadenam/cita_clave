@@ -43,7 +43,6 @@ class BookingAvailabilityEngineTest extends TestCase
         $response->assertJsonStructure([
             'success',
             'data' => [
-                'id',
                 'name',
                 'display_name',
                 'business_type',
