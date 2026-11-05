@@ -82,21 +82,21 @@ export class ApiService {
     );
   }
 
-  getNequiInfo(): Observable<NequiInfoResponse['data']> {
+  getNequiInfo(): Observable<{ account_number: string; account_holder: string; instructions: string; qr_code_url?: string }> {
     return this.http.get<NequiInfoResponse>(`${this.baseUrl}/payments/nequi-info`).pipe(
       map(res => {
         const d = res?.data;
         return {
-          account_number: d?.account_number || environment.nequiNumber,
-          account_holder: d?.account_holder || (d as any)?.holder_name || 'Paola Andrea Aguilera Camacho',
-          instructions: d?.instructions || 'Transfiere el anticipo a Nequi y adjunta el comprobante.',
-          qr_code_url: d?.qr_code_url || (d as any)?.qr_image_url
+          account_number: d?.account_number || '',
+          account_holder: d?.account_holder || d?.holder_name || '',
+          instructions: Array.isArray(d?.instructions) ? d.instructions.join(' ') : (d?.instructions || 'Transfiere el anticipo a este número de Nequi y adjunta el comprobante.'),
+          qr_code_url: d?.qr_code_url || d?.qr_image_url
         };
       }),
       catchError(() => of({
-        account_number: environment.nequiNumber,
-        account_holder: 'Paola Andrea Aguilera Camacho',
-        instructions: 'Transfiere el anticipo a Nequi y adjunta el comprobante.'
+        account_number: '',
+        account_holder: '',
+        instructions: 'Transfiere el anticipo a este número de Nequi y adjunta el comprobante.'
       }))
     );
   }

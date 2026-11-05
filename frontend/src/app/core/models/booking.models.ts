@@ -76,8 +76,13 @@ export interface NequiInfoResponse {
   data: {
     account_number: string;
     account_holder: string;
+    holder_name?: string;
+    raw_account_number?: string;
+    account_type?: string;
     qr_code_url?: string;
-    instructions: string;
+    qr_image_url?: string;
+    instructions: string | string[];
+    fee_discount_notice?: string;
   };
 }
 

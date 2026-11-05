@@ -767,15 +767,21 @@
         <div *ngIf="paymentMethod() === 'NEQUI'" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
           <div class="p-4 rounded-2xl bg-purple-50/80 border border-purple-100 space-y-2.5">
             <h4 class="text-xs font-bold text-purple-900">Datos para la Transferencia Nequi:</h4>
-            <p class="text-xs text-purple-800">
-              <span class="font-semibold text-purple-950">Titular:</span> {{ nequiInfo().account_holder || 'Paola Andrea Aguilera Camacho' }}
+            <p class="text-xs text-purple-800" *ngIf="nequiInfo().account_holder || salonProfile()?.display_name || salonProfile()?.name">
+              <span class="font-semibold text-purple-950">Titular:</span> {{ nequiInfo().account_holder || salonProfile()?.display_name || salonProfile()?.name }}
             </p>
-            <div class="flex items-center justify-between pt-2 border-t border-purple-200/60">
-              <span class="text-base font-black text-purple-950 font-mono tracking-widest">{{ nequiInfo().account_number || '310 324 8385' }}</span>
+            <div class="flex items-center justify-between pt-2 border-t border-purple-200/60" *ngIf="nequiInfo().account_number">
+              <span class="text-base font-black text-purple-950 font-mono tracking-widest">{{ nequiInfo().account_number }}</span>
               <button type="button" (click)="copyNequiNumber()"
                       class="text-[11px] font-bold px-3.5 py-1.5 rounded-full bg-purple-200 hover:bg-purple-300 text-purple-900 transition-colors shadow-2xs cursor-pointer">
                 <span>{{ copiedNequi() ? '¡Copiado! ✓' : 'Copiar Número' }}</span>
               </button>
+            </div>
+
+            <!-- Código QR Oficial del Tenant (si fue configurado en el Salón) -->
+            <div *ngIf="nequiInfo().qr_code_url" class="pt-2 flex flex-col items-center justify-center">
+              <span class="text-[10px] font-bold text-purple-800 mb-1.5">O escanea el código QR oficial de Nequi:</span>
+              <img [src]="nequiInfo().qr_code_url" alt="QR Nequi" class="w-36 h-36 object-contain rounded-xl border border-purple-200 bg-white p-1.5 shadow-xs">
             </div>
 
             <!-- Nota de Instrucción de Transferencia y Carga de Evidencia -->

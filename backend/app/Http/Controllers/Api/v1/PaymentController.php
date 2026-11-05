@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Tenant;
 use App\Services\BoldPaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,18 +17,50 @@ class PaymentController extends Controller
     ) {}
 
     /**
-     * Get Nequi and Daviplata transfer information for direct payments.
+     * Get Nequi and Daviplata transfer information for direct payments from active Tenant configuration.
      */
-    public function getNequiInfo(): JsonResponse
+    public function getNequiInfo(Request $request): JsonResponse
     {
-        $nequiConfig = config('payment.nequi');
+        // 1. Resolver Tenant activo
+        $tenant = app()->has('active_tenant')
+            ? app('active_tenant')
+            : null;
 
-        $rawAccount = preg_replace('/\D/', '', (string) ($nequiConfig['account_number'] ?? '3103248385'));
+        if (! $tenant && ($request->hasHeader('X-Tenant-Id') || $request->query('tenant_id'))) {
+            $tenantId = $request->header('X-Tenant-Id') ?: $request->query('tenant_id');
+            $tenant = Tenant::where('is_active', true)->find($tenantId);
+        }
+
+        if (! $tenant && ($request->hasHeader('X-Tenant-Slug') || $request->query('tenant') || $request->query('slug'))) {
+            $slug = $request->header('X-Tenant-Slug') ?: ($request->query('tenant') ?: $request->query('slug'));
+            $tenant = Tenant::where('is_active', true)->where('slug', $slug)->first();
+        }
+
+        if (! $tenant) {
+            $tenant = Tenant::where('is_active', true)->first();
+        }
+
+        $nequiConfig = config('payment.nequi', []);
+
+        // 2. Extraer datos Nequi directamente del Tenant (con fallback seguro a config)
+        $rawAccount = $tenant?->nequi_phone ?: ($nequiConfig['account_number'] ?? '3103248385');
+        $rawAccount = preg_replace('/\D/', '', (string) $rawAccount);
+
         $formattedAccount = strlen($rawAccount) === 10
             ? substr($rawAccount, 0, 3) . ' ' . substr($rawAccount, 3, 3) . ' ' . substr($rawAccount, 6)
             : $rawAccount;
 
-        $holderName = $nequiConfig['holder_name'] ?? 'Paola Andrea Aguilera Camacho';
+        $holderName = $tenant?->nequi_account_holder 
+            ?: ($tenant?->display_name ?: ($tenant?->name ?: ($nequiConfig['holder_name'] ?? 'Paola Andrea Aguilera Camacho')));
+
+        $accountType = $tenant?->nequi_account_type ?: ($nequiConfig['account_type'] ?? 'Personal');
+
+        $qrImageUrl = null;
+        if (! empty($tenant?->nequi_qr_image)) {
+            $qrImageUrl = asset('storage/' . $tenant->nequi_qr_image);
+        } elseif (! empty($nequiConfig['qr_image_url'])) {
+            $qrImageUrl = asset($nequiConfig['qr_image_url']);
+        }
 
         return response()->json([
             'success' => true,
@@ -35,10 +68,15 @@ class PaymentController extends Controller
                 'holder_name' => $holderName,
                 'account_holder' => $holderName,
                 'account_number' => $formattedAccount,
-                'account_type' => $nequiConfig['account_type'] ?? 'Nequi / Daviplata',
-                // document_id omitido por proteccion de datos personales (Ley 1581 de 2012)
-                'qr_image_url' => asset($nequiConfig['qr_image_url']),
-                'instructions' => $nequiConfig['instructions'],
+                'raw_account_number' => $rawAccount,
+                'account_type' => $accountType,
+                'qr_image_url' => $qrImageUrl,
+                'qr_code_url' => $qrImageUrl,
+                'instructions' => $nequiConfig['instructions'] ?? [
+                    '1. Realiza la transferencia del anticipo a este número de Nequi.',
+                    '2. Toma una captura de pantalla del comprobante de transferencia.',
+                    '3. Adjunta la captura abajo para confirmar tu turno.',
+                ],
                 'fee_discount_notice' => '¡Sin costos adicionales ni comisiones de pasarela!',
             ],
         ]);

@@ -47,6 +47,37 @@ class HybridPaymentSystemTest extends TestCase
         $this->assertNotEmpty($response->json('data.account_number'));
     }
 
+    public function test_nequi_info_endpoint_returns_data_from_tenant_configuration(): void
+    {
+        $customTenant = \App\Models\Tenant::create([
+            'name' => 'Studio Glamour Bogotá',
+            'slug' => 'studio-glamour',
+            'domain' => 'glamour.labellenailsbog.com',
+            'phone' => '3209998877',
+            'email' => 'admin@studioglamour.co',
+            'nequi_phone' => '3209998877',
+            'nequi_account_holder' => 'María Camila Gómez Glamour',
+            'nequi_account_type' => 'Nequi Personal',
+            'subscription_status' => 'active',
+            'plan_name' => 'Pro Salon',
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/v1/payments/nequi-info?slug=studio-glamour');
+
+        $response->assertSuccessful();
+        $response->assertJson([
+            'success' => true,
+            'data' => [
+                'holder_name' => 'María Camila Gómez Glamour',
+                'account_holder' => 'María Camila Gómez Glamour',
+                'account_number' => '320 999 8877',
+                'raw_account_number' => '3209998877',
+                'account_type' => 'Nequi Personal',
+            ],
+        ]);
+    }
+
     public function test_create_bold_checkout_session(): void
     {
         $service = Service::first();

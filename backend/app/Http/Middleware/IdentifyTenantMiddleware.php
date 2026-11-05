@@ -18,25 +18,33 @@ class IdentifyTenantMiddleware
         if (! app()->has('active_tenant_id')) {
             $host = $request->getHost();
             $cleanHost = preg_replace('/^www\./i', '', strtolower($host));
+            $tenant = null;
 
-            // 1. Búsqueda por coincidencia exacta de dominio asignado
-            $tenant = Tenant::where('is_active', true)
-                ->where(function ($query) use ($host, $cleanHost) {
-                    $query->where('domain', $host)
-                        ->orWhere('domain', $cleanHost)
-                        ->orWhere('domain', 'http://' . $cleanHost)
-                        ->orWhere('domain', 'https://' . $cleanHost);
-                })
-                ->first();
+            // 1. Búsqueda explícita por ID (Cabecera X-Tenant-Id o parámetro tenant_id)
+            if ($request->hasHeader('X-Tenant-Id') || $request->query('tenant_id')) {
+                $tenantId = $request->header('X-Tenant-Id') ?: $request->query('tenant_id');
+                $tenant = Tenant::where('is_active', true)->find($tenantId);
+            }
 
-            // 2. Búsqueda por subdominio o slug en cabecera
-            if (! $tenant && $request->hasHeader('X-Tenant-Slug')) {
+            // 2. Búsqueda explícita por Slug (Cabecera X-Tenant-Slug o parámetros tenant / slug)
+            if (! $tenant && ($request->hasHeader('X-Tenant-Slug') || $request->query('tenant') || $request->query('slug'))) {
+                $slug = $request->header('X-Tenant-Slug') ?: ($request->query('tenant') ?: $request->query('slug'));
+                $tenant = Tenant::where('is_active', true)->where('slug', $slug)->first();
+            }
+
+            // 3. Búsqueda por coincidencia exacta de dominio asignado
+            if (! $tenant) {
                 $tenant = Tenant::where('is_active', true)
-                    ->where('slug', $request->header('X-Tenant-Slug'))
+                    ->where(function ($query) use ($host, $cleanHost) {
+                        $query->where('domain', $host)
+                            ->orWhere('domain', $cleanHost)
+                            ->orWhere('domain', 'http://' . $cleanHost)
+                            ->orWhere('domain', 'https://' . $cleanHost);
+                    })
                     ->first();
             }
 
-            // 3. Fallback inteligente: Salón principal por defecto si no hay coincidencia
+            // 4. Fallback inteligente: Salón principal por defecto si no hay coincidencia
             if (! $tenant) {
                 $tenant = Tenant::where('is_active', true)->first();
             }

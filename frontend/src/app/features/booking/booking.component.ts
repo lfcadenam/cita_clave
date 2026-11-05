@@ -134,10 +134,11 @@ export class BookingComponent implements OnInit {
   }
   receiptFile: File | null = null;
   receiptPreview = signal<string | null>(null);
-  nequiInfo = signal<{ account_number: string; account_holder: string; instructions: string }>({
-    account_number: environment.nequiNumber,
-    account_holder: 'Paola Andrea Aguilera Camacho',
-    instructions: 'Transfiere el anticipo a Nequi y adjunta el comprobante.'
+  nequiInfo = signal<{ account_number: string; account_holder: string; instructions: string; qr_code_url?: string }>({
+    account_number: '',
+    account_holder: '',
+    instructions: 'Transfiere el anticipo a este número de Nequi y adjunta el comprobante.',
+    qr_code_url: undefined
   });
 
   // Result & Mobile Summary
@@ -335,7 +336,7 @@ export class BookingComponent implements OnInit {
   }
 
   loadNequiInfo(): void {
-    this.api.getNequiInfo().subscribe((info: { account_number: string; account_holder: string; instructions: string }) => {
+    this.api.getNequiInfo().subscribe(info => {
       this.nequiInfo.set(info);
     });
   }
