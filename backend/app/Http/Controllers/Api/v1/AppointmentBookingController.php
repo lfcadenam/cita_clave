@@ -366,8 +366,17 @@ class AppointmentBookingController extends Controller
         }
 
         $items = $appointments->map(function ($apt) {
+            $rawPhone = preg_replace('/\D/', '', (string) $apt->client_phone);
+            $maskedPhone = strlen($rawPhone) >= 7
+                ? substr($rawPhone, 0, 3) . ' **** ' . substr($rawPhone, -3)
+                : '*** ****';
+
+            $nameParts = explode(' ', trim((string) $apt->client_name));
+            $maskedName = count($nameParts) > 1
+                ? $nameParts[0] . ' ' . mb_substr($nameParts[1], 0, 1) . '.'
+                : $nameParts[0];
+
             return [
-                'id' => $apt->id,
                 'appointment_number' => $apt->appointment_number,
                 'status' => $apt->status->value,
                 'status_label' => $apt->status->label(),
@@ -376,8 +385,8 @@ class AppointmentBookingController extends Controller
                     'name' => $apt->service->name,
                     'duration_minutes' => $apt->service->duration_minutes,
                 ],
-                'client_name' => $apt->client_name,
-                'client_phone' => $apt->client_phone,
+                'client_name' => $maskedName,
+                'client_phone' => $maskedPhone,
                 'date' => $apt->appointment_date->toDateString(),
                 'booking_date' => $apt->appointment_date->toDateString(),
                 'start_time' => substr($apt->start_time, 0, 5),
@@ -403,9 +412,9 @@ class AppointmentBookingController extends Controller
     }
 
     /**
-     * Confirm attendance for an appointment via API.
+     * Confirm attendance for an appointment via API with security token verification.
      */
-    public function confirmAttendanceApi(string $appointmentNumber): JsonResponse
+    public function confirmAttendanceApi(Request $request, string $appointmentNumber): JsonResponse
     {
         $appointment = Appointment::where('appointment_number', trim($appointmentNumber))->first();
 
@@ -414,6 +423,21 @@ class AppointmentBookingController extends Controller
                 'success' => false,
                 'message' => 'Cita no encontrada.',
             ], 404);
+        }
+
+        $token = $request->input('token') ?? $request->header('X-Confirmation-Token');
+        $phone = $request->input('phone');
+        $apiKey = $request->header('X-API-Key');
+
+        $isAuthorized = (auth()->check())
+            || $appointment->validateSecurityToken($token, $phone)
+            || ($apiKey && $apiKey === config('app.integrations_api_key'));
+
+        if (! $isAuthorized) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para confirmar esta cita. Se requiere un token de confirmación válido o verificación de identidad.',
+            ], 403);
         }
 
         $appointment->update([

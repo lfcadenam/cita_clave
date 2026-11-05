@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\v1\AppointmentBookingController;
 use App\Http\Controllers\Api\v1\AvailabilityController;
+use App\Http\Controllers\Api\v1\IntegrationController;
 use App\Http\Controllers\Api\v1\MetaWhatsAppWebhookController;
 use App\Http\Controllers\Api\v1\PaymentController;
 use App\Http\Controllers\Api\v1\ServiceController;
@@ -12,14 +13,15 @@ use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
 | API Routes - Nuvex Agendamiento Belleza & Estética
+| Hardened Security & Rate Limiting (La Belle Nails Bogotá)
 |--------------------------------------------------------------------------
 */
 
 Route::prefix('v1')->group(function () {
-    // Perfil Comercial Dinámico del Salón / Tenant
-    Route::get('/tenant/profile', [TenantProfileController::class, 'show']);
 
-    // Health check
+    // =========================================================================
+    // 1. ENDPOINTS PÚBLICOS EXENTOS DE API KEY (Health check & Webhooks externos)
+    // =========================================================================
     Route::get('/health', function () {
         return response()->json([
             'status' => 'ok',
@@ -29,32 +31,60 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
-    // Catálogo de Servicios
-    Route::get('/services', [ServiceController::class, 'index']);
-    Route::get('/services/{id}', [ServiceController::class, 'show']);
-
-    // Motor de Disponibilidad Anti-Huecos
-    Route::get('/availability/slots', [AvailabilityController::class, 'slots']);
-    Route::get('/availability/month', [AvailabilityController::class, 'month']);
-
-    // Proceso de Reserva y Apartado de Citas
-    Route::get('/clients/lookup', [AppointmentBookingController::class, 'lookupClient']);
-    Route::post('/appointments/hold', [AppointmentBookingController::class, 'hold']);
-    Route::post('/appointments/book', [AppointmentBookingController::class, 'book']);
-    Route::get('/appointments/status/{appointmentNumber}', [AppointmentBookingController::class, 'status']);
-    Route::post('/appointments/confirm-attendance/{appointmentNumber}', [AppointmentBookingController::class, 'confirmAttendanceApi']);
-    Route::post('/appointments/{appointmentNumber}/cancel', [AppointmentBookingController::class, 'cancelAppointmentApi']);
-    Route::post('/appointments/{appointmentNumber}/reschedule', [AppointmentBookingController::class, 'rescheduleAppointmentApi']);
-
-    // Módulo Híbrido de Pagos (Bold & Nequi Directo)
-    Route::get('/payments/nequi-info', [PaymentController::class, 'getNequiInfo']);
-    Route::post('/payments/bold/checkout', [PaymentController::class, 'createBoldCheckout']);
+    // Webhooks de pasarela y mensajería oficial
     Route::post('/payments/bold/webhook', [PaymentController::class, 'handleBoldWebhook']);
-
-    // Lista de Espera Inteligente
-    Route::post('/waitlist/join', [WaitlistController::class, 'join']);
-
-    // Webhook Oficial Meta WhatsApp Cloud API
     Route::get('/webhooks/whatsapp', [MetaWhatsAppWebhookController::class, 'verify']);
     Route::post('/webhooks/whatsapp', [MetaWhatsAppWebhookController::class, 'handle']);
+
+    // =========================================================================
+    // 2. ENDPOINTS FRONTEND PROTEGIDOS CON API KEY Y RATE LIMITING
+    // =========================================================================
+    Route::middleware(['api.key'])->group(function () {
+
+        // --- Catálogo y Disponibilidad (60 peticiones/minuto) ---
+        Route::middleware(['throttle:api-public'])->group(function () {
+            Route::get('/tenant/profile', [TenantProfileController::class, 'show']);
+            Route::get('/services', [ServiceController::class, 'index']);
+            Route::get('/services/{id}', [ServiceController::class, 'show']);
+            Route::get('/availability/slots', [AvailabilityController::class, 'slots']);
+            Route::get('/availability/month', [AvailabilityController::class, 'month']);
+        });
+
+        // --- Endpoints Sensibles (10 peticiones/minuto) ---
+        Route::middleware(['throttle:api-sensitive'])->group(function () {
+            // Consulta de clientes y apartado
+            Route::get('/clients/lookup', [AppointmentBookingController::class, 'lookupClient']);
+            Route::post('/appointments/hold', [AppointmentBookingController::class, 'hold']);
+            Route::post('/appointments/book', [AppointmentBookingController::class, 'book']);
+            Route::get('/appointments/status/{appointmentNumber}', [AppointmentBookingController::class, 'status']);
+
+            // Confirmación y Autogestión con Token de Seguridad
+            Route::post('/appointments/confirm-attendance/{appointmentNumber}', [AppointmentBookingController::class, 'confirmAttendanceApi']);
+            Route::post('/appointments/{appointmentNumber}/cancel', [AppointmentBookingController::class, 'cancelAppointmentApi']);
+            Route::post('/appointments/{appointmentNumber}/reschedule', [AppointmentBookingController::class, 'rescheduleAppointmentApi']);
+
+            // Información Bancaria y Pasarela
+            Route::get('/payments/nequi-info', [PaymentController::class, 'getNequiInfo']);
+            Route::post('/payments/bold/checkout', [PaymentController::class, 'createBoldCheckout']);
+
+            // Lista de espera
+            Route::post('/waitlist/join', [WaitlistController::class, 'join']);
+        });
+
+    });
+
+    // =========================================================================
+    // 3. INTEGRACIONES EXTERNAS (n8n / Workflows Automatizados)
+    // =========================================================================
+    Route::prefix('integrations')->middleware(['api.key:integrations', 'throttle:api-integrations'])->group(function () {
+        // n8n obtiene las citas del día para enviar recordatorios automáticos
+        Route::get('/appointments/upcoming', [IntegrationController::class, 'upcomingAppointments']);
+
+        // n8n confirma asistencia tras interacción en WhatsApp
+        Route::post('/appointments/{appointmentNumber}/confirm', [IntegrationController::class, 'confirmAttendance']);
+
+        // n8n reporta que envió el recordatorio
+        Route::post('/appointments/{appointmentNumber}/notified', [IntegrationController::class, 'markNotified']);
+    });
+
 });

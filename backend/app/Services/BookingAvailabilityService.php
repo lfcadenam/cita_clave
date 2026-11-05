@@ -326,7 +326,6 @@ class BookingAvailabilityService
                         'end_formatted' => $currentSlotEnd->format('h:i A'),
                         'duration_minutes' => $serviceDuration,
                         'is_recommended' => ($gapBefore === 0),
-                        'gap_after_minutes' => $gapAfter,
                     ];
 
                     $currentSlotStart->addMinutes($serviceDuration);
@@ -345,7 +344,6 @@ class BookingAvailabilityService
                         'end_formatted' => $currentSlotEnd->format('h:i A'),
                         'duration_minutes' => $serviceDuration,
                         'is_recommended' => ($gapBefore === 0 || $gapAfter === 0),
-                        'gap_after_minutes' => $gapAfter,
                     ];
 
                     $currentSlotStart->addMinutes($stepMinutes);

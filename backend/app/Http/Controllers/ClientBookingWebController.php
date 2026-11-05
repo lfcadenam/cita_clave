@@ -142,11 +142,16 @@ class ClientBookingWebController extends Controller
     /**
      * Permite a la clienta confirmar su asistencia en 1 clic desde el enlace enviado por WhatsApp (/reserva/confirmar/{appointmentNumber}).
      */
-    public function confirmAttendanceViaLink(string $appointmentNumber)
+    public function confirmAttendanceViaLink(Request $request, string $appointmentNumber)
     {
         $appointment = Appointment::with(['service', 'tenant'])
             ->where('appointment_number', trim($appointmentNumber))
             ->firstOrFail();
+
+        $token = $request->query('token');
+        if ($request->has('token') && ! $appointment->validateSecurityToken($token)) {
+            abort(403, 'El enlace de confirmación es inválido o ha expirado.');
+        }
 
         if (!$appointment->attendance_confirmed_at && $appointment->status !== AppointmentStatus::CANCELLED) {
             $appointment->update([

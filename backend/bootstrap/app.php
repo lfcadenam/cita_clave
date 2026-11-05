@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         $middleware->append(SecurityHeadersMiddleware::class);
         $middleware->append(IdentifyTenantMiddleware::class);
+        $middleware->alias([
+            'api.key' => \App\Http\Middleware\ApiKeyMiddleware::class,
+        ]);
         $middleware->validateCsrfTokens(except: [
             'livewire*',
             'livewire/*',

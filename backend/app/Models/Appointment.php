@@ -267,4 +267,35 @@ class Appointment extends Model
 
         return now()->diffInSeconds($startDateTime, false) > (24 * 3600);
     }
+
+    /**
+     * Genera un token HMAC criptográfico único para la cita para autorizar
+     * acciones del cliente (confirmar asistencia, autogestión) sin exponer la cita a terceros.
+     */
+    public function generateSecurityToken(): string
+    {
+        $appKey = (string) config('app.key', 'nuvex_secret_salt_2026');
+        return substr(hash_hmac('sha256', "{$this->appointment_number}|{$this->client_phone}", $appKey), 0, 16);
+    }
+
+    /**
+     * Valida si un token o identificador provisto autoriza la manipulación de esta cita.
+     */
+    public function validateSecurityToken(?string $token, ?string $phone = null): bool
+    {
+        if (! empty($token) && hash_equals($this->generateSecurityToken(), trim($token))) {
+            return true;
+        }
+
+        if (! empty($phone)) {
+            $cleanInputPhone = preg_replace('/\D/', '', $phone);
+            $cleanClientPhone = preg_replace('/\D/', '', (string) $this->client_phone);
+
+            if (strlen($cleanInputPhone) >= 7 && (str_ends_with($cleanClientPhone, $cleanInputPhone) || str_ends_with($cleanInputPhone, $cleanClientPhone))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
