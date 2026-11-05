@@ -84,14 +84,18 @@ export class ApiService {
 
   getNequiInfo(): Observable<NequiInfoResponse['data']> {
     return this.http.get<NequiInfoResponse>(`${this.baseUrl}/payments/nequi-info`).pipe(
-      map(res => res?.data || {
-        account_number: environment.nequiNumber,
-        account_holder: 'Paola A. Aguilera C.',
-        instructions: 'Transfiere el anticipo a Nequi y adjunta el comprobante.'
+      map(res => {
+        const d = res?.data;
+        return {
+          account_number: d?.account_number || environment.nequiNumber,
+          account_holder: d?.account_holder || (d as any)?.holder_name || 'Paola Andrea Aguilera Camacho',
+          instructions: d?.instructions || 'Transfiere el anticipo a Nequi y adjunta el comprobante.',
+          qr_code_url: d?.qr_code_url || (d as any)?.qr_image_url
+        };
       }),
       catchError(() => of({
         account_number: environment.nequiNumber,
-        account_holder: 'Paola A. Aguilera C.',
+        account_holder: 'Paola Andrea Aguilera Camacho',
         instructions: 'Transfiere el anticipo a Nequi y adjunta el comprobante.'
       }))
     );

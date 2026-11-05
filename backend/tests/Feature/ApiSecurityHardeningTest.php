@@ -28,7 +28,7 @@ class ApiSecurityHardeningTest extends TestCase
     /**
      * 1.1 Ocultar / enmascarar información bancaria en nequi-info (Ley 1581 Habeas Data).
      */
-    public function test_nequi_info_does_not_expose_document_id_and_masks_sensitive_data(): void
+    public function test_nequi_info_does_not_expose_document_id_and_returns_transfer_data(): void
     {
         $response = $this->getJson('/api/v1/payments/nequi-info', [
             'X-API-Key' => 'nuvex_lbl_front_2026_sec_key',
@@ -39,10 +39,10 @@ class ApiSecurityHardeningTest extends TestCase
         $response->assertJson([
             'success' => true,
             'data' => [
-                'holder_name' => 'Paola A. Aguilera C.',
+                'holder_name' => 'Paola Andrea Aguilera Camacho',
             ],
         ]);
-        $this->assertStringContainsString('*** ****', $response->json('data.account_number'));
+        $this->assertNotEmpty($response->json('data.account_number'));
     }
 
     /**

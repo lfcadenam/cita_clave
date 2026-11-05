@@ -22,14 +22,19 @@ class PaymentController extends Controller
     {
         $nequiConfig = config('payment.nequi');
 
-        $rawAccount = preg_replace('/\D/', '', (string) ($nequiConfig['account_number'] ?? ''));
-        $maskedAccount = strlen($rawAccount) >= 4 ? '*** **** ' . substr($rawAccount, -4) : '*** **** 8385';
+        $rawAccount = preg_replace('/\D/', '', (string) ($nequiConfig['account_number'] ?? '3103248385'));
+        $formattedAccount = strlen($rawAccount) === 10
+            ? substr($rawAccount, 0, 3) . ' ' . substr($rawAccount, 3, 3) . ' ' . substr($rawAccount, 6)
+            : $rawAccount;
+
+        $holderName = $nequiConfig['holder_name'] ?? 'Paola Andrea Aguilera Camacho';
 
         return response()->json([
             'success' => true,
             'data' => [
-                'holder_name' => 'Paola A. Aguilera C.',
-                'account_number' => $maskedAccount,
+                'holder_name' => $holderName,
+                'account_holder' => $holderName,
+                'account_number' => $formattedAccount,
                 'account_type' => $nequiConfig['account_type'] ?? 'Nequi / Daviplata',
                 // document_id omitido por proteccion de datos personales (Ley 1581 de 2012)
                 'qr_image_url' => asset($nequiConfig['qr_image_url']),

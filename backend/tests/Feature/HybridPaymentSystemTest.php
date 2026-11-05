@@ -41,10 +41,10 @@ class HybridPaymentSystemTest extends TestCase
         $response->assertJsonMissing(['document_id']);
         $response->assertJson([
             'data' => [
-                'holder_name' => 'Paola A. Aguilera C.',
+                'holder_name' => 'Paola Andrea Aguilera Camacho',
             ],
         ]);
-        $this->assertStringContainsString('*** ****', $response->json('data.account_number'));
+        $this->assertNotEmpty($response->json('data.account_number'));
     }
 
     public function test_create_bold_checkout_session(): void
