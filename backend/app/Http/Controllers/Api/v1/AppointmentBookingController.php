@@ -378,6 +378,7 @@ class AppointmentBookingController extends Controller
 
             return [
                 'appointment_number' => $apt->appointment_number,
+                'confirmation_token' => $apt->generateSecurityToken(),
                 'status' => $apt->status->value,
                 'status_label' => $apt->status->label(),
                 'service_name' => $apt->service->name,

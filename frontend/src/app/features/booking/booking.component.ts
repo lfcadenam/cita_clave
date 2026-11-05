@@ -857,7 +857,10 @@ export class BookingComponent implements OnInit {
     if (!apt || !apt.appointment_number) return;
 
     this.isConfirmingAttendance.set(true);
-    this.api.confirmAttendance(apt.appointment_number).subscribe({
+    const token = (apt as any).confirmation_token;
+    const cleanPhone = (this.lookupQuery() || '').replace(/\D/g, '') || undefined;
+
+    this.api.confirmAttendance(apt.appointment_number, token, cleanPhone).subscribe({
       next: (res: any) => {
         this.isConfirmingAttendance.set(false);
         if (res && res.success) {
