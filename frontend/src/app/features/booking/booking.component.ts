@@ -134,11 +134,10 @@ export class BookingComponent implements OnInit {
   }
   receiptFile: File | null = null;
   receiptPreview = signal<string | null>(null);
-  nequiInfo = signal<{ account_number: string; account_holder: string; instructions: string; qr_code_url?: string }>({
+  nequiInfo = signal<{ account_number: string; account_holder: string; instructions: string }>({
     account_number: '',
     account_holder: '',
-    instructions: 'Transfiere el anticipo a este número de Nequi y adjunta el comprobante.',
-    qr_code_url: undefined
+    instructions: 'Transfiere el anticipo a este número de Nequi y adjunta el comprobante.'
   });
 
   // Result & Mobile Summary

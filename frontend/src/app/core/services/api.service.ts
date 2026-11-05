@@ -82,15 +82,16 @@ export class ApiService {
     );
   }
 
-  getNequiInfo(): Observable<{ account_number: string; account_holder: string; instructions: string; qr_code_url?: string }> {
+  getNequiInfo(): Observable<{ account_number: string; account_holder: string; instructions: string }> {
     return this.http.get<NequiInfoResponse>(`${this.baseUrl}/payments/nequi-info`).pipe(
       map(res => {
         const d = res?.data;
         return {
           account_number: d?.account_number || '',
           account_holder: d?.account_holder || d?.holder_name || '',
-          instructions: Array.isArray(d?.instructions) ? d.instructions.join(' ') : (d?.instructions || 'Transfiere el anticipo a este número de Nequi y adjunta el comprobante.'),
-          qr_code_url: d?.qr_code_url || d?.qr_image_url
+          instructions: typeof d?.instructions === 'string'
+            ? d.instructions
+            : (Array.isArray(d?.instructions) ? d.instructions.join(' ') : 'Transfiere el anticipo a este número de Nequi y adjunta el comprobante.')
         };
       }),
       catchError(() => of({

@@ -32,21 +32,34 @@ class IdentifyTenantMiddleware
                 $tenant = Tenant::where('is_active', true)->where('slug', $slug)->first();
             }
 
-            // 3. Búsqueda por coincidencia exacta de dominio asignado
+            // 3. Búsqueda por coincidencia de dominio asignado
             if (! $tenant) {
                 $tenant = Tenant::where('is_active', true)
                     ->where(function ($query) use ($host, $cleanHost) {
                         $query->where('domain', $host)
                             ->orWhere('domain', $cleanHost)
                             ->orWhere('domain', 'http://' . $cleanHost)
-                            ->orWhere('domain', 'https://' . $cleanHost);
+                            ->orWhere('domain', 'https://' . $cleanHost)
+                            ->orWhere('domain', 'LIKE', '%' . $cleanHost . '%');
                     })
                     ->first();
             }
 
-            // 4. Fallback inteligente: Salón principal por defecto si no hay coincidencia
+            // 4. Si aún no se encuentra, verificar si el host contiene el slug de algún tenant activo
             if (! $tenant) {
-                $tenant = Tenant::where('is_active', true)->first();
+                $activeTenants = Tenant::where('is_active', true)->get();
+                foreach ($activeTenants as $candidate) {
+                    if ($candidate->slug && str_contains($cleanHost, (string) $candidate->slug)) {
+                        $tenant = $candidate;
+                        break;
+                    }
+                }
+            }
+
+            // 5. Fallback inteligente: Salón activo más reciente o principal
+            if (! $tenant) {
+                $tenant = Tenant::where('is_active', true)->latest('id')->first()
+                    ?: Tenant::where('is_active', true)->first();
             }
 
             // 4. Inyección en el contenedor de dependencias de Laravel

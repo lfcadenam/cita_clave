@@ -33,7 +33,6 @@ class HybridPaymentSystemTest extends TestCase
                 'holder_name',
                 'account_number',
                 'account_type',
-                'qr_image_url',
                 'instructions',
                 'fee_discount_notice',
             ],

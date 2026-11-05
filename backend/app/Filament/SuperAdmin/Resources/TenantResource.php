@@ -197,16 +197,6 @@ class TenantResource extends Resource
                                             ->default('Personal')
                                             ->prefixIcon('heroicon-o-credit-card')
                                             ->maxLength(50),
-
-                                        Forms\Components\FileUpload::make('nequi_qr_image')
-                                            ->label('Código QR Oficial Nequi')
-                                            ->image()
-                                            ->imageEditor()
-                                            ->directory('tenants/nequi')
-                                            ->disk('public')
-                                            ->visibility('public')
-                                            ->helperText('Imagen del QR oficial generado por Nequi para escaneo directo de los clientes.')
-                                            ->columnSpanFull(),
                                     ])->columns(3),
 
                                 Section::make('Pasarela Bold Online')
