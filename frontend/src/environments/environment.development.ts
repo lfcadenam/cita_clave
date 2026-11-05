@@ -3,5 +3,6 @@ export const environment = {
   apiUrl: 'http://127.0.0.1:8000/api/v1',
   storageUrl: 'http://127.0.0.1:8000/storage',
   paolaWhatsApp: '573103248385',
-  nequiNumber: '310 324 8385'
+  nequiNumber: '310 324 8385',
+  apiKey: 'nuvex_lbl_front_2026_sec_key'
 };

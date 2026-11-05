@@ -123,4 +123,12 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | API Security Keys (Frontend & Integraciones n8n)
+    |--------------------------------------------------------------------------
+    */
+    'api_key' => env('FRONTEND_API_KEY', 'nuvex_lbl_front_2026_sec_key'),
+    'integrations_api_key' => env('INTEGRATIONS_API_KEY', 'nuvex_n8n_integration_2026_key'),
+
 ];

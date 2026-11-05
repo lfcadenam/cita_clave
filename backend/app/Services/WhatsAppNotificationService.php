@@ -416,7 +416,7 @@ class WhatsAppNotificationService
         $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
         $startTime = substr($appointment->start_time, 0, 5);
         $balanceFormatted = number_format($appointment->balance_due, 0, ',', '.');
-        $confirmationUrl = url("/reserva/confirmar/{$appointment->appointment_number}");
+        $confirmationUrl = url("/reserva/confirmar/{$appointment->appointment_number}?token=" . $appointment->generateSecurityToken());
         $portalUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
 
         $message = "✨ *¡Hola {$clientName}!* Te saludamos de *{$salonName}*.\n\n"

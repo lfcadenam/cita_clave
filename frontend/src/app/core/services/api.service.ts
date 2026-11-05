@@ -86,12 +86,12 @@ export class ApiService {
     return this.http.get<NequiInfoResponse>(`${this.baseUrl}/payments/nequi-info`).pipe(
       map(res => res?.data || {
         account_number: environment.nequiNumber,
-        account_holder: 'Paola Andrea Aguilera Camacho',
+        account_holder: 'Paola A. Aguilera C.',
         instructions: 'Transfiere el anticipo a Nequi y adjunta el comprobante.'
       }),
       catchError(() => of({
         account_number: environment.nequiNumber,
-        account_holder: 'Paola Andrea Aguilera Camacho',
+        account_holder: 'Paola A. Aguilera C.',
         instructions: 'Transfiere el anticipo a Nequi y adjunta el comprobante.'
       }))
     );
@@ -155,8 +155,11 @@ export class ApiService {
     return this.http.get<{ success: boolean; data?: any; message?: string }>(`${this.baseUrl}/appointments/status/${encodeURIComponent(clean)}`);
   }
 
-  confirmAttendance(appointmentNumber: string): Observable<{ success: boolean; message: string; data?: any }> {
+  confirmAttendance(appointmentNumber: string, token?: string, phone?: string): Observable<{ success: boolean; message: string; data?: any }> {
     const clean = appointmentNumber.trim();
-    return this.http.post<{ success: boolean; message: string; data?: any }>(`${this.baseUrl}/appointments/confirm-attendance/${encodeURIComponent(clean)}`, {});
+    const payload: { token?: string; phone?: string } = {};
+    if (token) payload.token = token;
+    if (phone) payload.phone = phone;
+    return this.http.post<{ success: boolean; message: string; data?: any }>(`${this.baseUrl}/appointments/confirm-attendance/${encodeURIComponent(clean)}`, payload);
   }
 }

@@ -150,6 +150,7 @@
                     </p>
                     <form action="{{ route('portal.confirm-attendance', $appointment->appointment_number) }}" method="POST">
                         @csrf
+                        <input type="hidden" name="token" value="{{ $appointment->generateSecurityToken() }}">
                         <button type="submit" class="w-full py-3 px-4 rounded-xl text-xs font-bold bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer">
                             <i data-lucide="calendar-check" class="w-4 h-4"></i>
                             <span>Confirmar Mi Asistencia en Línea</span>
