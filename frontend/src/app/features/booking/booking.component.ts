@@ -752,13 +752,59 @@ export class BookingComponent implements OnInit {
   }
 
   getServiceImage(svc: Service): string {
-    if (svc.image_url) return svc.image_url;
+    if (svc.image_url) {
+      if (svc.image_url.startsWith('http://') || svc.image_url.startsWith('https://')) {
+        return svc.image_url;
+      }
+      const cleanPath = svc.image_url.replace(/^\/?(storage\/)?/, '');
+      const backendOrigin = environment.apiUrl.replace(/\/api\/v1\/?$/, '');
+      return `${backendOrigin}/storage/${cleanPath}`;
+    }
+
     const c = (svc.category || '').toUpperCase();
-    if (c.includes('PESTANAS') || c.includes('CEJAS')) return 'https://images.unsplash.com/photo-1583001809873-a128495da465?w=800&q=80';
-    if (c.includes('FACIAL')) return 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&q=80';
-    if (c.includes('LABIOS')) return 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80';
-    if (c.includes('MASAJE')) return 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80';
-    return 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=800&q=80';
+    if (c.includes('SISTEMA') || c.includes('ACRIL') || c.includes('POLYGEL') || c.includes('NAIL')) {
+      return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80';
+    }
+    if (c.includes('MANICURA') || c.includes('RUS') || c.includes('SEMI') || c.includes('RUBBER')) {
+      return 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80';
+    }
+    if (c.includes('PEDI') || c.includes('SPA') || c.includes('PIES')) {
+      return 'https://images.unsplash.com/photo-1519415510236-718bdfcd89c8?auto=format&fit=crop&w=800&q=80';
+    }
+    if (c.includes('PESTANAS') || c.includes('CEJAS')) {
+      return 'https://images.unsplash.com/photo-1583001809873-a128495da465?auto=format&fit=crop&w=800&q=80';
+    }
+    if (c.includes('FACIAL')) {
+      return 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80';
+    }
+    if (c.includes('LABIOS')) {
+      return 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80';
+    }
+    if (c.includes('MASAJE')) {
+      return 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80';
+    }
+    return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80';
+  }
+
+  onServiceImageError(event: Event, svc: Service): void {
+    const img = event.target as HTMLImageElement;
+    if (!img) return;
+
+    // Si ya falló previamente el fallback, ocultar el elemento img para evitar el icono roto
+    if (img.dataset['hasFailed']) {
+      img.style.display = 'none';
+      return;
+    }
+
+    img.dataset['hasFailed'] = 'true';
+    const c = (svc.category || '').toUpperCase();
+    if (c.includes('PEDI') || c.includes('PIES')) {
+      img.src = 'https://images.unsplash.com/photo-1519415510236-718bdfcd89c8?auto=format&fit=crop&w=800&q=80';
+    } else if (c.includes('PESTANAS') || c.includes('CEJAS')) {
+      img.src = 'https://images.unsplash.com/photo-1583001809873-a128495da465?auto=format&fit=crop&w=800&q=80';
+    } else {
+      img.src = 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80';
+    }
   }
 
   openLookupModal(): void {

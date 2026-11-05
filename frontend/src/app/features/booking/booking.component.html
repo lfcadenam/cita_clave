@@ -205,10 +205,11 @@
 
           <div>
             <!-- Image with Overlay & Floating Badges -->
-            <div class="relative h-48 sm:h-52 w-full overflow-hidden bg-[#e6f7f2]">
+            <div class="relative h-48 sm:h-52 w-full overflow-hidden bg-gradient-to-br from-[#e6f7f2] via-slate-100 to-teal-50">
               <img [src]="getServiceImage(service)" [alt]="service.name"
+                   (error)="onServiceImageError($event, service)"
                    class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out">
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-black/20"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-black/20 pointer-events-none"></div>
 
               <!-- Category Pill (Top Left) -->
               <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-extrabold uppercase tracking-wider shadow-xs">

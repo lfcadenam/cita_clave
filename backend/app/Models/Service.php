@@ -64,6 +64,19 @@ class Service extends Model
         return $query->where('is_active', true);
     }
 
+    public function getImageUrlAttribute(?string $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
+
+        return asset('storage/' . ltrim($value, '/'));
+    }
+
     public function getFormattedDurationAttribute(): string
     {
         $hours = intdiv($this->duration_minutes, 60);
