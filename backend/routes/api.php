@@ -41,16 +41,17 @@ Route::prefix('v1')->group(function () {
     // =========================================================================
     Route::middleware(['api.key'])->group(function () {
 
-        // --- Catálogo y Disponibilidad (60 peticiones/minuto) ---
+        // --- Catálogo, Disponibilidad e Información de Pago (120 peticiones/minuto) ---
         Route::middleware(['throttle:api-public'])->group(function () {
             Route::get('/tenant/profile', [TenantProfileController::class, 'show']);
             Route::get('/services', [ServiceController::class, 'index']);
             Route::get('/services/{id}', [ServiceController::class, 'show']);
             Route::get('/availability/slots', [AvailabilityController::class, 'slots']);
             Route::get('/availability/month', [AvailabilityController::class, 'month']);
+            Route::get('/payments/nequi-info', [PaymentController::class, 'getNequiInfo']);
         });
 
-        // --- Endpoints Sensibles (10 peticiones/minuto) ---
+        // --- Endpoints Sensibles (60 peticiones/minuto) ---
         Route::middleware(['throttle:api-sensitive'])->group(function () {
             // Consulta de clientes y apartado
             Route::get('/clients/lookup', [AppointmentBookingController::class, 'lookupClient']);
@@ -63,8 +64,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/appointments/{appointmentNumber}/cancel', [AppointmentBookingController::class, 'cancelAppointmentApi']);
             Route::post('/appointments/{appointmentNumber}/reschedule', [AppointmentBookingController::class, 'rescheduleAppointmentApi']);
 
-            // Información Bancaria y Pasarela
-            Route::get('/payments/nequi-info', [PaymentController::class, 'getNequiInfo']);
+            // Pasarela de Pago
             Route::post('/payments/bold/checkout', [PaymentController::class, 'createBoldCheckout']);
 
             // Lista de espera

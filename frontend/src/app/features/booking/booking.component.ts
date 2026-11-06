@@ -105,6 +105,7 @@ export class BookingComponent implements OnInit {
 
   // Client Profile & Payment State
   clientForm!: FormGroup;
+  private lastLookedUpPhone = '';
   showPrivacyModal = signal<boolean>(false);
   isExistingClient = signal<boolean>(false);
   isRecurringClient = signal<boolean>(false);
@@ -284,13 +285,21 @@ export class BookingComponent implements OnInit {
       accept_terms: [false, [Validators.requiredTrue]]
     });
 
-    this.clientForm.valueChanges.subscribe(val => {
+    // Validar paso 3 al cambiar cualquier campo
+    this.clientForm.valueChanges.subscribe(() => {
       this.isStep3Valid.set(this.checkStep3Validity());
-      if (val && val.phone) {
-        const clean = val.phone.toString().replace(/\D/g, '');
-        if (clean.length === 10) {
+    });
+
+    // Escuchar únicamente cambios directos en el campo de teléfono
+    this.clientForm.get('phone')?.valueChanges.subscribe(rawVal => {
+      const clean = (rawVal || '').toString().replace(/\D/g, '');
+      if (clean.length === 10) {
+        if (clean !== this.lastLookedUpPhone) {
           this.lookupClientData(clean);
-        } else if (clean.length < 10 && this.isExistingClient()) {
+        }
+      } else if (clean.length < 10) {
+        this.lastLookedUpPhone = '';
+        if (this.isExistingClient()) {
           this.isExistingClient.set(false);
           this.isRecurringClient.set(false);
           this.existingClientName.set('');
@@ -363,9 +372,15 @@ export class BookingComponent implements OnInit {
       this.isExistingClient.set(false);
       this.isRecurringClient.set(false);
       this.existingClientName.set('');
+      this.lastLookedUpPhone = '';
       return;
     }
 
+    if (clean === this.lastLookedUpPhone && (this.isExistingClient() || this.isCheckingClient())) {
+      return;
+    }
+
+    this.lastLookedUpPhone = clean;
     this.isCheckingClient.set(true);
     this.api.lookupClient(clean).subscribe({
       next: (profile: ClientProfile | null) => {
