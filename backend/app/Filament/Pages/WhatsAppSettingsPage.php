@@ -29,6 +29,7 @@ class WhatsAppSettingsPage extends Page
     public ?string $meta_access_token = '';
     public ?string $meta_verify_token = '';
     public ?string $whatsapp_number = '';
+    public string $meta_pin = '123456';
 
     // Test form
     public string $test_phone = '';
@@ -201,6 +202,56 @@ class WhatsAppSettingsPage extends Page
     {
         $this->test_template_name = $name;
         $this->test_template_lang = $language;
+    }
+
+    /**
+     * Registra y activa el número en Meta WhatsApp Cloud API con un PIN de 6 dígitos.
+     * Resuelve el error de Meta (#133010): Account not registered.
+     */
+    public function registerMetaPhoneNumber(): void
+    {
+        $this->validate([
+            'meta_pin' => ['required', 'string', 'regex:/^\d{6}$/'],
+            'meta_phone_number_id' => ['required', 'string'],
+            'meta_access_token' => ['required', 'string'],
+        ], [
+            'meta_pin.required' => 'Ingresa un PIN de 6 dígitos numéricos.',
+            'meta_pin.regex' => 'El PIN debe contener exactamente 6 dígitos numéricos (ej: 123456).',
+            'meta_phone_number_id.required' => 'Ingresa el Phone Number ID de Meta antes de registrar el número.',
+            'meta_access_token.required' => 'Ingresa el Access Token de Meta antes de registrar el número.',
+        ]);
+
+        $service = app(WhatsAppNotificationService::class);
+        $tenant = $this->getTenant();
+
+        if ($tenant) {
+            $tenant->whatsapp_driver = 'meta';
+            $tenant->meta_phone_number_id = trim((string) $this->meta_phone_number_id);
+            $tenant->meta_waba_id = trim((string) $this->meta_waba_id);
+            $tenant->meta_access_token = trim((string) $this->meta_access_token);
+            $tenant->meta_verify_token = trim((string) $this->meta_verify_token) ?: 'nuvex_meta_verify_2026';
+            if (!empty($this->whatsapp_number)) {
+                $tenant->whatsapp_number = trim((string) $this->whatsapp_number);
+            }
+        }
+
+        $res = $service->registerMetaPhoneNumber(trim($this->meta_pin), $tenant);
+
+        if ($res['success'] ?? false) {
+            Notification::make()
+                ->title('¡Número Activado en Meta Cloud API!')
+                ->body('El número telefónico ha sido registrado con éxito en Meta WhatsApp Cloud API (Error #133010 resuelto). Ya puedes realizar envíos de prueba.')
+                ->success()
+                ->send();
+        } else {
+            Notification::make()
+                ->title('Error al Registrar Número en Meta')
+                ->body($res['message'] ?? 'Meta no pudo registrar el número con el PIN proporcionado.')
+                ->danger()
+                ->send();
+        }
+
+        $this->checkConnection();
     }
 
     /**

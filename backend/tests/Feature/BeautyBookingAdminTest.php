@@ -179,7 +179,7 @@ class BeautyBookingAdminTest extends TestCase
         $appointment = Appointment::where('status', AppointmentStatus::PENDING_VERIFICATION)->first();
 
         Livewire::test(\App\Filament\Pages\AppointmentCalendarPage::class)
-            ->assertSet('viewMode', 'month')
+            ->assertSet('viewMode', 'hibrido')
             ->call('setViewMode', 'week')
             ->assertSet('viewMode', 'week')
             ->call('setViewMode', 'day')

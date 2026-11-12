@@ -150,7 +150,7 @@ class WhatsAppNotificationFlowTest extends TestCase
         ]);
 
         Http::fake([
-            'https://graph.facebook.com/v21.0/123456789012345/messages' => Http::response([
+            '*123456789012345/messages*' => Http::response([
                 'messaging_product' => 'whatsapp',
                 'contacts' => [['input' => '573106080402', 'wa_id' => '573106080402']],
                 'messages' => [['id' => 'wamid.HBgMNTczMTA2MDgwNDAyFQIAERgSQkI']],
@@ -200,4 +200,44 @@ class WhatsAppNotificationFlowTest extends TestCase
             'client_name' => 'Natalia Morales',
         ]);
     }
+
+    public function test_register_meta_phone_number_success(): void
+    {
+        $this->tenant->update([
+            'whatsapp_driver' => 'meta',
+            'meta_phone_number_id' => '123456789012345',
+            'meta_access_token' => 'EAAG_TEST_TOKEN',
+        ]);
+
+        Http::fake([
+            '*123456789012345/register*' => Http::response([
+                'success' => true,
+            ], 200),
+        ]);
+
+        $result = $this->serviceWhatsApp->registerMetaPhoneNumber('123456', $this->tenant);
+
+        $this->assertTrue($result['success']);
+        $this->assertStringContainsString('registrado y activado', $result['message']);
+    }
+
+    public function test_register_meta_phone_number_artisan_command(): void
+    {
+        $this->tenant->update([
+            'whatsapp_driver' => 'meta',
+            'meta_phone_number_id' => '123456789012345',
+            'meta_access_token' => 'EAAG_TEST_TOKEN',
+        ]);
+
+        Http::fake([
+            '*123456789012345/register*' => Http::response([
+                'success' => true,
+            ], 200),
+        ]);
+
+        $this->artisan('whatsapp:register', ['pin' => '654321', '--tenant' => $this->tenant->slug])
+            ->expectsOutputToContain('registrado y activado exitosamente')
+            ->assertSuccessful();
+    }
 }
+

@@ -83,7 +83,8 @@ class SendAppointmentRemindersCommand extends Command
             if ($mailSent || $waSent) {
                 $sentCount++;
                 $appointment->update(['reminder_24h_sent_at' => now()]);
-                $this->info("   [OK] Recordatorio despachado (Email: " . ($mailSent ? 'Sí' : 'No') . " | WhatsApp: " . ($waSent ? 'Sí' : 'No') . ").");
+                $mailStatus = $this->mailService->isEnabled() ? ($mailSent ? 'Sí' : 'No') : 'Desactivado';
+                $this->info("   [OK] Recordatorio despachado (Email: {$mailStatus} | WhatsApp: " . ($waSent ? 'Sí' : 'No') . ").");
             } else {
                 $this->warn("   [ERROR] No se pudo enviar el recordatorio para #{$appointment->appointment_number}.");
             }

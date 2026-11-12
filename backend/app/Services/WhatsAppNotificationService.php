@@ -1143,6 +1143,53 @@ class WhatsAppNotificationService
     }
 
     /**
+     * Registra / activa el número de teléfono en Meta Cloud API con un PIN de 6 dígitos.
+     * Requerido por Meta para números reales (resuelve el error 133010: Account not registered).
+     */
+    public function registerMetaPhoneNumber(string $pin = '123456', ?Tenant $tenant = null): array
+    {
+        $creds = $this->resolveMetaCredentials(null, $tenant);
+        $apiUrl = $creds['api_url'];
+        $phoneId = $creds['phone_number_id'];
+        $token = $creds['access_token'];
+
+        if (empty($phoneId) || empty($token)) {
+            return [
+                'success' => false,
+                'message' => 'Faltan credenciales de Meta (Phone Number ID o Access Token).',
+            ];
+        }
+
+        try {
+            $response = Http::withToken($token)
+                ->acceptJson()
+                ->timeout(15)
+                ->post("{$apiUrl}/{$phoneId}/register", [
+                    'messaging_product' => 'whatsapp',
+                    'pin' => $pin,
+                ]);
+
+            $json = $response->json() ?? [];
+
+            if ($response->successful() && ($json['success'] ?? false)) {
+                Log::info("[WhatsApp Meta] Número Phone ID {$phoneId} registrado exitosamente en Cloud API.");
+                return [
+                    'success' => true,
+                    'message' => 'Número registrado y activado con éxito en Meta WhatsApp Cloud API.',
+                    'data' => $json,
+                ];
+            }
+
+            return $this->formatMetaError($response->status(), $json);
+        } catch (\Throwable $e) {
+            return [
+                'success' => false,
+                'message' => 'Excepción al registrar número en Meta: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Traduce errores de Meta Graph API a diagnósticos claros en español.
      */
     protected function formatMetaError(int $httpStatus, mixed $body): array
@@ -1160,6 +1207,7 @@ class WhatsAppNotificationService
             131058 => 'La plantilla "hello_world" sólo está permitida por Meta en números públicos de prueba (sandbox). Al estar usando un número real o Phone Number ID de producción, Meta bloquea "hello_world". Debes usar una plantilla propia aprobada en tu Meta WhatsApp Manager (por ejemplo: "reserva_confirmada", "recordatorio_cita_24h" o "cita_recibida") con su idioma correspondiente (ej: "es_CO" o "es").',
             132000, 132001 => 'La plantilla solicitada no existe o aún no está aprobada en el idioma indicado dentro de Meta WhatsApp Manager.',
             131009, 100 => 'Parámetro inválido en la petición a Meta Graph API (#100). Causas principales: 1) El número destinatario es el mismo número comercial de WhatsApp del salón (Meta no permite auto-mensajes). 2) La cantidad de variables enviadas no coincide con las definidas en la plantilla en WhatsApp Manager (ej. enviar 5 variables a una plantilla de 4 o sin variables).',
+            133010 => 'El número de teléfono está en tu cuenta de Meta pero no ha sido registrado/activado en Cloud API (Error #133010: Account not registered). Para resolverlo: 1) Si este número está actualmente activo en la app de WhatsApp de tu celular físico, debes eliminar la cuenta en la app móvil de WhatsApp (Meta prohíbe operar simultáneamente en app móvil y en Cloud API). 2) Registra y activa el número usando el botón "Activar Número con PIN" en este panel o ejecutando en terminal: php artisan whatsapp:register 123456.',
             default => null,
         };
 

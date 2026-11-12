@@ -1064,3 +1064,47 @@ ecalculateLunchForDate(): Recalcula o elimina el bloque flexible retornando al h
      - Creado GUIA_INTEGRACION_META_WHATSAPP.md con el paso a paso detallado para Meta for Developers (System User token permanente, webhooks, plantillas y políticas).
   6. **Certificación y Pruebas Automatizadas:**
      - Suite ejecutada con éxito (WhatsAppNotificationFlowTest.php): 6/6 pruebas aprobadas (19 aserciones).
+
+---
+
+### 🏷️ Registro #062 — Diagnóstico Error Meta #133010 y Herramientas de Activación de Número con PIN
+* **Fecha:** 7 de Noviembre de 2026
+* **Responsable:** Nuvex Tecnología
+* **Solicitud:** Diagnóstico de fallo en el envío de WhatsApp por error de Meta `#133010 (Account not registered)`, habilitación de registro de número con PIN en el panel backoffice y preparación de informe ejecutivo para el cliente.
+* **Actividades Realizadas:**
+  1. **Diagnóstico Técnico y Causa Raíz:**
+     - Identificado que Meta Cloud API requiere invocación obligatoria a `POST /{phone_number_id}/register` con PIN de 6 dígitos antes de permitir cualquier envío.
+     - Documentada la incompatibilidad de Meta que desregistra el número si este continúa activo en la app física de WhatsApp en un celular móvil.
+  2. **Panel Administrativo Filament (`WhatsAppSettingsPage.php` y `whatsapp-settings.blade.php`):**
+     - Añadido campo de PIN de 6 dígitos (por defecto `123456`) y botón interactivo "Activar Número con PIN".
+     - Añadida acción asistida dentro del cuadro de diagnóstico del test de envío para resolver `#133010` en un solo clic.
+  3. **Comando de Terminal Artisan:**
+     - Creado `php artisan whatsapp:register {pin=123456} {--tenant=}` en `RegisterWhatsAppMetaNumberCommand.php`.
+  4. **Documento para el Cliente:**
+     - Redactado `INFORME_DIAGNOSTICO_WHATSAPP_META.md` con resumen ejecutivo, alternativas (Meta Cloud API vs Evolution Gateway QR) y agenda guiada para la reunión con el cliente.
+  5. **Pruebas Automatizadas:**
+     - Actualizada suite `WhatsAppNotificationFlowTest.php`: 8/8 pruebas aprobadas (22 aserciones al 100%).
+
+
+---
+
+### 🚀 Registro #063 — Bandera de Activación/Desactivación de Notificaciones por Correo Electrónico
+* **Fecha:** 12 de Noviembre de 2026
+* **Responsable:** Nuvex Tecnología
+* **Solicitud:** Crear una bandera para prender o apagar las notificaciones por correo electrónico desde variables de entorno (.env) y dejarla desactivada de inmediato.
+* **Actividades Realizadas:**
+  1. **Configuración Centralizada (config/mail.php):**
+     - Añadida la clave 'notifications_enabled' => (bool) env('MAIL_NOTIFICATIONS_ENABLED', true).
+  2. **Control en Servicio Transaccional (pp/Services/AppointmentMailNotificationService.php):**
+     - Incorporado método isEnabled(): bool que consulta dinámicamente config('mail.notifications_enabled').
+     - Validaciones preventivas en sendAppointmentBookedEmails, sendPaymentConfirmedEmail y sendReminder24hEmail.
+     - Salida inmediata y registro limpio en log (MAIL_NOTIFICATIONS_ENABLED=false) sin generar demoras por timeouts ni excepciones SMTP.
+  3. **Comando de Recordatorios 24h (pp/Console/Commands/SendAppointmentRemindersCommand.php):**
+     - Reporte visual en consola adaptado: muestra Email: Desactivado en lugar de marcar fallo cuando la bandera está inactiva.
+     - Permite que el cron continúe despachando los recordatorios por WhatsApp con normalidad.
+  4. **Archivos de Entorno Actualizados:**
+     - Establecido MAIL_NOTIFICATIONS_ENABLED=false en ackend/.env, .env raíz, ackend/.env.example y .env.docker.example.
+  5. **Certificación y Pruebas Automatizadas:**
+     - Añadidas 3 pruebas en 	ests/Feature/AppointmentEmailNotificationTest.php validando que con la bandera en alse no se dispare ningún email en creación, pago ni cron 24h.
+     - Corregida aserción de modo de vista 'hibrido' en 	ests/Feature/BeautyBookingAdminTest.php.
+     - Suite completa ejecutada con éxito: **88/88 pruebas aprobadas al 100% (473 aserciones)** en 11.69s.

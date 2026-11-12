@@ -538,6 +538,36 @@
                                     <input type="text" wire:model="meta_verify_token" placeholder="nuvex_meta_verify_2026" class="nuvex-wa-input is-mono">
                                     <span class="nuvex-wa-hint">Token de verificación para el handshake de Webhook con Meta.</span>
                                 </div>
+
+                                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:16px; padding:16px; margin-top:8px;">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+                                        <div style="font-size:12.5px; font-weight:800; color:#166534; display:flex; align-items:center; gap:6px;">
+                                            <x-heroicon-o-key style="width:16px; height:16px; color:#16a34a;" />
+                                            <span>Activación del Número en Meta Cloud API (PIN de 6 Dígitos)</span>
+                                        </div>
+                                        <span style="font-size:11px; font-weight:700; color:#15803d; background:#dcfce7; padding:2px 8px; border-radius:9999px;">
+                                            Resuelve Error #133010
+                                        </span>
+                                    </div>
+                                    <p style="font-size:11.5px; color:#166534; line-height:1.45; margin:0 0 12px 0;">
+                                        Meta exige registrar el número con un PIN de 6 dígitos antes de permitir envíos. Si el número está activo en la app de WhatsApp de un celular físico, debes eliminar la cuenta en la app móvil previamente.
+                                    </p>
+                                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                                        <div style="flex:0 0 130px;">
+                                            <input type="text" maxlength="6" wire:model="meta_pin" placeholder="123456" class="nuvex-wa-input is-mono" style="text-align:center; font-weight:800; letter-spacing:3px;">
+                                        </div>
+                                        <button type="button" wire:click="registerMetaPhoneNumber" wire:loading.attr="disabled" class="nuvex-wa-btn-secondary" style="background:#ffffff; border-color:#86efac; color:#166534;">
+                                            <span wire:loading.remove wire:target="registerMetaPhoneNumber" style="display:inline-flex; align-items:center; gap:6px;">
+                                                <x-heroicon-o-shield-check style="width:16px; height:16px;" />
+                                                <span>Activar Número con PIN</span>
+                                            </span>
+                                            <span wire:loading.inline-flex wire:target="registerMetaPhoneNumber" style="display:none; align-items:center; gap:6px;">
+                                                <span class="nuvex-wa-spinner is-teal"></span>
+                                                <span>Activando en Meta...</span>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         @elseif($whatsapp_driver === 'evolution')
                             <div class="nuvex-wa-evo-box">
@@ -714,6 +744,25 @@
                             <div style="font-family:ui-monospace, monospace; font-size:11.5px; word-break:break-word;">
                                 {{ $lastTestResult }}
                             </div>
+
+                            @if(!$lastTestSuccess && str_contains($lastTestResult ?? '', '133010'))
+                                <div style="margin-top:14px; padding:12px 14px; background:#fff; border-radius:14px; border:1px solid #fecaca; text-align:left;">
+                                    <div style="font-weight:800; color:#991b1b; font-size:12px; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                                        <x-heroicon-o-wrench-screwdriver style="width:15px; height:15px;" />
+                                        <span>Solución Rápida para Error #133010:</span>
+                                    </div>
+                                    <p style="font-size:11.5px; color:#7f1d1d; margin:0 0 10px 0; line-height:1.45;">
+                                        Meta exige registrar el número con su PIN de 6 dígitos antes de enviar mensajes. Si el número está activo en la app de WhatsApp de tu celular físico, debes eliminar la cuenta en la app de WhatsApp del celular previamente. Luego presiona:
+                                    </p>
+                                    <button type="button" wire:click="registerMetaPhoneNumber" wire:loading.attr="disabled" class="nuvex-wa-btn-primary" style="font-size:11.5px; padding:6px 14px; background:#dc2626; border:none; color:#ffffff;">
+                                        <span wire:loading.remove wire:target="registerMetaPhoneNumber">Activar Número Ahora con PIN ({{ $meta_pin ?: '123456' }})</span>
+                                        <span wire:loading.inline-flex wire:target="registerMetaPhoneNumber" style="display:none; align-items:center; gap:6px;">
+                                            <span class="nuvex-wa-spinner"></span>
+                                            <span>Activando en Meta...</span>
+                                        </span>
+                                    </button>
+                                </div>
+                            @endif
                         </div>
                     @endif
                 </div>

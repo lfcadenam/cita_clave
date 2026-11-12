@@ -15,6 +15,14 @@ use Throwable;
 class AppointmentMailNotificationService
 {
     /**
+     * Determina si las notificaciones por correo están habilitadas globalmente.
+     */
+    public function isEnabled(): bool
+    {
+        return (bool) config('mail.notifications_enabled', true);
+    }
+
+    /**
      * Enviar correos al registrar una nueva cita:
      * 1. A la dueña/administradora del centro de estética.
      * 2. A la clienta que realizó el agendamiento (si proporcionó email).
@@ -26,6 +34,11 @@ class AppointmentMailNotificationService
             'admin_sent' => false,
             'client_sent' => false,
         ];
+
+        if (! $this->isEnabled()) {
+            Log::info("Notificaciones por correo desactivadas globalmente (MAIL_NOTIFICATIONS_ENABLED=false). Omitiendo correos de registro para cita #{$appointment->appointment_number}");
+            return $results;
+        }
 
         // 1. Notificar a la dueña / administradora del salón
         $ownerEmail = $this->resolveOwnerEmail($appointment);
@@ -60,6 +73,11 @@ class AppointmentMailNotificationService
     {
         $appointment->loadMissing(['tenant', 'service']);
 
+        if (! $this->isEnabled()) {
+            Log::info("Notificaciones por correo desactivadas globalmente (MAIL_NOTIFICATIONS_ENABLED=false). Omitiendo correo de pago validado para cita #{$appointment->appointment_number}");
+            return false;
+        }
+
         if (empty($appointment->client_email)) {
             Log::info("Cita #{$appointment->appointment_number} confirmada, pero no tiene correo de clienta registrado.");
             return false;
@@ -81,6 +99,11 @@ class AppointmentMailNotificationService
     public function sendReminder24hEmail(Appointment $appointment): bool
     {
         $appointment->loadMissing(['tenant', 'service']);
+
+        if (! $this->isEnabled()) {
+            Log::info("Notificaciones por correo desactivadas globalmente (MAIL_NOTIFICATIONS_ENABLED=false). Omitiendo correo recordatorio 24h para cita #{$appointment->appointment_number}");
+            return false;
+        }
 
         if (empty($appointment->client_email)) {
             Log::info("Recordatorio 24h omitido para cita #{$appointment->appointment_number}: no tiene correo.");

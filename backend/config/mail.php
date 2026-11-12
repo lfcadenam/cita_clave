@@ -18,6 +18,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Email Notifications Toggle
+    |--------------------------------------------------------------------------
+    |
+    | Enables or disables appointment transactional email notifications.
+    | When set to false, emails are bypassed cleanly without SMTP errors.
+    |
+    */
+
+    'notifications_enabled' => (bool) env('MAIL_NOTIFICATIONS_ENABLED', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Mailer Configurations
     |--------------------------------------------------------------------------
     |
