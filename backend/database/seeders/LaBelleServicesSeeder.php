@@ -144,13 +144,79 @@ class LaBelleServicesSeeder extends Seeder
                 'image_url' => 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&w=800&q=80',
                 'sort_order' => 11,
             ],
+            [
+                'name' => 'Manicura Rusa + Semipermanente',
+                'slug' => 'combo-manicura-rusa-semipermanente',
+                'category' => ServiceCategory::COMBOS,
+                'description' => 'Combo completo de manicura rusa de alta precisión con esmaltado semipermanente de larga duración.',
+                'duration_minutes' => 60,
+                'base_price' => 90000,
+                'deposit_amount' => 50000,
+                'image_url' => 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80',
+                'sort_order' => 12,
+            ],
+            [
+                'name' => 'Manicura Rusa + Semipermanente + Rubber',
+                'slug' => 'combo-manicura-rusa-semipermanente-rubber',
+                'category' => ServiceCategory::COMBOS,
+                'description' => 'Combo premium: manicura rusa, refuerzo con base Rubber niveladora y esmaltado semipermanente.',
+                'duration_minutes' => 120,
+                'base_price' => 145000,
+                'deposit_amount' => 50000,
+                'image_url' => 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=800&q=80',
+                'sort_order' => 13,
+            ],
+            [
+                'name' => 'Pedicura + Semipermanente',
+                'slug' => 'combo-pedicura-semipermanente',
+                'category' => ServiceCategory::COMBOS,
+                'description' => 'Combo de pedicura integral con esmaltado semipermanente y secado inmediato en lámpara.',
+                'duration_minutes' => 60,
+                'base_price' => 85000,
+                'deposit_amount' => 50000,
+                'image_url' => 'https://images.unsplash.com/photo-1664643411326-6c589531be3c?auto=format&fit=crop&w=800&q=80',
+                'sort_order' => 14,
+            ],
+            [
+                'name' => 'Pedicura Semipermanente + Spa',
+                'slug' => 'combo-pedicura-semipermanente-spa',
+                'category' => ServiceCategory::COMBOS,
+                'description' => 'Combo relajante: pedicura profunda, exfoliación, mascarilla podal Spa y esmaltado semipermanente.',
+                'duration_minutes' => 60,
+                'base_price' => 120000,
+                'deposit_amount' => 50000,
+                'image_url' => 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
+                'sort_order' => 15,
+            ],
+            [
+                'name' => 'Uñas Polygel + Semipermanente',
+                'slug' => 'combo-unas-polygel-semipermanente',
+                'category' => ServiceCategory::COMBOS,
+                'description' => 'Set completo esculpido en Polygel de alta resistencia con acabado en esmaltado semipermanente.',
+                'duration_minutes' => 150,
+                'base_price' => 265000,
+                'deposit_amount' => 50000,
+                'image_url' => 'https://images.unsplash.com/photo-1601244668565-afba8cbd2b51?auto=format&fit=crop&w=800&q=80',
+                'sort_order' => 16,
+            ],
+            [
+                'name' => 'Mantenimiento Polygel + Semipermanente',
+                'slug' => 'combo-mantenimiento-polygel-semipermanente',
+                'category' => ServiceCategory::COMBOS,
+                'description' => 'Retoque y nivelación del crecimiento en Polygel complementado con esmaltado semipermanente impecable.',
+                'duration_minutes' => 120,
+                'base_price' => 210000,
+                'deposit_amount' => 50000,
+                'image_url' => 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&w=800&q=80',
+                'sort_order' => 17,
+            ],
         ];
 
-        $validSlugs = array_map(fn($srv) => Str::slug($srv['name']), $services);
+        $validSlugs = array_map(fn($srv) => $srv['slug'] ?? Str::slug($srv['name']), $services);
 
         foreach ($tenants as $tenant) {
             foreach ($services as $srv) {
-                $slug = Str::slug($srv['name']);
+                $slug = $srv['slug'] ?? Str::slug($srv['name']);
                 Service::updateOrCreate(
                     [
                         'tenant_id' => $tenant->id,
@@ -164,7 +230,7 @@ class LaBelleServicesSeeder extends Seeder
                 );
             }
 
-            // Eliminar del tenant cualquier servicio anterior que no pertenezca al catálogo oficial de 11
+            // Eliminar del tenant cualquier servicio anterior que no pertenezca al catálogo oficial
             Service::where('tenant_id', $tenant->id)
                 ->whereNotIn('slug', $validSlugs)
                 ->delete();

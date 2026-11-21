@@ -90,21 +90,19 @@ class ClearAppointmentsCommand extends Command
 
         $this->info('Eliminando citas...');
 
-        DB::beginTransaction();
-
         try {
             if ($all) {
                 DB::statement('SET FOREIGN_KEY_CHECKS=0;');
                 DB::table('appointments')->truncate();
                 DB::statement('SET FOREIGN_KEY_CHECKS=1;');
             } else {
-                $query->delete();
+                DB::transaction(function () use ($query) {
+                    $query->delete();
+                });
             }
 
-            DB::commit();
             $this->info("✓ Se eliminaron correctamente {$count} citas de la base de datos.");
         } catch (\Throwable $e) {
-            DB::rollBack();
             $this->error("❌ Error al limpiar las citas: {$e->getMessage()}");
             return Command::FAILURE;
         }

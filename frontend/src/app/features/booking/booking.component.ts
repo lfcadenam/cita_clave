@@ -39,6 +39,10 @@ export class BookingComponent implements OnInit {
   // Category Filter Tabs
   categories = [
     { key: 'ALL', label: 'Todos' },
+    { key: 'COMBOS', label: 'Combos' },
+    { key: 'MANICURA', label: 'Manicura' },
+    { key: 'PEDICURA', label: 'Pedicura' },
+    { key: 'SISTEMAS_ARTIFICIALES', label: 'Polygel' },
     { key: 'PESTANAS_CEJAS', label: 'Pestañas & Cejas' },
     { key: 'FACIAL', label: 'Cuidado Facial' },
     { key: 'LABIOS', label: 'Labios' },

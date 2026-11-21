@@ -13,6 +13,7 @@ enum ServiceCategory: string
     case PEDICURA = 'PEDICURA';                     // Limpieza pedicura, spa, semipermanente
     case SISTEMAS_ARTIFICIALES = 'SISTEMAS_ARTIFICIALES'; // Polygel, acrílico, extensiones
     case REPARACION_RETIRO = 'REPARACION_RETIRO';   // Remoción semi, remiendos, uñas individuales
+    case COMBOS = 'COMBOS';                         // Combos y paquetes especiales
 
     public function label(): string
     {
@@ -26,6 +27,7 @@ enum ServiceCategory: string
             self::PEDICURA => 'Pedicura',
             self::SISTEMAS_ARTIFICIALES => 'Sistemas & Polygel',
             self::REPARACION_RETIRO => 'Retiro & Reparaciones',
+            self::COMBOS => 'Combos Especiales',
         };
     }
 }

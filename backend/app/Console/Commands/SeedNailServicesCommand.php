@@ -19,19 +19,19 @@ class SeedNailServicesCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Registra o sincroniza los 11 servicios oficiales de La Belle Nails Bogotá (Manicura, Pedicura y Polygel)';
+    protected $description = 'Registra o sincroniza los 17 servicios y combos oficiales de La Belle Nails Bogotá (Manicura, Pedicura, Polygel y Combos)';
 
     /**
      * Execute the console command.
      */
     public function handle(): int
     {
-        $this->info('Sincronizando el catálogo de servicios de La Belle Nails Bogotá...');
+        $this->info('Sincronizando el catálogo de servicios y combos de La Belle Nails Bogotá...');
 
         $seeder = new LaBelleServicesSeeder();
         $seeder->run();
 
-        $this->info('✓ Catálogo de 11 servicios actualizado exitosamente en la base de datos.');
+        $this->info('✓ Catálogo de servicios y combos actualizado exitosamente en la base de datos.');
 
         return Command::SUCCESS;
     }
