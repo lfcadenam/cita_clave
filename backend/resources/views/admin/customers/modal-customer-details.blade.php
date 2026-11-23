@@ -25,7 +25,7 @@
 
         /* Banner Superior del Cliente */
         .nuvex-cust-banner {
-            background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+            background: #F8FAFC;
             border: 1px solid #E2E8F0;
             border-radius: 20px;
             padding: 1.25rem 1.5rem;
@@ -37,7 +37,7 @@
         }
 
         .dark .nuvex-cust-banner {
-            background: linear-gradient(135deg, #1E293B 0%, #182234 100%);
+            background: #1E293B;
             border-color: rgba(255, 255, 255, 0.08);
         }
 
@@ -45,7 +45,7 @@
             width: 52px;
             height: 52px;
             border-radius: 9999px;
-            background: linear-gradient(135deg, #00C975 0%, #009E5C 100%);
+            background: #00C975;
             color: #FFFFFF;
             display: flex;
             align-items: center;

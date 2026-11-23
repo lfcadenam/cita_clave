@@ -1,4 +1,4 @@
-@extends('portal.layout')
+﻿@extends('portal.layout')
 
 @section('title', 'Reagendar Cita #' . $appointment->appointment_number . ' | Paola Aguilera')
 
@@ -11,17 +11,17 @@
      })">
 
     <!-- Header Card -->
-    <div class="bg-white rounded-3xl border border-[#e2f0ea] shadow-lg p-6 sm:p-8 text-center relative overflow-hidden">
-        <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#1e3a5f] via-[#0d9488] to-[#00C975]"></div>
+    <div class="bg-white rounded-3xl border border-[#EFEAE6] shadow-lg p-6 sm:p-8 text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-2 bg-[#8E4D5E]"></div>
 
-        <div class="w-16 h-16 rounded-full bg-[#e6f7f2] text-[#0d9488] mx-auto flex items-center justify-center mb-3 shadow-inner">
+        <div class="w-16 h-16 rounded-full bg-[#FAF2F4] text-[#8E4D5E] mx-auto flex items-center justify-center mb-3 shadow-inner">
             <i data-lucide="calendar-sync" class="w-8 h-8"></i>
         </div>
 
-        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-[#e6f7f2] text-[#0d9488] uppercase tracking-wider mb-2 border border-[#e2f0ea]">
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-[#FAF2F4] text-[#8E4D5E] uppercase tracking-wider mb-2 border border-[#EFEAE6]">
             Reprogramación de Cita
         </span>
-        <h2 class="text-2xl font-bold text-[#1e3a5f]">Reagenda tu Turno</h2>
+        <h2 class="text-2xl font-bold text-[#2D2327]">Reagenda tu Turno</h2>
         <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">
             Elige una nueva fecha y horario disponible. Tu abono y tu reserva para este servicio se mantendrán totalmente intactos.
         </p>
@@ -30,11 +30,11 @@
         <div class="mt-6 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left text-xs space-y-2">
             <div class="flex items-center justify-between pb-2 border-b border-slate-200">
                 <span class="font-bold text-slate-500 uppercase tracking-wider">Cita Actual:</span>
-                <span class="font-mono font-bold text-[#1e3a5f]">#{{ $appointment->appointment_number }}</span>
+                <span class="font-mono font-bold text-[#2D2327]">#{{ $appointment->appointment_number }}</span>
             </div>
             <div class="flex items-center justify-between">
                 <span class="text-slate-500">Servicio:</span>
-                <span class="font-bold text-[#0d9488]">{{ $appointment->service->name }} ({{ $appointment->service->duration_minutes }} min)</span>
+                <span class="font-bold text-[#8E4D5E]">{{ $appointment->service->name }} ({{ $appointment->service->duration_minutes }} min)</span>
             </div>
             <div class="flex items-center justify-between">
                 <span class="text-slate-500">Horario actual:</span>
@@ -66,8 +66,8 @@
 
             <!-- 1. Selección de Nueva Fecha -->
             <div>
-                <label for="new_date" class="block text-xs font-bold text-[#1e3a5f] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                    <i data-lucide="calendar" class="w-4 h-4 text-[#0d9488]"></i>
+                <label for="new_date" class="block text-xs font-bold text-[#2D2327] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <i data-lucide="calendar" class="w-4 h-4 text-[#8E4D5E]"></i>
                     <span>1. Selecciona la Nueva Fecha</span>
                 </label>
                 <input type="date"
@@ -78,7 +78,7 @@
                        min="{{ $minDate }}"
                        max="{{ $maxDate }}"
                        required
-                       class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0d9488]/30 focus:border-[#0d9488] bg-white transition-all shadow-xs cursor-pointer">
+                       class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8E4D5E]/30 focus:border-[#8E4D5E] bg-white transition-all shadow-xs cursor-pointer">
                 <p class="text-[11px] text-slate-400 mt-1">
                     Puedes agendar para cualquier día hábil dentro de los próximos 35 días.
                 </p>
@@ -86,12 +86,12 @@
 
             <!-- 2. Selección de Horario Disponible -->
             <div>
-                <label class="block text-xs font-bold text-[#1e3a5f] uppercase tracking-wider mb-2 flex items-center justify-between">
+                <label class="block text-xs font-bold text-[#2D2327] uppercase tracking-wider mb-2 flex items-center justify-between">
                     <span class="flex items-center gap-1.5">
-                        <i data-lucide="clock" class="w-4 h-4 text-[#0d9488]"></i>
+                        <i data-lucide="clock" class="w-4 h-4 text-[#8E4D5E]"></i>
                         <span>2. Turnos Disponibles</span>
                     </span>
-                    <span x-show="loading" class="text-[11px] text-[#0d9488] font-normal animate-pulse flex items-center gap-1">
+                    <span x-show="loading" class="text-[11px] text-[#8E4D5E] font-normal animate-pulse flex items-center gap-1">
                         <i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Consultando turnos...
                     </span>
                 </label>
@@ -101,7 +101,7 @@
 
                 <!-- Loading State -->
                 <div x-show="loading" class="py-8 text-center bg-slate-50 rounded-2xl border border-slate-100">
-                    <div class="inline-block w-6 h-6 border-2 border-[#0d9488] border-t-transparent rounded-full animate-spin"></div>
+                    <div class="inline-block w-6 h-6 border-2 border-[#8E4D5E] border-t-transparent rounded-full animate-spin"></div>
                     <p class="text-xs text-slate-500 mt-2">Buscando turnos libres para esta fecha...</p>
                 </div>
 
@@ -122,7 +122,7 @@
                                 @click="selectedTime = slot.start_time"
                                 :class="selectedTime === slot.start_time
                                     ? 'bg-[#00C975] text-white border-[#00C975] shadow-md shadow-emerald-500/25 scale-[1.02]'
-                                    : 'bg-white text-slate-700 border-slate-200 hover:border-[#0d9488] hover:bg-emerald-50/40'"
+                                    : 'bg-white text-slate-700 border-slate-200 hover:border-[#8E4D5E] hover:bg-emerald-50/40'"
                                 class="py-2.5 px-3 rounded-xl border text-xs font-bold transition-all text-center flex flex-col items-center justify-center cursor-pointer">
                             <span x-text="slot.start_formatted"></span>
                             <span class="text-[10px] opacity-75 font-normal" x-text="'a ' + slot.end_formatted"></span>
@@ -140,11 +140,11 @@
                           name="reason"
                           rows="2"
                           placeholder="Ej: Inconveniente laboral, cambio de turno..."
-                          class="w-full text-xs p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-[#0d9488]/30 focus:border-[#0d9488] outline-none transition-all placeholder:text-slate-400"></textarea>
+                          class="w-full text-xs p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-[#8E4D5E]/30 focus:border-[#8E4D5E] outline-none transition-all placeholder:text-slate-400"></textarea>
             </div>
 
             <!-- Resumen de Selección y Acciones -->
-            <div class="pt-2 border-t border-[#e2f0ea] space-y-3">
+            <div class="pt-2 border-t border-[#EFEAE6] space-y-3">
                 <div x-show="selectedTime" x-cloak class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-semibold flex items-center justify-between">
                     <span>Nuevo turno seleccionado:</span>
                     <span class="font-bold" x-text="selectedDate + ' a las ' + selectedTime"></span>

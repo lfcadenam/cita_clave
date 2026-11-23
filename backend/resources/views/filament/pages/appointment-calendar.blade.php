@@ -727,7 +727,7 @@
             left: 4px;
             right: 4px;
             border-radius: 6px;
-            background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 10px, #f1f5f9 10px, #f1f5f9 20px);
+            background: #f1f5f9;
             border-left: 3px solid #94a3b8;
             color: #64748b;
             font-size: 11px;
@@ -850,7 +850,7 @@
         /* Modal Header (Cierra Style) */
         .cierra-modal-header {
             padding: 18px 22px;
-            background: linear-gradient(180deg, #f0fdf9 0%, #ffffff 100%);
+            background: #f0fdf9;
             border-bottom: 1px solid #E2E8F0;
             display: flex;
             align-items: center;
@@ -859,7 +859,7 @@
         }
 
         .cierra-modal-header.purple-theme {
-            background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);
+            background: #faf5ff;
             border-bottom-color: #f3e8ff;
         }
 
@@ -1398,7 +1398,7 @@
             color: #fca5a5;
         }
         .vet-card-spotlight {
-            background: linear-gradient(145deg, #00875a 0%, #006644 100%);
+            background: #00875a;
             border-radius: 22px;
             padding: 24px;
             position: relative;
@@ -2744,7 +2744,7 @@
                 <!-- Header -->
                 <div class="cierra-modal-header">
                     <div class="cierra-header-left">
-                        <div class="cierra-icon-box" style="background: linear-gradient(135deg, #0d9488, #00C975);">
+                        <div class="cierra-icon-box" style="background: #0d9488;">
                             <svg style="width: 22px; height: 22px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>

@@ -110,9 +110,9 @@ class AppointmentResource extends Resource
     public static function getFormComponents(): array
     {
         return [
-            Grid::make(12)
+            Grid::make(['default' => 1, 'lg' => 12])
                 ->schema([
-                    // Columna Izquierda: Clienta & Servicio (7 columnas)
+                    // Columna Izquierda: Clienta & Servicio (6 columnas)
                     Group::make([
                         Section::make('Datos de la Clienta')
                             ->description('Información de contacto para confirmaciones y recordatorios')
@@ -184,13 +184,13 @@ class AppointmentResource extends Resource
                                     ->reactive()
                                     ->afterStateUpdated(function ($state, $set) {
                                         if ($state) {
-                                            $parts = explode('|', $state);
-                                            $set('client_name', $parts[0] ?? '');
-                                            $set('client_phone', $parts[1] ?? '');
-                                            $set('client_email', $parts[2] ?? '');
-                                            if (!empty($parts[3])) {
-                                                $set('customer_id', (int) $parts[3]);
-                                            }
+                                             $parts = explode('|', $state);
+                                             $set('client_name', $parts[0] ?? '');
+                                             $set('client_phone', $parts[1] ?? '');
+                                             $set('client_email', $parts[2] ?? '');
+                                             if (!empty($parts[3])) {
+                                                 $set('customer_id', (int) $parts[3]);
+                                             }
                                         }
                                     })
                                     ->dehydrated(false)
@@ -200,7 +200,8 @@ class AppointmentResource extends Resource
                                 Forms\Components\TextInput::make('client_name')
                                     ->label('Nombre Completo')
                                     ->placeholder('Ej: Mariana Gómez')
-                                    ->required(),
+                                    ->required()
+                                    ->columnSpanFull(),
 
                                 Forms\Components\TextInput::make('client_phone')
                                     ->label('Celular WhatsApp')
@@ -212,8 +213,7 @@ class AppointmentResource extends Resource
                                 Forms\Components\TextInput::make('client_email')
                                     ->label('Correo Electrónico (Opcional)')
                                     ->placeholder('ejemplo@correo.com')
-                                    ->email()
-                                    ->columnSpanFull(),
+                                    ->email(),
                             ])->columns(2),
 
                         Section::make('Programación del Servicio')
@@ -413,12 +413,12 @@ class AppointmentResource extends Resource
                                         },
                                     ]),
                             ])->columns(2),
-                    ])->columnSpan(7),
+                    ])->columnSpan(['default' => 12, 'lg' => 6]),
 
-                    // Columna Derecha: Estado, Finanzas y Comprobante (5 columnas)
+                    // Columna Derecha: Estado, Finanzas y Comprobante (6 columnas)
                     Group::make([
                         Section::make('Estado y Liquidación de Pagos')
-                            ->description('Control financiero y abonos')
+                            ->description('Control financiero, estado de la cita y abonos')
                             ->icon('heroicon-o-banknotes')
                             ->compact()
                             ->schema([
@@ -426,12 +426,14 @@ class AppointmentResource extends Resource
                                     ->label('Estado de la Cita')
                                     ->options(collect(AppointmentStatus::cases())->mapWithKeys(fn ($st) => [$st->value => $st->label()]))
                                     ->default(AppointmentStatus::CONFIRMED->value)
-                                    ->required(),
+                                    ->required()
+                                    ->columnSpanFull(),
 
                                 Forms\Components\Select::make('payment_method')
                                     ->label('Método de Abono')
                                     ->options(collect(PaymentMethod::cases())->mapWithKeys(fn ($pm) => [$pm->value => $pm->label()]))
-                                    ->default(PaymentMethod::CASH_AT_LOCATION->value),
+                                    ->default(PaymentMethod::CASH_AT_LOCATION->value)
+                                    ->columnSpanFull(),
 
                                 Forms\Components\TextInput::make('total_amount')
                                     ->label('Total del Servicio')
@@ -482,7 +484,7 @@ class AppointmentResource extends Resource
                                     ->rows(2)
                                     ->columnSpanFull(),
                             ])->columns(2),
-                    ])->columnSpan(5),
+                    ])->columnSpan(['default' => 12, 'lg' => 6]),
                 ]),
         ];
     }

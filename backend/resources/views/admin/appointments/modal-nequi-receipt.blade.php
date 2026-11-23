@@ -10,7 +10,7 @@
 
         /* Header Cierra Purple */
         .nequi-header-banner {
-            background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);
+            background: #faf5ff;
             border-radius: 16px;
             padding: 16px 18px;
             display: flex;

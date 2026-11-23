@@ -1,4 +1,4 @@
-@extends('portal.layout')
+﻿@extends('portal.layout')
 
 @section('title', 'Confirmación de Cita #' . $appointment->appointment_number . ' | Paola Aguilera')
 
@@ -6,17 +6,17 @@
 <div class="max-w-xl mx-auto px-4 py-8 sm:py-12">
     
     <!-- Status Header Card -->
-    <div class="bg-white rounded-3xl border border-[#e2f0ea] shadow-lg p-6 sm:p-8 text-center relative overflow-hidden">
-        <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#1e3a5f] via-[#0d9488] to-[#14b8a6]"></div>
+    <div class="bg-white rounded-3xl border border-[#EFEAE6] shadow-lg p-6 sm:p-8 text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-2 bg-[#8E4D5E]"></div>
 
         @if($appointment->status === \App\Enums\AppointmentStatus::CONFIRMED)
-            <div class="w-16 h-16 rounded-full bg-[#e6f7f2] text-[#0d9488] mx-auto flex items-center justify-center mb-3 shadow-inner">
+            <div class="w-16 h-16 rounded-full bg-[#FAF2F4] text-[#8E4D5E] mx-auto flex items-center justify-center mb-3 shadow-inner">
                 <i data-lucide="check-circle" class="w-8 h-8"></i>
             </div>
-            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-[#e6f7f2] text-[#0d9488] uppercase tracking-wider mb-2 border border-[#e2f0ea]">
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-[#FAF2F4] text-[#8E4D5E] uppercase tracking-wider mb-2 border border-[#EFEAE6]">
                 Cita Confirmada
             </span>
-            <h2 class="text-2xl font-bold text-[#1e3a5f]">¡Tu cita está asegurada!</h2>
+            <h2 class="text-2xl font-bold text-[#2D2327]">¡Tu cita está asegurada!</h2>
             <p class="text-xs text-slate-500 mt-1">Hemos recibido tu abono y reservado tu espacio en la agenda de Paola.</p>
         @elseif($appointment->status === \App\Enums\AppointmentStatus::PENDING_VERIFICATION)
             <div class="w-16 h-16 rounded-full bg-amber-50 text-amber-600 mx-auto flex items-center justify-center mb-3 shadow-inner animate-pulse">
@@ -25,7 +25,7 @@
             <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 uppercase tracking-wider mb-2 border border-amber-200">
                 Comprobante Nequi por Validar
             </span>
-            <h2 class="text-2xl font-bold text-[#1e3a5f]">¡Tu comprobante fue recibido!</h2>
+            <h2 class="text-2xl font-bold text-[#2D2327]">¡Tu comprobante fue recibido!</h2>
             <p class="text-xs text-slate-500 mt-1">Paola validará tu transferencia en breve y te enviará un WhatsApp de confirmación.</p>
         @elseif($appointment->status === \App\Enums\AppointmentStatus::CANCELLED)
             <div class="w-16 h-16 rounded-full bg-rose-50 text-rose-600 mx-auto flex items-center justify-center mb-3 shadow-inner">
@@ -34,33 +34,33 @@
             <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 uppercase tracking-wider mb-2 border border-rose-200">
                 Cita Cancelada
             </span>
-            <h2 class="text-2xl font-bold text-[#1e3a5f]">Esta cita ha sido cancelada</h2>
+            <h2 class="text-2xl font-bold text-[#2D2327]">Esta cita ha sido cancelada</h2>
             <p class="text-xs text-slate-500 mt-1">El cupo previamente reservado ha sido liberado en la agenda.</p>
         @else
-            <div class="w-16 h-16 rounded-full bg-slate-100 text-[#1e3a5f] mx-auto flex items-center justify-center mb-3">
+            <div class="w-16 h-16 rounded-full bg-slate-100 text-[#2D2327] mx-auto flex items-center justify-center mb-3">
                 <i data-lucide="calendar" class="w-8 h-8"></i>
             </div>
             <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 uppercase tracking-wider mb-2 border border-slate-200">
                 {{ $appointment->status->label() }}
             </span>
-            <h2 class="text-2xl font-bold text-[#1e3a5f]">Estado de tu Reserva</h2>
+            <h2 class="text-2xl font-bold text-[#2D2327]">Estado de tu Reserva</h2>
         @endif
 
         <!-- Appointment Number Badge -->
-        <div class="mt-6 py-3 px-4 rounded-2xl bg-[#f3f8f6] border border-[#e2f0ea] flex items-center justify-between">
+        <div class="mt-6 py-3 px-4 rounded-2xl bg-[#f3f8f6] border border-[#EFEAE6] flex items-center justify-between">
             <span class="text-xs text-slate-500 font-semibold uppercase">Número de Cita:</span>
-            <span class="font-mono font-bold text-base text-[#1e3a5f] tracking-wider">{{ $appointment->appointment_number }}</span>
+            <span class="font-mono font-bold text-base text-[#2D2327] tracking-wider">{{ $appointment->appointment_number }}</span>
         </div>
 
         <!-- Details Card -->
-        <div class="mt-6 text-left space-y-3 text-xs border-t border-[#e2f0ea] pt-6">
+        <div class="mt-6 text-left space-y-3 text-xs border-t border-[#EFEAE6] pt-6">
             <div class="flex justify-between items-center">
                 <span class="text-slate-500">Clienta:</span>
-                <span class="font-bold text-[#1e3a5f]">{{ $appointment->client_name }}</span>
+                <span class="font-bold text-[#2D2327]">{{ $appointment->client_name }}</span>
             </div>
             <div class="flex justify-between items-center">
                 <span class="text-slate-500">Tratamiento:</span>
-                <span class="font-bold text-[#0d9488] text-sm">{{ $appointment->service?->name ?? 'Servicio de Belleza' }}</span>
+                <span class="font-bold text-[#8E4D5E] text-sm">{{ $appointment->service?->name ?? 'Servicio de Belleza' }}</span>
             </div>
             <div class="flex justify-between items-center">
                 <span class="text-slate-500">Fecha:</span>
@@ -70,13 +70,13 @@
                 <span class="text-slate-500">Horario:</span>
                 <span class="font-bold text-slate-800">{{ substr($appointment->start_time, 0, 5) }} a {{ substr($appointment->end_time, 0, 5) }} ({{ $appointment->service?->formatted_duration ?? '60 min' }})</span>
             </div>
-            <div class="flex justify-between items-center pt-2 border-t border-[#e2f0ea]">
+            <div class="flex justify-between items-center pt-2 border-t border-[#EFEAE6]">
                 <span class="text-slate-500">Abono Recibido:</span>
-                <span class="font-bold text-[#0d9488]">${{ number_format($appointment->deposit_amount, 0, ',', '.') }} COP</span>
+                <span class="font-bold text-[#8E4D5E]">${{ number_format($appointment->deposit_amount, 0, ',', '.') }} COP</span>
             </div>
             <div class="flex justify-between items-center">
                 <span class="text-slate-500">Saldo Pendiente en Local:</span>
-                <span class="font-bold text-[#1e3a5f]">${{ number_format($appointment->balance_due, 0, ',', '.') }} COP</span>
+                <span class="font-bold text-[#2D2327]">${{ number_format($appointment->balance_due, 0, ',', '.') }} COP</span>
             </div>
         </div>
 
@@ -151,7 +151,7 @@
                     <form action="{{ route('portal.confirm-attendance', $appointment->appointment_number) }}" method="POST">
                         @csrf
                         <input type="hidden" name="token" value="{{ $appointment->generateSecurityToken() }}">
-                        <button type="submit" class="w-full py-3 px-4 rounded-xl text-xs font-bold bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer">
+                        <button type="submit" class="w-full py-3 px-4 rounded-xl text-xs font-bold bg-[#8E4D5E] text-white hover:bg-[#793E4C] shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer">
                             <i data-lucide="calendar-check" class="w-4 h-4"></i>
                             <span>Confirmar Mi Asistencia en Línea</span>
                         </button>
@@ -177,12 +177,12 @@
             <!-- Client Cancellation & Reschedule Module -->
             @if($appointment->canBeCancelledByClient())
                 <!-- More than 24 hours remaining: Self-cancellation & Rescheduling permitted -->
-                <div x-data="{ openCancelModal: false, reason: '' }" class="mt-6 pt-5 border-t border-[#e2f0ea]">
+                <div x-data="{ openCancelModal: false, reason: '' }" class="mt-6 pt-5 border-t border-[#EFEAE6]">
                     <div x-show="!openCancelModal" class="space-y-3">
                         <!-- Card Destacada de Reagendamiento -->
-                        <div class="p-4 rounded-2xl bg-[#e6f7f2] border border-[#bbf0df] text-left">
+                        <div class="p-4 rounded-2xl bg-[#FAF2F4] border border-[#bbf0df] text-left">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold text-[#0d9488] uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-[#8E4D5E] uppercase tracking-wider flex items-center gap-1.5">
                                     <i data-lucide="calendar-sync" class="w-4 h-4 text-[#00C975]"></i>
                                     ¿Necesitas cambiar la fecha u hora?
                                 </span>
@@ -221,9 +221,9 @@
                         <p class="text-xs text-slate-600 mb-2 leading-relaxed">
                             Para confirmar la cancelación de tu cita, es obligatorio ingresar el motivo. Al enviar este formulario, tu turno será liberado.
                         </p>
-                        <p class="text-[11px] text-[#0d9488] font-semibold mb-3 flex items-center gap-1">
+                        <p class="text-[11px] text-[#8E4D5E] font-semibold mb-3 flex items-center gap-1">
                             <i data-lucide="info" class="w-3.5 h-3.5 text-[#00C975]"></i>
-                            <span>¿Prefieres conservar tu abono? Puedes <a href="{{ route('portal.reschedule-form', $appointment->appointment_number) }}" class="underline font-bold text-[#00C975] hover:text-[#0d9488]">reagendar tu cita aquí</a>.</span>
+                            <span>¿Prefieres conservar tu abono? Puedes <a href="{{ route('portal.reschedule-form', $appointment->appointment_number) }}" class="underline font-bold text-[#00C975] hover:text-[#8E4D5E]">reagendar tu cita aquí</a>.</span>
                         </p>
 
                         <form action="{{ route('portal.cancel-appointment', $appointment->appointment_number) }}" method="POST" class="space-y-3">
@@ -265,7 +265,7 @@
                 </div>
             @else
                 <!-- Less than 24 hours remaining: Self-cancellation disabled, admin contact required -->
-                <div class="mt-6 pt-5 border-t border-[#e2f0ea]">
+                <div class="mt-6 pt-5 border-t border-[#EFEAE6]">
                     <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left">
                         <div class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
                             <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-500"></i>

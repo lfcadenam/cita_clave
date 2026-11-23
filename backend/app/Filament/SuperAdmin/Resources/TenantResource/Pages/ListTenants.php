@@ -14,7 +14,7 @@ class ListTenants extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('+ Registrar Nuevo Salón')
+                ->label('Registrar Nuevo Salón')
                 ->icon('heroicon-o-plus-circle'),
         ];
     }

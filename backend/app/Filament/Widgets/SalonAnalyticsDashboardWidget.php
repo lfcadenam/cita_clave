@@ -223,6 +223,7 @@ class SalonAnalyticsDashboardWidget extends Widget
         foreach ($chartSeries as &$item) {
             $item['revenue_height'] = $maxRevenue > 0 ? max(8, round(($item['revenue'] / $maxRevenue) * 100)) : 8;
             $item['count_height'] = $maxCount > 0 ? max(8, round(($item['count'] / $maxCount) * 100)) : 8;
+            $item['height_pct'] = $item['revenue_height'];
             $item['formatted_revenue'] = '$ ' . number_format($item['revenue'], 0, ',', '.');
         }
         unset($item);
@@ -285,6 +286,152 @@ class SalonAnalyticsDashboardWidget extends Widget
             ->where('status', 'waiting')
             ->count();
 
+        // 8. Citas Recientes (Recent Orders)
+        $recentAppointments = Appointment::where('tenant_id', $tenantId)
+            ->with('service')
+            ->latest('id')
+            ->limit(6)
+            ->get()
+            ->map(function ($apt) {
+                $st = $apt->status instanceof AppointmentStatus ? $apt->status->value : (string) $apt->status;
+                $color = match($st) {
+                    'CONFIRMED', 'COMPLETED' => '#10B981',
+                    'IN_PROGRESS' => '#3B82F6',
+                    'PENDING_VERIFICATION', 'PENDING_DEPOSIT' => '#F59E0B',
+                    'CANCELLED', 'NO_SHOW' => '#EF4444',
+                    default => '#94A3B8',
+                };
+                $bg = match($st) {
+                    'CONFIRMED', 'COMPLETED' => 'rgba(16, 185, 129, 0.12)',
+                    'IN_PROGRESS' => 'rgba(59, 130, 246, 0.12)',
+                    'PENDING_VERIFICATION', 'PENDING_DEPOSIT' => 'rgba(245, 158, 11, 0.12)',
+                    'CANCELLED', 'NO_SHOW' => 'rgba(239, 68, 68, 0.12)',
+                    default => 'rgba(148, 163, 184, 0.12)',
+                };
+                $dateObj = $apt->appointment_date ? Carbon::parse($apt->appointment_date) : null;
+                $timeObj = $apt->start_time ? Carbon::parse($apt->start_time) : null;
+
+                return [
+                    'id' => $apt->id,
+                    'code' => $apt->appointment_number ?: ('#CC-' . str_pad((string)$apt->id, 4, '0', STR_PAD_LEFT)),
+                    'appointment_number' => $apt->appointment_number ?: ('#CC-' . str_pad((string)$apt->id, 4, '0', STR_PAD_LEFT)),
+                    'client_name' => $apt->client_name ?: 'Clienta',
+                    'date' => $dateObj ? $dateObj->format('d-m-Y') : 'Fecha pendiente',
+                    'date_formatted' => $dateObj ? $dateObj->isoFormat('D [de] MMM') : 'Fecha pendiente',
+                    'time_formatted' => $timeObj ? $timeObj->format('g:i A') : '',
+                    'status' => $st,
+                    'status_label' => match($st) {
+                        'CONFIRMED' => 'Confirmada',
+                        'COMPLETED' => 'Completada',
+                        'IN_PROGRESS' => 'En proceso',
+                        'PENDING_VERIFICATION' => 'Comprobante',
+                        'PENDING_DEPOSIT' => 'Pendiente',
+                        'CANCELLED' => 'Cancelada',
+                        default => 'Registrada',
+                    },
+                    'status_color' => $color,
+                    'status_bg' => $bg,
+                    'service_name' => $apt->service?->name ?? 'Tratamiento',
+                    'total_amount' => '$ ' . number_format($apt->total_amount, 0, ',', '.'),
+                ];
+            });
+
+        // 9. Mini Calendario Mensual (Estilo Nuvex Modern Curve UI)
+        $calStart = Carbon::today()->startOfMonth();
+        $calDaysInMonth = $calStart->daysInMonth;
+        $calFirstDayOfWeek = ($calStart->dayOfWeek + 6) % 7; // 0: Lunes, 6: Domingo
+        $badgeColors = ['#F59E0B', '#10B981', '#3B82F6', '#EC4899', '#8B5CF6'];
+
+        $appointmentsThisMonth = Appointment::where('tenant_id', $tenantId)
+            ->whereBetween('appointment_date', [$calStart->toDateString(), $calStart->copy()->endOfMonth()->toDateString()])
+            ->get()
+            ->groupBy(fn($a) => Carbon::parse($a->appointment_date)->day);
+
+        $calendarDays = [];
+        for ($b = 0; $b < $calFirstDayOfWeek; $b++) {
+            $calendarDays[] = [
+                'day' => null,
+                'has_appointments' => false,
+                'count' => 0,
+                'badge_color' => null,
+                'color' => null,
+                'is_today' => false,
+                'is_current_month' => false,
+            ];
+        }
+        for ($d = 1; $d <= $calDaysInMonth; $d++) {
+            $has = isset($appointmentsThisMonth[$d]);
+            $count = $has ? $appointmentsThisMonth[$d]->count() : 0;
+            $color = $has ? $badgeColors[($d % count($badgeColors))] : null;
+            $calendarDays[] = [
+                'day' => $d,
+                'has_appointments' => $has,
+                'count' => $count,
+                'badge_color' => $color,
+                'color' => $color,
+                'is_today' => ($d === Carbon::today()->day),
+                'is_current_month' => true,
+            ];
+        }
+
+        $miniCalendar = [
+            'month_name' => strtoupper($calStart->isoFormat('MMMM YYYY')),
+            'days' => $calendarDays,
+        ];
+
+        // 10. Novedades y Comprobantes Recientes (Recent Comments)
+        $recentNovedades = Appointment::where('tenant_id', $tenantId)
+            ->where(function ($q) {
+                $q->whereNotNull('client_notes')
+                  ->orWhere('status', AppointmentStatus::PENDING_VERIFICATION->value)
+                  ->orWhereNotNull('verification_notes');
+            })
+            ->with('service')
+            ->latest('updated_at')
+            ->limit(3)
+            ->get()
+            ->map(function ($item, $idx) {
+                $avatarColors = ['#EC4899', '#F59E0B', '#06B6D4', '#10B981'];
+                $noteText = $item->verification_notes ?: ($item->client_notes ?: ('Reserva registrada para ' . ($item->service?->name ?? 'servicio')));
+                return [
+                    'client_name' => $item->client_name,
+                    'time_ago' => $item->updated_at?->diffForHumans() ?? 'Reciente',
+                    'note' => $noteText,
+                    'service' => $item->service?->name ?? 'Tratamiento',
+                    'avatar_color' => $avatarColors[$idx % count($avatarColors)],
+                ];
+            });
+
+        // 11. Contactos / Clientas Frecuentes
+        $customerQuery = \App\Models\Customer::where('tenant_id', $tenantId)
+            ->withCount('appointments')
+            ->orderByDesc('appointments_count')
+            ->limit(4)
+            ->get();
+
+        if ($customerQuery->isEmpty()) {
+            $topContacts = Appointment::where('tenant_id', $tenantId)
+                ->selectRaw('client_name as name, client_phone as phone, client_email as email, count(*) as appointments_count')
+                ->whereNotNull('client_name')
+                ->groupBy('client_name', 'client_phone', 'client_email')
+                ->orderByDesc('appointments_count')
+                ->limit(4)
+                ->get();
+        } else {
+            $topContacts = $customerQuery;
+        }
+
+        $topContacts = $topContacts->map(function ($cust, $idx) {
+            $avatarColors = ['#EC4899', '#8B5CF6', '#F59E0B', '#0EA5E9'];
+            return [
+                'name' => $cust->name ?? 'Clienta',
+                'phone' => $cust->phone ?? 'Sin teléfono',
+                'email' => $cust->email ?: 'Sin correo registrado',
+                'avatar_color' => $avatarColors[$idx % count($avatarColors)],
+                'total_appointments' => $cust->appointments_count ?? 1,
+            ];
+        });
+
         return [
             'period' => $this->period,
             'periodTitle' => $periodTitle,
@@ -333,6 +480,12 @@ class SalonAnalyticsDashboardWidget extends Widget
             'totalClientsInPeriod' => $totalClientsInPeriod,
             'newClientsCount' => $newClientsCount,
             'recurrentClientsCount' => $recurrentClientsCount,
+
+            // Módulos del Nuevo Dashboard Estilo Nuvex Curve
+            'recentAppointments' => $recentAppointments,
+            'miniCalendar' => $miniCalendar,
+            'recentNovedades' => $recentNovedades,
+            'topContacts' => $topContacts,
         ];
     }
 }

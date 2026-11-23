@@ -760,6 +760,15 @@ export class BookingComponent implements OnInit {
     return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   }
 
+  getGeneralWhatsAppUrl(): string {
+    if (this.salonProfile()?.whatsapp_url) {
+      return this.salonProfile()!.whatsapp_url!;
+    }
+    const phone = this.resolveSalonWhatsAppPhone();
+    const msg = 'Hola Paola, quisiera consultar sobre tus servicios de belleza.';
+    return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  }
+
   resetBooking(): void {
     this.bookingResult.set(null);
     this.receiptFile = null;

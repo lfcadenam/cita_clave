@@ -6,7 +6,7 @@
             line-height: 1.5;
         }
         .nuvex-banner {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background: #0f172a;
             border-radius: 16px;
             padding: 16px 20px;
             color: #ffffff;
@@ -114,7 +114,7 @@
         }
 
         .nuvex-gift-box {
-            background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+            background: #fff1f2;
             border: 1.5px dashed #f43f5e;
             border-radius: 14px;
             padding: 14px;

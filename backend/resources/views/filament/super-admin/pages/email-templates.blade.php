@@ -280,7 +280,7 @@
         .nuvex-em-send-btn {
             width: 100%;
             margin-top: 8px;
-            background: linear-gradient(135deg, #0d9488 0%, #00C975 100%);
+            background: #0d9488;
             color: #ffffff;
             font-weight: 700;
             font-size: 12.5px;

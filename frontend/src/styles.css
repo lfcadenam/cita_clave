@@ -6,7 +6,7 @@
 
 @layer base {
   body {
-    @apply bg-[#f3f8f6] text-zinc-800 font-sans antialiased selection:bg-emerald-600 selection:text-white min-h-screen;
+    @apply bg-[#FAF8F5] text-[#2D2327] font-sans antialiased selection:bg-[#8E4D5E] selection:text-white min-h-screen;
   }
 }
 

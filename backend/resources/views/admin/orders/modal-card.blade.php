@@ -40,8 +40,6 @@
             padding: 32px 28px;
             border: 2px solid #fecdd3;
             box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.1), 0 8px 10px -6px rgba(244, 63, 94, 0.05);
-            background-image: radial-gradient(#ffe4e6 1px, transparent 1px);
-            background-size: 18px 18px;
             overflow: hidden;
         }
         .nuvex-card-inner-frame {
@@ -56,7 +54,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+            background: #f43f5e;
             color: #ffffff;
             font-size: 11px;
             font-weight: 800;

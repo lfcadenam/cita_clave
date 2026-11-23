@@ -1,9 +1,9 @@
-<div class="studio-canvas font-sans antialiased text-slate-800 min-h-screen pb-36 sm:pb-32 lg:pb-28 selection:bg-[#e6f7f2] selection:text-[#1e3a5f]">
+<div class="studio-canvas font-sans antialiased text-[#2D2327] min-h-screen pb-36 sm:pb-32 lg:pb-28 selection:bg-[#F5E9EC] selection:text-[#8E4D5E]">
 
   <!-- ========================================================================= -->
-  <!-- TOP NAVIGATION BAR (LUXURY SAAS HEADER)                                    -->
+  <!-- TOP NAVIGATION BAR (LUXURY ATELIER HEADER)                                 -->
   <!-- ========================================================================= -->
-  <header class="bg-white/95 backdrop-blur-md border-b border-[#e2f0ea] sticky top-0 z-40 shadow-xs">
+  <header class="bg-white/95 backdrop-blur-md border-b border-[#EFEAE6] sticky top-0 z-40 shadow-xs">
     <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-4 sm:px-6 h-18 sm:h-20 flex items-center justify-between gap-3">
       
       <!-- Brand Logo & Studio Identity -->
@@ -15,41 +15,34 @@
         
         <!-- Fallback if image asset is pending -->
         <div #logoFallback style="display:none;" class="items-center gap-2 shrink-0">
-          <div class="w-10 h-10 rounded-2xl bg-[#1e3a5f] flex items-center justify-center text-white shadow-xs">
-            <svg class="w-5 h-5 text-[#0d9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="w-10 h-10 rounded-2xl bg-[#2D2327] flex items-center justify-center text-white shadow-xs">
+            <svg class="w-5 h-5 text-[#8E4D5E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
           </div>
-          <span class="font-bold text-base text-[#1e3a5f]">Cita Clave</span>
+          <span class="font-bold text-base text-[#2D2327]">Cita Clave</span>
         </div>
 
-        <div class="border-l border-slate-200 pl-3 hidden sm:block">
+        <div class="border-l border-stone-200 pl-3 hidden sm:block">
           <div class="flex items-center gap-2">
-            <span class="text-xs sm:text-sm font-bold tracking-tight text-[#1e3a5f] leading-none">
+            <span class="font-serif text-xs sm:text-sm font-bold tracking-tight text-[#2D2327] leading-none">
               {{ salonProfile()?.display_name || 'Paola Aguilera' }}
             </span>
           </div>
-          <span class="text-[10px] text-[#0d9488] font-bold tracking-wider uppercase block mt-0.5">
-            {{ salonProfile()?.business_type || 'ESTUDIO DE BELLEZA' }}
+          <span class="text-[10px] text-[#8E4D5E] font-bold tracking-wider uppercase block mt-0.5">
+            {{ salonProfile()?.business_type || 'ESTUDIO DE UÑAS & BELLEZA' }}
           </span>
         </div>
       </div>
 
       <!-- Top Right Actions -->
       <div class="flex items-center gap-2.5 shrink-0">
-        <button (click)="openLookupModal()" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2 rounded-full border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer">
-          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button (click)="openLookupModal()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#EFEAE6] text-xs font-semibold text-stone-700 bg-white hover:bg-[#FAF4F6] hover:text-[#8E4D5E] hover:border-[#EBD2D8] transition-colors shadow-2xs cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-stone-400 group-hover:text-[#8E4D5E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
           <span class="inline">Consultar Cita</span>
         </button>
-
-        <a [href]="salonProfile()?.whatsapp_url || 'https://wa.me/573103248385'" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-bold shadow-md shadow-teal-500/20 transition-all hover:scale-[1.02]">
-          <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.542 1.897.82 2.791.82h.001c3.181 0 5.768-2.586 5.768-5.766 0-3.18-2.587-5.766-5.769-5.766zm3.376 8.204c-.149.419-.747.781-1.026.832-.27.05-.62.072-1.808-.419-1.52-.628-2.502-2.18-2.578-2.282-.075-.102-.614-.817-.614-1.558 0-.741.388-1.106.526-1.255.138-.149.3-.186.4-.186.1 0 .2.001.288.006.094.005.218-.035.341.262.126.305.433 1.056.471 1.134.038.077.063.168.013.268-.05.101-.075.163-.15.251-.075.088-.158.197-.225.264-.075.075-.153.156-.066.305.087.149.387.639.83 1.033.57.507 1.051.664 1.2.739.149.075.237.063.325-.038.088-.101.376-.438.476-.588.1-.15.2-.125.338-.075.138.05.877.413 1.027.488.15.075.25.112.288.175.037.063.037.363-.112.782z"/>
-          </svg>
-          <span class="text-xs font-bold">WhatsApp</span>
-        </a>
       </div>
 
     </div>
@@ -58,125 +51,125 @@
   <!-- ========================================================================= -->
   <!-- MAIN WORKFLOW CONTAINER                                                    -->
   <!-- ========================================================================= -->
-  <main [ngClass]="currentStep() === 1 ? 'max-w-7xl 2xl:max-w-[1536px]' : 'max-w-4xl'" class="mx-auto px-4 sm:px-6 py-6 sm:py-10 transition-all duration-300">
+  <main [ngClass]="currentStep() === 1 ? 'max-w-7xl 2xl:max-w-[1536px]' : 'max-w-4xl'" class="mx-auto px-4 sm:px-6 py-6 sm:py-10 pb-28 sm:pb-32 transition-all duration-300">
     
     <!-- Hero / Presentation Banner -->
     <div class="text-center mb-8">
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#e6f7f2] text-[#0d9488] text-[11px] font-bold uppercase tracking-widest mb-3 border border-[#e2f0ea] shadow-xs">
-        <svg class="w-3.5 h-3.5 text-[#0d9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FAF4F6] text-[#8E4D5E] text-[11px] font-bold uppercase tracking-widest mb-3 border border-[#EBD2D8] shadow-2xs">
+        <svg class="w-3.5 h-3.5 text-[#8E4D5E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
         </svg>
         <span>AGENDA EN LÍNEA • CONFIRMACIÓN INMEDIATA</span>
       </div>
-      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
-        Reserva tu Experiencia de Belleza
+      <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2D2327] tracking-tight leading-tight">
+        Reserva tu Cita <span class="italic font-normal text-[#8E4D5E]">de Belleza</span>
       </h1>
-      <p class="text-slate-600 text-sm sm:text-base mt-2 max-w-xl mx-auto leading-relaxed">
-        Realza tu mirada y cuida tu piel con tratamientos personalizados en un ambiente exclusivo.
+      <p class="text-stone-600 text-sm sm:text-base mt-2 max-w-xl mx-auto leading-relaxed">
+        Manicura rusa, uñas en poligel, pedicura spa y tratamientos personalizados en un ambiente exclusivo.
       </p>
     </div>
 
-    <!-- Stepper Navigation (4 Steps with Connected Progress Bar) -->
+    <!-- Stepper Navigation (4 Steps with Connected Progress Bar - Flat Solid Colors) -->
     <div class="flex items-center justify-between mb-8 px-4 sm:px-12 relative max-w-2xl mx-auto">
-      <div class="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-1 bg-[#e6f7f2] -z-0"></div>
-      <div class="absolute left-10 top-1/2 -translate-y-1/2 h-1 bg-[#0d9488] -z-0 transition-all duration-300"
+      <div class="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-1 bg-[#EFEAE6] -z-0"></div>
+      <div class="absolute left-10 top-1/2 -translate-y-1/2 h-1 bg-[#8E4D5E] -z-0 transition-all duration-300"
            [style.width.%]="((currentStep() > 4 ? 4 : currentStep()) - 1) / 3 * 100"></div>
 
-      <!-- Step 1 Indicator: Clickable only to return from a later step -->
+      <!-- Step 1 Indicator -->
       <button type="button" 
               (click)="currentStep() > 1 ? goToStep(1) : null" 
               [disabled]="currentStep() <= 1"
               class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none"
               [ngClass]="currentStep() > 1 ? 'cursor-pointer' : 'cursor-default'">
         <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
-             [ngClass]="currentStep() >= 1 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+             [ngClass]="currentStep() >= 1 ? 'bg-[#8E4D5E] text-white shadow-xs ring-4 ring-[#FAF4F6]' : 'bg-white text-stone-400 border border-[#EFEAE6]'">
           <svg *ngIf="currentStep() > 1" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
           </svg>
           <span *ngIf="currentStep() <= 1">1</span>
         </div>
-        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 1 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Servicio</span>
+        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 1 ? 'text-[#2D2327] font-extrabold' : 'text-stone-400'">Servicio</span>
       </button>
 
-      <!-- Step 2 Indicator: Clickable only to return from step 3 or 4 -->
+      <!-- Step 2 Indicator -->
       <button type="button" 
               (click)="currentStep() > 2 ? goToStep(2) : null" 
               [disabled]="currentStep() <= 2"
               class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none"
               [ngClass]="currentStep() > 2 ? 'cursor-pointer' : 'cursor-default'">
         <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
-             [ngClass]="currentStep() >= 2 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+             [ngClass]="currentStep() >= 2 ? 'bg-[#8E4D5E] text-white shadow-xs ring-4 ring-[#FAF4F6]' : 'bg-white text-stone-400 border border-[#EFEAE6]'">
           <svg *ngIf="currentStep() > 2" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
           </svg>
           <span *ngIf="currentStep() <= 2">2</span>
         </div>
-        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 2 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Horario</span>
+        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 2 ? 'text-[#2D2327] font-extrabold' : 'text-stone-400'">Horario</span>
       </button>
 
-      <!-- Step 3 Indicator: Clickable only to return from step 4 -->
+      <!-- Step 3 Indicator -->
       <button type="button" 
               (click)="currentStep() > 3 ? goToStep(3) : null" 
               [disabled]="currentStep() <= 3"
               class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none"
               [ngClass]="currentStep() > 3 ? 'cursor-pointer' : 'cursor-default'">
         <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
-             [ngClass]="currentStep() >= 3 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+             [ngClass]="currentStep() >= 3 ? 'bg-[#8E4D5E] text-white shadow-xs ring-4 ring-[#FAF4F6]' : 'bg-white text-stone-400 border border-[#EFEAE6]'">
           <svg *ngIf="currentStep() > 3" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
           </svg>
           <span *ngIf="currentStep() <= 3">3</span>
         </div>
-        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 3 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Tus Datos</span>
+        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 3 ? 'text-[#2D2327] font-extrabold' : 'text-stone-400'">Tus Datos</span>
       </button>
 
-      <!-- Step 4 Indicator: Clickable only if on step 5 to return -->
+      <!-- Step 4 Indicator -->
       <button type="button" 
               (click)="currentStep() > 4 ? goToStep(4) : null" 
               [disabled]="currentStep() <= 4"
               class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none"
               [ngClass]="currentStep() > 4 ? 'cursor-pointer' : 'cursor-default'">
         <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
-             [ngClass]="currentStep() >= 4 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+             [ngClass]="currentStep() >= 4 ? 'bg-[#8E4D5E] text-white shadow-xs ring-4 ring-[#FAF4F6]' : 'bg-white text-stone-400 border border-[#EFEAE6]'">
           <svg *ngIf="currentStep() > 4" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
           </svg>
           <span *ngIf="currentStep() <= 4">4</span>
         </div>
-        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 4 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">{{ !isDepositRequired() ? 'Confirmar' : 'Abono' }}</span>
+        <span class="text-[11px] font-bold tracking-wide" [ngClass]="currentStep() >= 4 ? 'text-[#2D2327] font-extrabold' : 'text-stone-400'">{{ !isDepositRequired() ? 'Confirmar' : 'Abono' }}</span>
       </button>
     </div>
 
     <!-- ========================================================================= -->
-    <!-- STEP 1: SELECT SERVICE (MODERN BEAUTY CARDS GRID)                         -->
+    <!-- STEP 1: SELECT SERVICE (LUXURY ATELIER CARDS GRID)                         -->
     <!-- ========================================================================= -->
     <div *ngIf="currentStep() === 1" class="animate-fade-in">
       
       <!-- Filter & Search Controls -->
       <div class="mb-6 space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 class="font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">1. Selecciona tu Tratamiento</h2>
+          <h2 class="font-serif font-bold text-xl sm:text-2xl text-[#2D2327] tracking-tight">1. Selecciona tu Tratamiento</h2>
           
           <!-- Search Input -->
           <div class="relative w-full sm:w-80">
-            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
             <input type="text" 
                    [value]="searchQuery()"
                    (input)="searchQuery.set($any($event.target).value)" 
                    placeholder="Buscar tratamiento..."
-                   class="w-full pl-9 pr-3.5 py-2 rounded-full border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488] bg-white shadow-xs font-medium">
+                   class="w-full pl-9 pr-3.5 py-2 rounded-full border border-[#EFEAE6] text-xs focus:outline-none focus:ring-2 focus:ring-[#8E4D5E]/20 focus:border-[#8E4D5E] bg-white shadow-xs font-medium text-[#2D2327]">
           </div>
         </div>
 
-        <!-- Category Pills -->
+        <!-- Category Pills (Flat Solid Colors) -->
         <div class="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar scroll-smooth">
           <button type="button" 
                   *ngFor="let cat of categories"
                   (click)="selectedCategory.set(cat.key)"
                   class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer"
-                  [ngClass]="selectedCategory() === cat.key ? (cat.key === 'ALL' ? 'bg-slate-900 text-white shadow-md' : 'bg-[#0d9488] text-white shadow-md shadow-teal-500/20') : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#e6f7f2]'">
+                  [ngClass]="selectedCategory() === cat.key ? (cat.key === 'ALL' ? 'bg-[#2D2327] text-white shadow-xs' : 'bg-[#8E4D5E] text-white shadow-xs') : 'bg-white text-stone-700 border border-[#EFEAE6] hover:bg-[#FAF4F6] hover:text-[#8E4D5E]'">
             {{ cat.label }}
           </button>
         </div>
@@ -184,19 +177,19 @@
 
       <!-- Loading State -->
       <div *ngIf="isLoading()" class="py-16 text-center">
-        <div class="w-10 h-10 border-3 border-[#0d9488] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-        <p class="text-xs text-slate-500 font-medium">Cargando catálogo de tratamientos exclusivos...</p>
+        <div class="w-10 h-10 border-3 border-[#8E4D5E] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+        <p class="text-xs text-stone-500 font-medium">Cargando catálogo de tratamientos exclusivos...</p>
       </div>
 
-      <!-- Modern Beauty Cards Grid (4 Columns on Desktop with Expanded Width) -->
+      <!-- Modern Beauty Cards Grid (Flat Solid Colors - NO Gradients) -->
       <div *ngIf="!isLoading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 min-[1150px]:grid-cols-4 2xl:grid-cols-4 gap-6">
         <div *ngFor="let service of filteredServices()"
              (click)="selectService(service)"
-             class="group rounded-3xl border transition-all duration-300 cursor-pointer bg-white overflow-hidden flex flex-col justify-between h-full hover:shadow-xl hover:shadow-teal-500/10 hover:-translate-y-1 relative"
-             [ngClass]="selectedService()?.id === service.id ? 'border-[#0d9488] ring-2 ring-[#0d9488]/30 shadow-lg shadow-teal-200/60 bg-gradient-to-b from-[#e6f7f2]/40 to-white' : 'border-slate-200/80 hover:border-[#e2f0ea]'">
+             class="group rounded-3xl border transition-all duration-300 cursor-pointer bg-white overflow-hidden flex flex-col justify-between h-full hover:shadow-lg hover:-translate-y-1 relative"
+             [ngClass]="selectedService()?.id === service.id ? 'border-[#8E4D5E] ring-2 ring-[#8E4D5E]/20 shadow-md bg-[#FAF5F6]' : 'border-[#EFEAE6] hover:border-[#EBD2D8]'">
           
           <!-- Selected Ribbon Badge -->
-          <div *ngIf="selectedService()?.id === service.id" class="absolute top-3 right-3 z-20 px-3 py-1 rounded-full bg-[#0d9488] text-white text-[10px] font-bold uppercase tracking-wider shadow-md flex items-center gap-1">
+          <div *ngIf="selectedService()?.id === service.id" class="absolute top-3 right-3 z-20 px-3 py-1 rounded-full bg-[#8E4D5E] text-white text-[10px] font-bold uppercase tracking-wider shadow-xs flex items-center gap-1">
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
@@ -204,21 +197,21 @@
           </div>
 
           <div>
-            <!-- Image with Overlay & Floating Badges -->
-            <div class="relative h-48 sm:h-52 w-full overflow-hidden bg-gradient-to-br from-[#e6f7f2] via-slate-100 to-teal-50">
+            <!-- Image with Overlay & Floating Badges (Flat Solid Background) -->
+            <div class="relative h-48 sm:h-52 w-full overflow-hidden bg-[#FAF2F4]">
               <img [src]="getServiceImage(service)" [alt]="service.name"
                    (error)="onServiceImageError($event, service)"
                    class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out">
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-black/20 pointer-events-none"></div>
+              <div class="absolute inset-0 bg-black/25 pointer-events-none"></div>
 
               <!-- Category Pill (Top Left) -->
-              <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
+              <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#2D2327] text-[10px] font-extrabold uppercase tracking-wider shadow-2xs">
                 {{ getCategoryLabel(service.category || 'FACIAL') }}
               </span>
 
               <!-- Duration Badge (Bottom Left) -->
-              <span class="absolute bottom-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold flex items-center gap-1 shadow-xs">
-                <svg class="w-3 h-3 text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span class="absolute bottom-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold flex items-center gap-1 shadow-2xs">
+                <svg class="w-3 h-3 text-rose-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <span>{{ service.duration_minutes }} min</span>
@@ -228,23 +221,23 @@
             <!-- Content -->
             <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between">
               <div>
-                <h3 class="font-bold text-slate-900 text-base leading-snug group-hover:text-[#0d9488] transition-colors line-clamp-2">
+                <h3 class="font-bold text-[#2D2327] text-base leading-snug group-hover:text-[#8E4D5E] transition-colors line-clamp-2">
                   {{ service.name }}
                 </h3>
-                <p class="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">
+                <p class="text-xs text-stone-500 mt-2 line-clamp-2 leading-relaxed">
                   {{ service.description }}
                 </p>
               </div>
 
               <!-- Required Deposit Badge -->
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs gap-1">
-                <div class="flex items-center gap-1 text-[#0d9488] font-bold text-[11px] sm:text-xs shrink-0">
+              <div class="mt-4 pt-3 border-t border-[#EFEAE6] flex items-center justify-between text-xs gap-1">
+                <div class="flex items-center gap-1 text-[#8E4D5E] font-bold text-[11px] sm:text-xs shrink-0">
                   <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                   </svg>
                   <span>Abono: ${{ formatPrice(service.deposit_amount) }}</span>
                 </div>
-                <span class="text-slate-400 font-medium text-[10px] sm:text-[11px] truncate">
+                <span class="text-stone-400 font-medium text-[10px] sm:text-[11px] truncate">
                   Saldo: ${{ formatPrice((service.price || service.base_price || 0) - (service.deposit_amount || 0)) }}
                 </span>
               </div>
@@ -254,15 +247,15 @@
           <!-- Price & CTA Footer -->
           <div class="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 flex items-center justify-between gap-2 mt-3">
             <div>
-              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Precio Total</span>
-              <span class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+              <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">Precio Total</span>
+              <span class="text-lg sm:text-xl font-bold text-[#2D2327] tracking-tight">
                 ${{ formatPrice(service.price || service.base_price) }}
               </span>
             </div>
 
             <button type="button"
                     class="px-4 sm:px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
-                    [ngClass]="selectedService()?.id === service.id ? 'bg-[#0d9488] text-white shadow-teal-500/30' : 'bg-[#e6f7f2] text-[#1e3a5f] hover:bg-[#0d9488] hover:text-white'">
+                    [ngClass]="selectedService()?.id === service.id ? 'bg-[#8E4D5E] text-white shadow-xs' : 'bg-[#FAF4F6] text-[#8E4D5E] hover:bg-[#8E4D5E] hover:text-white'">
               <span>{{ selectedService()?.id === service.id ? 'Continuar' : 'Agendar Cita' }}</span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
@@ -273,26 +266,26 @@
       </div>
 
       <!-- Empty State -->
-      <div *ngIf="!isLoading() && filteredServices().length === 0" class="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8">
-        <p class="text-sm text-slate-500">No se encontraron servicios en esta categoría o búsqueda.</p>
+      <div *ngIf="!isLoading() && filteredServices().length === 0" class="text-center py-16 bg-white rounded-3xl border border-[#EFEAE6] p-8">
+        <p class="text-sm text-stone-500">No se encontraron servicios en esta categoría o búsqueda.</p>
       </div>
 
     </div>
 
     <!-- ========================================================================= -->
-    <!-- STEP 2: SELECT DATE & IMMEDIATE SINGLE SLOT (MATCHING SCREENSHOT)         -->
+    <!-- STEP 2: SELECT DATE & IMMEDIATE SINGLE SLOT                               -->
     <!-- ========================================================================= -->
     <div *ngIf="currentStep() === 2 && selectedService()" class="animate-fade-in">
       
       <!-- Header Row -->
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h2 class="font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">2. Selecciona Fecha</h2>
-          <p class="text-xs text-[#1e3a5f] font-semibold mt-0.5">
+          <h2 class="font-serif font-bold text-xl sm:text-2xl text-[#2D2327] tracking-tight">2. Selecciona Fecha</h2>
+          <p class="text-xs text-[#8E4D5E] font-semibold mt-0.5">
             Tratamiento: {{ selectedService()?.name }}
           </p>
         </div>
-        <button type="button" (click)="goToStep(1)" class="text-xs font-bold text-[#0d9488] hover:underline flex items-center gap-1 cursor-pointer">
+        <button type="button" (click)="goToStep(1)" class="text-xs font-bold text-[#8E4D5E] hover:text-[#793E4C] flex items-center gap-1 cursor-pointer">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
@@ -303,14 +296,14 @@
       <!-- Date Picker Pills Carousel -->
       <div class="mb-6">
         <div class="flex items-center justify-between mb-2.5">
-          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">DÍA DE TU CITA</label>
+          <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider">DÍA DE TU CITA</label>
           <div class="flex items-center gap-2">
             <!-- Selector nativo de calendario discreto -->
             <div class="relative inline-flex">
               <button type="button"
                       (click)="openCalendarPicker(nativeDatePicker)"
-                      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:border-[#0d9488] hover:text-[#0d9488] text-[11px] font-semibold text-slate-600 transition-all cursor-pointer shadow-xs active:scale-95">
-                <svg class="w-3.5 h-3.5 text-[#0d9488]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#EFEAE6] bg-white hover:border-[#8E4D5E] hover:text-[#8E4D5E] text-[11px] font-semibold text-stone-600 transition-all cursor-pointer shadow-xs active:scale-95">
+                <svg class="w-3.5 h-3.5 text-[#8E4D5E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
                   <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -332,7 +325,7 @@
               <button type="button"
                       (click)="scrollDays('left')"
                       aria-label="Ver días anteriores"
-                      class="w-7 h-7 rounded-full border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors shadow-xs cursor-pointer">
+                      class="w-7 h-7 rounded-full border border-[#EFEAE6] bg-white hover:bg-[#FAF4F6] active:bg-[#F5E9EC] flex items-center justify-center text-stone-600 transition-colors shadow-2xs cursor-pointer">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 18 9 12 15 6"></polyline>
                 </svg>
@@ -340,7 +333,7 @@
               <button type="button"
                       (click)="scrollDays('right')"
                       aria-label="Ver días siguientes"
-                      class="w-7 h-7 rounded-full border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors shadow-xs cursor-pointer">
+                      class="w-7 h-7 rounded-full border border-[#EFEAE6] bg-white hover:bg-[#FAF4F6] active:bg-[#F5E9EC] flex items-center justify-center text-stone-600 transition-colors shadow-2xs cursor-pointer">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
@@ -357,16 +350,16 @@
                   [disabled]="!day.is_open"
                   class="shrink-0 w-20 py-2.5 px-2 rounded-2xl border text-center transition-all duration-200 cursor-pointer"
                   [ngClass]="selectedDate() === day.date
-                    ? 'border-[#0d9488] bg-[#0d9488] text-white shadow-md shadow-teal-500/25 ring-2 ring-[#0d9488]/20'
-                    : (day.is_open ? 'border-slate-200 bg-white hover:border-[#99f6e4] text-slate-800 shadow-xs' : 'opacity-40 bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed')">
+                    ? 'border-[#8E4D5E] bg-[#8E4D5E] text-white shadow-xs ring-2 ring-[#8E4D5E]/20'
+                    : (day.is_open ? 'border-[#EFEAE6] bg-white hover:border-[#EBD2D8] text-stone-800 shadow-2xs' : 'opacity-40 bg-stone-50 border-stone-200 text-stone-400 cursor-not-allowed')">
             <span class="block text-[11px] font-bold uppercase tracking-wider">{{ day.day_short }}</span>
             <span class="block text-xl font-bold leading-tight my-0.5">{{ day.day_number }}</span>
             <span class="block text-[10px] font-bold uppercase tracking-wider -mt-0.5"
-                  [ngClass]="selectedDate() === day.date ? 'text-teal-100' : 'text-slate-400'">
+                  [ngClass]="selectedDate() === day.date ? 'text-rose-100' : 'text-stone-400'">
               {{ day.month_short }}
             </span>
             <span class="block text-[9px] font-semibold mt-1" 
-                  [ngClass]="selectedDate() === day.date ? 'text-teal-200 font-bold' : (day.is_open ? 'text-[#0d9488]' : 'text-slate-400')">
+                  [ngClass]="selectedDate() === day.date ? 'text-white font-bold' : (day.is_open ? 'text-[#8E4D5E]' : 'text-stone-400')">
               {{ day.is_open ? 'Abierto' : 'Cerrado' }}
             </span>
           </button>
@@ -376,65 +369,65 @@
       <!-- Single Next Available Slot Presentation -->
       <div>
         <div class="flex items-center justify-between mb-3">
-          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">HORARIO DISPONIBLE INMEDIATO</label>
-          <span class="text-[11px] text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200">
+          <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider">HORARIO DISPONIBLE INMEDIATO</label>
+          <span class="text-[11px] text-[#8E4D5E] bg-[#FAF4F6] px-2.5 py-0.5 rounded-full font-bold border border-[#EBD2D8]">
             ⏱ Duración: {{ selectedService()?.duration_minutes }} min
           </span>
         </div>
 
         <!-- Loading Spinner -->
         <div *ngIf="loadingSlots()" class="text-center py-10">
-          <div class="w-8 h-8 border-3 border-[#0d9488] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-          <p class="text-xs text-slate-500 font-medium">Calculando el próximo turno disponible...</p>
+          <div class="w-8 h-8 border-3 border-[#8E4D5E] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+          <p class="text-xs text-stone-500 font-medium">Calculando el próximo turno disponible...</p>
         </div>
 
-        <!-- Single Slot Card (Only 1 Next Available Slot) -->
+        <!-- Single Slot Card (Only 1 Next Available Slot - Flat Solid) -->
         <div *ngIf="!loadingSlots() && selectedSlot()" class="max-w-lg mx-auto my-3">
-          <div class="p-6 sm:p-7 rounded-3xl bg-gradient-to-b from-[#e6f7f2]/60 to-white border-2 border-[#0d9488] shadow-xl shadow-teal-200/50 text-center relative overflow-hidden ring-4 ring-[#e6f7f2]">
-            <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-extrabold bg-[#0d9488] text-white uppercase tracking-wider shadow-xs mb-3">
+          <div class="p-6 sm:p-7 rounded-3xl bg-white border-2 border-[#8E4D5E] shadow-sm text-center relative overflow-hidden ring-4 ring-[#FAF4F6]">
+            <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-extrabold bg-[#8E4D5E] text-white uppercase tracking-wider shadow-2xs mb-3">
               <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
               </svg>
               <span>ÚNICO TURNO INMEDIATO DISPONIBLE</span>
             </div>
 
-            <div class="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight my-1.5">
+            <div class="text-3xl sm:text-4xl font-serif font-bold text-[#2D2327] tracking-tight my-1.5">
               {{ formatTime12h(selectedSlot()?.start_time) }}
             </div>
             
-            <div class="flex items-center justify-center gap-2 text-xs text-slate-600 font-medium my-2.5">
-              <span class="bg-[#e6f7f2] text-[#1e3a5f] px-3.5 py-1 rounded-full font-bold border border-[#e2f0ea]">
+            <div class="flex items-center justify-center gap-2 text-xs text-stone-600 font-medium my-2.5">
+              <span class="bg-[#FAF4F6] text-[#2D2327] px-3.5 py-1 rounded-full font-bold border border-[#EBD2D8]">
                 Finaliza a las {{ formatTime12h(selectedSlot()?.end_time) }}
               </span>
             </div>
 
-            <p class="text-[11px] text-slate-500 mt-2 leading-relaxed max-w-sm mx-auto">
+            <p class="text-[11px] text-stone-500 mt-2 leading-relaxed max-w-sm mx-auto">
               Horario habilitado inmediatamente después del último servicio agendado para optimizar la jornada de Paola.
             </p>
           </div>
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="!loadingSlots() && !selectedSlot()" class="text-center py-8 px-4 rounded-3xl bg-[#e6f7f2]/50 border border-[#e2f0ea]">
-          <div class="w-11 h-11 rounded-full bg-[#e6f7f2] text-[#0d9488] mx-auto flex items-center justify-center mb-2.5">
+        <div *ngIf="!loadingSlots() && !selectedSlot()" class="text-center py-8 px-4 rounded-3xl bg-[#FAF4F6] border border-[#EBD2D8]">
+          <div class="w-11 h-11 rounded-full bg-white text-[#8E4D5E] mx-auto flex items-center justify-center mb-2.5 shadow-2xs">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
           </div>
-          <h4 class="font-bold text-slate-900 text-base">No hay turnos disponibles para esta fecha</h4>
-          <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
-            La agenda para este día está completa o coincide con el horario de almuerzo de Paola.
+          <h4 class="font-bold text-[#2D2327] text-base">No hay turnos disponibles para esta fecha</h4>
+          <p class="text-xs text-stone-500 mt-1 max-w-sm mx-auto leading-relaxed">
+            La agenda para este día está completa o coincide con el horario de descanso de Paola.
           </p>
         </div>
       </div>
 
-      <!-- Continue Button -->
+      <!-- Continue Button (Flat Solid Color) -->
       <div class="mt-8 flex justify-end">
         <button type="button"
                 (click)="goToStep(3)"
                 [disabled]="!isStep2Valid() || loadingSlots()"
-                class="px-8 py-3.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-2 tracking-wide shadow-md"
-                [ngClass]="isStep2Valid() && !loadingSlots() ? 'bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white hover:from-[#0f766e] hover:to-[#115e59] shadow-teal-500/25 hover:scale-[1.02] cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'">
+                class="px-8 py-3.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-2 tracking-wide shadow-xs"
+                [ngClass]="isStep2Valid() && !loadingSlots() ? 'bg-[#8E4D5E] text-white hover:bg-[#793E4C] shadow-xs hover:scale-[1.02] cursor-pointer' : 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'">
           <span>Continuar a Mis Datos</span>
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
@@ -452,12 +445,12 @@
       <!-- Section Header -->
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h2 class="font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">3. Tus Datos de Contacto</h2>
-          <p class="text-xs text-slate-500 font-medium mt-0.5">
+          <h2 class="font-serif font-bold text-xl sm:text-2xl text-[#2D2327] tracking-tight">3. Tus Datos de Contacto</h2>
+          <p class="text-xs text-stone-500 font-medium mt-0.5">
             Ingresa tus datos para apartar tu turno y enviarte la confirmación por WhatsApp.
           </p>
         </div>
-        <button type="button" (click)="goToStep(2)" class="text-xs font-bold text-[#0d9488] hover:text-[#162d4a] flex items-center gap-1.5 transition-colors cursor-pointer">
+        <button type="button" (click)="goToStep(2)" class="text-xs font-bold text-[#8E4D5E] hover:text-[#793E4C] flex items-center gap-1.5 transition-colors cursor-pointer">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
@@ -465,35 +458,35 @@
         </button>
       </div>
 
-      <!-- Luxury Booking Summary Card -->
-      <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#e6f7f2]/90 via-[#e6f7f2]/50 to-white border border-[#e2f0ea] mb-6 shadow-xs relative overflow-hidden">
+      <!-- Luxury Booking Summary Card (Flat Solid Color) -->
+      <div class="p-4 sm:p-5 rounded-3xl bg-[#FAF5F6] border border-[#EBD2D8] mb-6 shadow-xs relative overflow-hidden">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           
           <!-- Service & Schedule Info -->
           <div class="flex items-start sm:items-center gap-3.5">
-            <div class="w-12 h-12 rounded-2xl bg-white text-[#0d9488] shrink-0 flex items-center justify-center shadow-md border border-[#e2f0ea]">
+            <div class="w-12 h-12 rounded-2xl bg-white text-[#8E4D5E] shrink-0 flex items-center justify-center shadow-xs border border-[#EBD2D8]">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
               </svg>
             </div>
             <div>
               <div class="flex items-center gap-2 flex-wrap">
-                <h4 class="font-bold text-slate-900 text-base sm:text-lg leading-tight">{{ selectedService()?.name }}</h4>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#e6f7f2] text-[#1e3a5f] uppercase tracking-wider">
+                <h4 class="font-bold text-[#2D2327] text-base sm:text-lg leading-tight">{{ selectedService()?.name }}</h4>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FAF2F4] text-[#8E4D5E] uppercase tracking-wider border border-[#EBD2D8]">
                   {{ selectedService()?.duration_minutes }} min
                 </span>
               </div>
               
               <!-- Formatted Spanish Date & Time -->
-              <div class="flex items-center gap-2 mt-1.5 text-xs text-slate-600 font-medium flex-wrap">
-                <span class="inline-flex items-center gap-1 font-semibold text-slate-800 bg-white/80 px-2.5 py-1 rounded-lg border border-[#e2f0ea] shadow-2xs">
-                  <svg class="w-3.5 h-3.5 text-[#0d9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="flex items-center gap-2 mt-1.5 text-xs text-stone-600 font-medium flex-wrap">
+                <span class="inline-flex items-center gap-1 font-semibold text-[#2D2327] bg-white px-2.5 py-1 rounded-lg border border-[#EFEAE6] shadow-2xs">
+                  <svg class="w-3.5 h-3.5 text-[#8E4D5E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                   </svg>
                   <span>{{ formattedDateDisplay() }}</span>
                 </span>
-                <span class="inline-flex items-center gap-1 font-bold text-[#1e3a5f] bg-[#e6f7f2] px-2.5 py-1 rounded-lg">
-                  <svg class="w-3.5 h-3.5 text-[#0d9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span class="inline-flex items-center gap-1 font-bold text-[#2D2327] bg-[#FAF2F4] px-2.5 py-1 rounded-lg border border-[#EBD2D8]">
+                  <svg class="w-3.5 h-3.5 text-[#8E4D5E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                   </svg>
                   <span>{{ formatTime12h(selectedSlot()?.start_time) }} a {{ formatTime12h(selectedSlot()?.end_time) }}</span>
@@ -503,24 +496,24 @@
           </div>
 
           <!-- Financial Settlement Box -->
-          <div class="flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 md:border-l border-[#e2f0ea] pt-3 md:pt-0 md:pl-5">
+          <div class="flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 md:border-l border-[#EBD2D8] pt-3 md:pt-0 md:pl-5">
             <div class="text-left md:text-right">
-              <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
+              <span class="text-[10px] uppercase font-bold text-stone-500 tracking-wider block">
                 {{ isRecurringClient() ? 'Modalidad de Pago' : 'Abono Requerido' }}
               </span>
-              <span *ngIf="!isRecurringClient()" class="font-bold text-[#1e3a5f] text-lg sm:text-xl">
+              <span *ngIf="!isRecurringClient()" class="font-bold text-[#2D2327] text-lg sm:text-xl">
                 ${{ formatPrice(selectedService()?.deposit_amount) }} COP
               </span>
-              <span *ngIf="isRecurringClient()" class="font-extrabold text-[#0d9488] text-base sm:text-lg inline-flex items-center gap-1.5 bg-[#e6f7f2] px-2.5 py-1 rounded-full border border-[#a7f3d0]">
+              <span *ngIf="isRecurringClient()" class="font-extrabold text-[#8E4D5E] text-base sm:text-lg inline-flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-full border border-[#EBD2D8]">
                 ⭐ Sin Abono Requerido
               </span>
             </div>
-            <span class="text-[11px] text-slate-500 font-medium block mt-0.5">
+            <span class="text-[11px] text-stone-500 font-medium block mt-0.5">
               <ng-container *ngIf="!isRecurringClient()">
-                Saldo en local: <strong class="text-slate-700">${{ formatPrice((selectedService()?.price || selectedService()?.base_price || 0) - (selectedService()?.deposit_amount || 0)) }} COP</strong>
+                Saldo en local: <strong class="text-stone-700">${{ formatPrice((selectedService()?.price || selectedService()?.base_price || 0) - (selectedService()?.deposit_amount || 0)) }} COP</strong>
               </ng-container>
               <ng-container *ngIf="isRecurringClient()">
-                Total en salón: <strong class="text-slate-800">${{ formatPrice(selectedService()?.price || selectedService()?.base_price || 0) }} COP</strong>
+                Total en salón: <strong class="text-[#2D2327]">${{ formatPrice(selectedService()?.price || selectedService()?.base_price || 0) }} COP</strong>
               </ng-container>
             </span>
           </div>
@@ -528,16 +521,16 @@
       </div>
 
       <!-- Client Details Form Card -->
-      <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs">
+      <div class="bg-white p-6 sm:p-8 rounded-3xl border border-[#EFEAE6] shadow-xs">
         <form [formGroup]="clientForm" class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             
             <!-- 1. WhatsApp Celular (PRIMERO) -->
             <div>
               <div class="flex items-center justify-between mb-1.5">
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Celular WhatsApp *</label>
-                <span *ngIf="isCheckingClient()" class="text-[10px] text-[#0d9488] font-bold animate-pulse flex items-center gap-1">
-                  <svg class="animate-spin w-3 h-3 text-[#0d9488]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider">Celular WhatsApp *</label>
+                <span *ngIf="isCheckingClient()" class="text-[10px] text-[#8E4D5E] font-bold animate-pulse flex items-center gap-1">
+                  <svg class="animate-spin w-3 h-3 text-[#8E4D5E]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                   </svg>
@@ -545,8 +538,8 @@
                 </span>
               </div>
               <input type="tel" formControlName="phone" (input)="formatPhoneInput($event)" placeholder="Ej: 310 123 4567"
-                     class="w-full text-xs text-slate-900 border rounded-xl px-4 py-3 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]"
-                     [ngClass]="clientForm.get('phone')?.touched && clientForm.get('phone')?.invalid ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'">
+                     class="w-full text-xs text-[#2D2327] border rounded-xl px-4 py-3 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8E4D5E]/20 focus:border-[#8E4D5E]"
+                     [ngClass]="clientForm.get('phone')?.touched && clientForm.get('phone')?.invalid ? 'border-rose-400 bg-rose-50/20' : 'border-[#EFEAE6]'">
               <span *ngIf="clientForm.get('phone')?.touched && clientForm.get('phone')?.invalid" class="text-[10px] text-rose-500 font-semibold mt-1 block">
                 Ingresa un número de 10 dígitos válido.
               </span>
@@ -554,55 +547,55 @@
 
             <!-- 2. Nombre Completo (SEGUNDO) -->
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nombre Completo *</label>
+              <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Nombre Completo *</label>
               <input type="text" formControlName="name" placeholder="Ej: Paola Andrea Gómez"
-                     class="w-full text-xs text-slate-900 border border-slate-200 rounded-xl px-4 py-3 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]">
+                     class="w-full text-xs text-[#2D2327] border border-[#EFEAE6] rounded-xl px-4 py-3 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8E4D5E]/20 focus:border-[#8E4D5E]">
               <span *ngIf="clientForm.get('name')?.touched && clientForm.get('name')?.invalid" class="text-[10px] text-rose-500 font-semibold mt-1 block">
                 Por favor ingresa tu nombre (mínimo 3 caracteres).
               </span>
             </div>
           </div>
 
-          <!-- Banner de Reconocimiento de Clienta Frecuente / Recurrente -->
-          <div *ngIf="isRecurringClient()" class="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-white border border-emerald-200/90 shadow-2xs flex items-start gap-3.5 animate-fade-in">
-            <div class="w-9 h-9 rounded-xl bg-[#0d9488] text-white shrink-0 flex items-center justify-center font-black text-sm shadow-xs">
+          <!-- Banner de Reconocimiento de Clienta Frecuente / Recurrente (Flat Solid) -->
+          <div *ngIf="isRecurringClient()" class="p-4 rounded-2xl bg-[#FAF5F6] border border-[#EBD2D8] shadow-2xs flex items-start gap-3.5 animate-fade-in">
+            <div class="w-9 h-9 rounded-xl bg-[#8E4D5E] text-white shrink-0 flex items-center justify-center font-black text-sm shadow-xs">
               ⭐
             </div>
             <div class="text-xs leading-relaxed">
-              <h5 class="font-extrabold text-emerald-950 text-xs sm:text-sm flex items-center gap-2 flex-wrap">
+              <h5 class="font-extrabold text-[#2D2327] text-xs sm:text-sm flex items-center gap-2 flex-wrap">
                 <span>¡Hola de nuevo, {{ existingClientName() }}!</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#FAF2F4] text-[#8E4D5E] border border-[#EBD2D8]">
                   Clienta Habitual VIP
                 </span>
               </h5>
-              <p class="text-emerald-800 text-[11px] sm:text-xs mt-1 font-medium">
-                Por ser clienta habitual de <strong>La Belle Nails</strong>, tu reserva queda confirmada inmediatamente <strong>sin pagar abono previo</strong>. Pagarás el 100% en el salón el día de tu turno.
+              <p class="text-stone-700 text-[11px] sm:text-xs mt-1 font-medium">
+                Por ser clienta habitual de <strong>Paola Aguilera</strong>, tu reserva queda confirmada inmediatamente <strong>sin pagar abono previo</strong>. Pagarás el 100% en el salón el día de tu turno.
               </p>
             </div>
           </div>
 
           <!-- Correo Electrónico Opcional -->
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Correo Electrónico (Opcional)</label>
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Correo Electrónico (Opcional)</label>
             <input type="email" formControlName="email" placeholder="Para enviarte el voucher digital y recordatorio de cita"
-                   class="w-full text-xs text-slate-900 border border-slate-200 rounded-xl px-4 py-3 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]">
+                   class="w-full text-xs text-[#2D2327] border border-[#EFEAE6] rounded-xl px-4 py-3 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8E4D5E]/20 focus:border-[#8E4D5E]">
           </div>
 
           <!-- Notas Opcionales -->
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Notas o Preferencias Especiales</label>
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Notas o Preferencias Especiales</label>
             <textarea formControlName="notes" rows="2" placeholder="¿Alguna condición, alergia o detalle que debamos tener en cuenta?"
-                      class="w-full text-xs text-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]"></textarea>
+                      class="w-full text-xs text-[#2D2327] border border-[#EFEAE6] rounded-xl px-4 py-2.5 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8E4D5E]/20 focus:border-[#8E4D5E]"></textarea>
           </div>
 
           <!-- Checkbox Obligatorio Tratamiento de Datos (Ley 1581 de 2012) -->
-          <div class="pt-3 border-t border-slate-100">
+          <div class="pt-3 border-t border-stone-100">
             <label class="flex items-start gap-3 cursor-pointer group">
               <input type="checkbox"
                      formControlName="accept_terms"
-                     class="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]/20 focus:ring-2 accent-[#0d9488] cursor-pointer">
-              <span class="text-xs text-slate-600 leading-relaxed select-none">
-                Acepto la <button type="button" (click)="$event.preventDefault(); $event.stopPropagation(); openPrivacyModal()" class="text-[#0d9488] font-bold underline hover:text-[#0f766e] transition-colors cursor-pointer inline">Política de Tratamiento de Datos Personales</button> de acuerdo con la Ley 1581 de 2012 de Colombia y autorizo el uso de mis datos para la gestión y confirmación de mi cita. <span class="text-rose-500 font-bold">*</span>
+                     class="mt-0.5 w-4 h-4 rounded border-stone-300 text-[#8E4D5E] focus:ring-[#8E4D5E]/20 focus:ring-2 accent-[#8E4D5E] cursor-pointer">
+              <span class="text-xs text-stone-600 leading-relaxed select-none">
+                Acepto la <button type="button" (click)="$event.preventDefault(); $event.stopPropagation(); openPrivacyModal()" class="text-[#8E4D5E] font-bold underline hover:text-[#793E4C] transition-colors cursor-pointer inline">Política de Tratamiento de Datos Personales</button> de acuerdo con la Ley 1581 de 2012 de Colombia y autorizo el uso de mis datos para la gestión y confirmación de mi cita. <span class="text-rose-500 font-bold">*</span>
               </span>
             </label>
             <span *ngIf="clientForm.get('accept_terms')?.touched && clientForm.get('accept_terms')?.invalid"
@@ -612,10 +605,10 @@
           </div>
         </form>
 
-        <!-- Continue CTA -->
+        <!-- Continue CTA (Flat Solid Color) -->
         <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p *ngIf="!isDepositRequired()" class="text-xs text-emerald-700 font-bold flex items-center gap-1.5">
-            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <p *ngIf="!isDepositRequired()" class="text-xs text-[#8E4D5E] font-bold flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-[#8E4D5E] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
             </svg>
             <span *ngIf="isRecurringClient()">Beneficio VIP: Confirmación instantánea sin anticipo</span>
@@ -627,8 +620,8 @@
                     type="button"
                     (click)="submitBooking()"
                     [disabled]="!isStep3Valid() || isSubmitting()"
-                    class="w-full sm:w-auto px-8 py-3.5 rounded-full text-xs font-extrabold transition-all duration-200 flex items-center justify-center gap-2 tracking-wide shadow-md"
-                    [ngClass]="isStep3Valid() && !isSubmitting() ? 'bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white hover:from-[#0f766e] hover:to-[#115e59] shadow-teal-500/25 hover:scale-[1.02] cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'">
+                    class="w-full sm:w-auto px-8 py-3.5 rounded-full text-xs font-extrabold transition-all duration-200 flex items-center justify-center gap-2 tracking-wide shadow-xs"
+                    [ngClass]="isStep3Valid() && !isSubmitting() ? 'bg-[#8E4D5E] text-white hover:bg-[#793E4C] shadow-xs hover:scale-[1.02] cursor-pointer' : 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'">
               <span *ngIf="!isSubmitting()">Confirmar Cita Inmediata (Sin Abono)</span>
               <span *ngIf="isSubmitting()">Confirmando tu reserva...</span>
               <svg *ngIf="!isSubmitting()" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -641,8 +634,8 @@
                     type="button"
                     (click)="goToStep(4)"
                     [disabled]="!isStep3Valid()"
-                    class="w-full sm:w-auto px-8 py-3.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 tracking-wide shadow-md"
-                    [ngClass]="isStep3Valid() ? 'bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white hover:from-[#0f766e] hover:to-[#115e59] shadow-teal-500/25 hover:scale-[1.02] cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'">
+                    class="w-full sm:w-auto px-8 py-3.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 tracking-wide shadow-xs"
+                    [ngClass]="isStep3Valid() ? 'bg-[#8E4D5E] text-white hover:bg-[#793E4C] shadow-xs hover:scale-[1.02] cursor-pointer' : 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'">
               <span>Continuar al Pago del Abono (${{ formatPrice(selectedService()?.deposit_amount) }} COP)</span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
@@ -661,10 +654,10 @@
       
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h2 class="font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">
+          <h2 class="font-serif font-bold text-xl sm:text-2xl text-[#2D2327] tracking-tight">
             {{ isDepositRequired() ? '4. Método de Abono' : '4. Confirmación de Cita' }}
           </h2>
-          <p class="text-xs text-slate-500 font-medium">
+          <p class="text-xs text-stone-500 font-medium">
             {{ isDepositRequired() ? 'Asegura tu cita con el pago del anticipo' : 'Finaliza tu reserva sin necesidad de pago anticipado' }}
           </p>
         </div>
@@ -676,36 +669,36 @@
         </span>
       </div>
 
-      <!-- Settlement Breakdown Card -->
-      <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs mb-6">
-        <div class="flex justify-between items-center text-xs text-slate-600 pb-2.5 border-b border-slate-100">
+      <!-- Settlement Breakdown Card (Flat Solid) -->
+      <div class="bg-white p-5 rounded-3xl border border-[#EFEAE6] shadow-xs mb-6">
+        <div class="flex justify-between items-center text-xs text-stone-600 pb-2.5 border-b border-stone-100">
           <span class="font-medium">Valor Total del Servicio</span>
-          <span class="font-bold text-slate-900 text-base">${{ formatPrice(selectedService()?.price || selectedService()?.base_price) }} COP</span>
+          <span class="font-bold text-[#2D2327] text-base">${{ formatPrice(selectedService()?.price || selectedService()?.base_price) }} COP</span>
         </div>
-        <div class="flex justify-between items-center text-xs text-[#1e3a5f] font-bold py-2.5 border-b border-slate-100">
+        <div class="flex justify-between items-center text-xs text-[#2D2327] font-bold py-2.5 border-b border-stone-100">
           <span>Monto de Abono a Pagar Hoy</span>
-          <span class="text-lg text-[#0d9488]" *ngIf="isDepositRequired()">${{ formatPrice(selectedService()?.deposit_amount) }} COP</span>
-          <span class="text-sm font-extrabold text-emerald-600" *ngIf="!isDepositRequired()">$0 COP (Exento / Sin anticipo)</span>
+          <span class="text-lg text-[#8E4D5E]" *ngIf="isDepositRequired()">${{ formatPrice(selectedService()?.deposit_amount) }} COP</span>
+          <span class="text-sm font-extrabold text-[#8E4D5E]" *ngIf="!isDepositRequired()">$0 COP (Exento / Sin anticipo)</span>
         </div>
-        <div class="flex justify-between items-center text-xs text-slate-500 pt-2.5">
+        <div class="flex justify-between items-center text-xs text-stone-500 pt-2.5">
           <span class="font-medium">Saldo Restante a Pagar en el Local</span>
-          <span class="font-bold text-slate-800 text-sm">
+          <span class="font-bold text-[#2D2327] text-sm">
             ${{ formatPrice(isDepositRequired() ? ((selectedService()?.price || selectedService()?.base_price || 0) - (selectedService()?.deposit_amount || 0)) : (selectedService()?.price || selectedService()?.base_price || 0)) }} COP
           </span>
         </div>
       </div>
 
       <!-- CASO 1: NO REQUIERE ABONO ($0 COP O VIP) -> CONFIRMACIÓN DIRECTA SIN NEQUI NI COMPROBANTE -->
-      <div *ngIf="!isDepositRequired()" class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-5">
-        <div class="p-5 rounded-2xl bg-emerald-50/80 border border-emerald-100 flex items-start gap-3.5">
-          <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-extrabold text-base">
+      <div *ngIf="!isDepositRequired()" class="bg-white p-6 sm:p-8 rounded-3xl border border-[#EFEAE6] shadow-xs space-y-5">
+        <div class="p-5 rounded-2xl bg-[#FAF5F6] border border-[#EBD2D8] flex items-start gap-3.5">
+          <div class="w-9 h-9 rounded-full bg-[#FAF2F4] text-[#8E4D5E] border border-[#EBD2D8] flex items-center justify-center shrink-0 font-extrabold text-base">
             ✓
           </div>
           <div>
-            <h4 class="text-sm font-bold text-emerald-950 mb-1">
+            <h4 class="text-sm font-bold text-[#2D2327] mb-1">
               {{ isRecurringClient() ? '¡Beneficio de Clienta VIP!' : '¡Cita sin pago anticipado!' }}
             </h4>
-            <p class="text-xs text-emerald-800 leading-relaxed">
+            <p class="text-xs text-stone-700 leading-relaxed">
               No requieres hacer transferencias ni adjuntar ningún comprobante. 
               El valor total del tratamiento lo cancelarás el día de tu turno directamente en el salón (efectivo, Nequi o transferencia).
             </p>
@@ -717,11 +710,11 @@
           {{ errorMessage() }}
         </div>
 
-        <!-- Submit Direct Confirmation Button -->
+        <!-- Submit Direct Confirmation Button (Flat Solid) -->
         <button type="button"
                 (click)="submitBooking()"
                 [disabled]="isSubmitting()"
-                class="w-full py-4 rounded-full text-xs font-extrabold bg-[#0d9488] text-white hover:bg-[#0f766e] disabled:bg-slate-200 disabled:text-slate-400 shadow-md shadow-teal-500/25 transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
+                class="w-full py-4 rounded-full text-xs font-extrabold bg-[#8E4D5E] text-white hover:bg-[#793E4C] disabled:bg-stone-200 disabled:text-stone-400 shadow-xs transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
           <span *ngIf="isSubmitting()" class="flex items-center gap-2">
             <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             <span>Confirmando tu reserva...</span>
@@ -739,12 +732,12 @@
           <button type="button" 
                   (click)="paymentMethod.set('NEQUI')"
                   class="p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer"
-                  [ngClass]="paymentMethod() === 'NEQUI' ? 'border-[#0d9488] bg-[#e6f7f2]/50 ring-2 ring-[#0d9488]/20 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'">
+                  [ngClass]="paymentMethod() === 'NEQUI' ? 'border-[#8E4D5E] bg-[#FAF5F6] ring-2 ring-[#8E4D5E]/20 shadow-xs' : 'border-[#EFEAE6] bg-white hover:border-[#EBD2D8]'">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-xs font-bold text-slate-900">📲 Nequi Directo</span>
-              <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase tracking-wider">0% Comisión</span>
+              <span class="text-xs font-bold text-[#2D2327]">📲 Nequi Directo</span>
+              <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#FAF2F4] text-[#8E4D5E] border border-[#EBD2D8] uppercase tracking-wider">0% Comisión</span>
             </div>
-            <p class="text-[11px] text-slate-500 leading-tight">Transferencia directa y subida de comprobante</p>
+            <p class="text-[11px] text-stone-500 leading-tight">Transferencia directa y subida de comprobante</p>
           </button>
 
           <button type="button" 
@@ -752,54 +745,53 @@
                   (click)="selectPaymentMethod('BOLD')"
                   class="p-4 rounded-2xl border text-left transition-all duration-200"
                   [ngClass]="!isBoldEnabled() 
-                    ? 'opacity-40 cursor-not-allowed bg-slate-50 border-slate-200 select-none' 
-                    : (paymentMethod() === 'BOLD' ? 'border-[#0d9488] bg-[#e6f7f2]/50 ring-2 ring-[#0d9488]/20 shadow-xs cursor-pointer' : 'border-slate-200 bg-white hover:border-slate-300 cursor-pointer')">
+                    ? 'opacity-40 cursor-not-allowed bg-stone-50 border-stone-200 select-none' 
+                    : (paymentMethod() === 'BOLD' ? 'border-[#8E4D5E] bg-[#FAF5F6] ring-2 ring-[#8E4D5E]/20 shadow-xs cursor-pointer' : 'border-[#EFEAE6] bg-white hover:border-[#EBD2D8] cursor-pointer')">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-xs font-bold" [ngClass]="isBoldEnabled() ? 'text-slate-900' : 'text-slate-400'">💳 Pago en Línea (Bold)</span>
-              <span *ngIf="!isBoldEnabled()" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-500 uppercase tracking-wider">No Habilitado</span>
+              <span class="text-xs font-bold" [ngClass]="isBoldEnabled() ? 'text-[#2D2327]' : 'text-stone-400'">💳 Pago en Línea (Bold)</span>
+              <span *ngIf="!isBoldEnabled()" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-stone-200 text-stone-500 uppercase tracking-wider">No Habilitado</span>
             </div>
-            <p class="text-[11px] leading-tight" [ngClass]="isBoldEnabled() ? 'text-slate-500' : 'text-slate-400'">
+            <p class="text-[11px] leading-tight" [ngClass]="isBoldEnabled() ? 'text-stone-500' : 'text-stone-400'">
               {{ isBoldEnabled() ? 'PSE, Tarjetas Débito y Crédito' : 'Pasarela no configurada temporalmente' }}
             </p>
           </button>
         </div>
 
         <!-- Nequi Transfer Instructions & Receipt Upload -->
-        <div *ngIf="paymentMethod() === 'NEQUI'" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
-          <div class="p-4 rounded-2xl bg-purple-50/80 border border-purple-100 space-y-2.5">
-            <h4 class="text-xs font-bold text-purple-900">Datos para la Transferencia Nequi:</h4>
-            <p class="text-xs text-purple-800" *ngIf="nequiInfo().account_holder || salonProfile()?.display_name || salonProfile()?.name">
-              <span class="font-semibold text-purple-950">Titular:</span> {{ nequiInfo().account_holder || salonProfile()?.display_name || salonProfile()?.name }}
+        <div *ngIf="paymentMethod() === 'NEQUI'" class="bg-white p-6 rounded-3xl border border-[#EFEAE6] shadow-xs space-y-4">
+          <div class="p-4 rounded-2xl bg-[#FAF5F6] border border-[#EBD2D8] space-y-2.5">
+            <h4 class="text-xs font-bold text-[#2D2327]">Datos para la Transferencia Nequi:</h4>
+            <p class="text-xs text-stone-700" *ngIf="nequiInfo().account_holder || salonProfile()?.display_name || salonProfile()?.name">
+              <span class="font-semibold text-[#2D2327]">Titular:</span> {{ nequiInfo().account_holder || salonProfile()?.display_name || salonProfile()?.name }}
             </p>
-            <div class="flex items-center justify-between pt-2 border-t border-purple-200/60" *ngIf="nequiInfo().account_number">
-              <span class="text-base font-black text-purple-950 font-mono tracking-widest">{{ nequiInfo().account_number }}</span>
+            <div class="flex items-center justify-between pt-2 border-t border-[#EBD2D8]" *ngIf="nequiInfo().account_number">
+              <span class="text-base font-black text-[#2D2327] font-mono tracking-widest">{{ nequiInfo().account_number }}</span>
               <button type="button" (click)="copyNequiNumber()"
-                      class="text-[11px] font-bold px-3.5 py-1.5 rounded-full bg-purple-200 hover:bg-purple-300 text-purple-900 transition-colors shadow-2xs cursor-pointer">
+                      class="text-[11px] font-bold px-3.5 py-1.5 rounded-full bg-white hover:bg-[#FAF4F6] text-[#8E4D5E] border border-[#EBD2D8] transition-colors shadow-2xs cursor-pointer">
                 <span>{{ copiedNequi() ? '¡Copiado! ✓' : 'Copiar Número' }}</span>
               </button>
             </div>
 
-
             <!-- Nota de Instrucción de Transferencia y Carga de Evidencia -->
-            <div class="mt-2 p-2.5 rounded-xl bg-purple-100/70 border border-purple-200 text-[11px] text-purple-900 flex items-start gap-2">
+            <div class="mt-2 p-2.5 rounded-xl bg-white border border-[#EBD2D8] text-[11px] text-stone-700 flex items-start gap-2">
               <span class="text-sm shrink-0">💡</span>
               <p class="leading-relaxed">
-                <span class="font-bold">Instrucción:</span> Por favor realiza la transferencia del anticipo a este número de Nequi y a continuación <strong>adjunta la captura del comprobante abajo</strong> para confirmar y apartar tu turno.
+                <span class="font-bold text-[#2D2327]">Instrucción:</span> Por favor realiza la transferencia del anticipo a este número de Nequi y a continuación <strong>adjunta la captura del comprobante abajo</strong> para confirmar y apartar tu turno.
               </p>
             </div>
           </div>
 
           <!-- Receipt File Input -->
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Cargar Comprobante de Transferencia *</label>
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Cargar Comprobante de Transferencia *</label>
             <input type="file" (change)="onReceiptSelected($event)" accept="image/*"
-                   class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#e6f7f2] file:text-[#1e3a5f] hover:file:bg-[#ccfbf1] cursor-pointer border border-slate-200 rounded-2xl p-2 bg-slate-50/50">
+                   class="w-full text-xs text-stone-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#FAF2F4] file:text-[#8E4D5E] hover:file:bg-[#F5E9EC] cursor-pointer border border-[#EFEAE6] rounded-2xl p-2 bg-stone-50/50">
             
-            <div *ngIf="receiptPreview()" class="mt-3 relative w-32 h-32 rounded-xl overflow-hidden border border-emerald-300 shadow-xs">
+            <div *ngIf="receiptPreview()" class="mt-3 relative w-32 h-32 rounded-xl overflow-hidden border border-[#EBD2D8] shadow-xs">
               <img [src]="receiptPreview()" alt="Comprobante" class="w-full h-full object-cover">
               <button type="button" (click)="removeReceipt()" class="absolute top-1 right-1 bg-black/70 text-white rounded-full p-1 text-[10px]">✕</button>
             </div>
-            <p class="text-[10px] text-slate-400 mt-1.5">Adjunta una foto o captura de pantalla donde se vea claramente el valor y número de aprobación.</p>
+            <p class="text-[10px] text-stone-400 mt-1.5">Adjunta una foto o captura de pantalla donde se vea claramente el valor y número de aprobación.</p>
           </div>
 
           <!-- Error Message -->
@@ -807,11 +799,11 @@
             {{ errorMessage() }}
           </div>
 
-          <!-- Submit Button -->
+          <!-- Submit Button (Flat Solid) -->
           <button type="button"
                   (click)="submitBooking()"
                   [disabled]="isSubmitting() || !receiptFile"
-                  class="w-full py-3.5 rounded-full text-xs font-bold bg-[#0d9488] text-white hover:bg-[#0f766e] disabled:bg-slate-200 disabled:text-slate-400 shadow-md shadow-teal-500/25 transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
+                  class="w-full py-3.5 rounded-full text-xs font-bold bg-[#8E4D5E] text-white hover:bg-[#793E4C] disabled:bg-stone-200 disabled:text-stone-400 shadow-xs transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
             <span *ngIf="isSubmitting()" class="flex items-center gap-2">
               <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               <span>Registrando y subiendo comprobante...</span>
@@ -821,14 +813,14 @@
         </div>
 
         <!-- Bold Payment Gateway Info -->
-        <div *ngIf="paymentMethod() === 'BOLD' && isBoldEnabled()" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
-          <p class="text-xs text-slate-600 leading-relaxed">
+        <div *ngIf="paymentMethod() === 'BOLD' && isBoldEnabled()" class="bg-white p-6 rounded-3xl border border-[#EFEAE6] shadow-xs space-y-4">
+          <p class="text-xs text-stone-600 leading-relaxed">
             Serás redirigido a la pasarela segura de Bold para realizar el abono mediante PSE o tarjeta débito/crédito.
           </p>
           <button type="button"
                   (click)="submitBooking()"
                   [disabled]="isSubmitting()"
-                  class="w-full py-3.5 rounded-full text-xs font-bold bg-[#1e3a5f] text-white hover:bg-[#162d4a] shadow-md transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
+                  class="w-full py-3.5 rounded-full text-xs font-bold bg-[#2D2327] text-white hover:bg-[#1D1619] shadow-xs transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
             <span *ngIf="isSubmitting()">Iniciando pasarela de pago...</span>
             <span *ngIf="!isSubmitting()">Pagar Abono en Línea con Bold</span>
           </button>
@@ -842,51 +834,51 @@
     <!-- ========================================================================= -->
     <div *ngIf="currentStep() === 5 && bookingResult()" class="max-w-xl mx-auto animate-fade-in text-center py-6">
       
-      <div class="bg-white rounded-3xl border border-emerald-200 p-8 sm:p-10 shadow-lg text-center space-y-6">
-        <div class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto shadow-xs">
+      <div class="bg-white rounded-3xl border border-[#EBD2D8] p-8 sm:p-10 shadow-sm text-center space-y-6">
+        <div class="w-16 h-16 rounded-full bg-[#FAF2F4] text-[#8E4D5E] border border-[#EBD2D8] flex items-center justify-center mx-auto shadow-2xs">
           <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
           </svg>
         </div>
 
         <div>
-          <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-md border border-emerald-200">
+          <span class="text-xs font-mono font-bold text-[#8E4D5E] bg-[#FAF2F4] px-3 py-1 rounded-md border border-[#EBD2D8]">
             #{{ bookingResult()?.appointment_number }}
           </span>
-          <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-3">¡Cita Registrada con Éxito!</h2>
-          <p class="text-xs sm:text-sm text-slate-500 mt-1">
+          <h2 class="font-serif text-2xl sm:text-3xl font-bold text-[#2D2327] mt-3">¡Cita Registrada con Éxito!</h2>
+          <p class="text-xs sm:text-sm text-stone-500 mt-1">
             Tu reserva ha sido enviada al equipo de Paola Aguilera.
           </p>
         </div>
 
         <!-- Appointment Details Summary -->
-        <div class="bg-slate-50/90 p-5 rounded-2xl border border-slate-200 text-left space-y-2.5 text-xs sm:text-sm">
+        <div class="bg-[#FAF5F6] p-5 rounded-2xl border border-[#EBD2D8] text-left space-y-2.5 text-xs sm:text-sm">
           <div class="flex justify-between">
-            <span class="text-slate-500">Tratamiento:</span>
-            <span class="font-bold text-slate-900">{{ bookingResult()?.service_name }}</span>
+            <span class="text-stone-500">Tratamiento:</span>
+            <span class="font-bold text-[#2D2327]">{{ bookingResult()?.service_name }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Fecha y Hora:</span>
-            <span class="font-bold text-emerald-800">{{ bookingResult()?.booking_date || $any(bookingResult())?.date }} • {{ bookingResult()?.start_time }}</span>
+            <span class="text-stone-500">Fecha y Hora:</span>
+            <span class="font-bold text-[#8E4D5E]">{{ bookingResult()?.booking_date || $any(bookingResult())?.date }} • {{ bookingResult()?.start_time }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Cliente:</span>
-            <span class="font-bold text-slate-900">{{ bookingResult()?.client_name }}</span>
+            <span class="text-stone-500">Cliente:</span>
+            <span class="font-bold text-[#2D2327]">{{ bookingResult()?.client_name }}</span>
           </div>
-          <div class="flex justify-between pt-2 border-t border-slate-200">
-            <span class="text-slate-500">Abono Registrado:</span>
-            <span class="font-bold text-emerald-800">${{ formatPrice(bookingResult()?.deposit_amount) }} COP</span>
+          <div class="flex justify-between pt-2 border-t border-[#EBD2D8]">
+            <span class="text-stone-500">Abono Registrado:</span>
+            <span class="font-bold text-[#8E4D5E]">${{ formatPrice(bookingResult()?.deposit_amount) }} COP</span>
           </div>
         </div>
 
         <!-- Action CTAs -->
         <div class="space-y-3 pt-2">
           <a [href]="getWhatsAppShareUrl()" target="_blank"
-             class="w-full py-3.5 bg-[#25d366] hover:bg-[#20bd5a] text-white font-bold rounded-full text-xs uppercase tracking-wider block transition-colors shadow-md">
+             class="w-full py-3.5 bg-[#25d366] hover:bg-[#20bd5a] text-white font-bold rounded-full text-xs uppercase tracking-wider block transition-colors shadow-xs">
             Notificar por WhatsApp a Paola
           </a>
           <button type="button" (click)="resetBooking()"
-                  class="w-full py-2.5 text-xs text-slate-500 hover:text-slate-900 font-semibold transition-colors cursor-pointer">
+                  class="w-full py-2.5 text-xs text-stone-500 hover:text-[#2D2327] font-semibold transition-colors cursor-pointer">
             Reservar otra cita
           </button>
         </div>
@@ -899,7 +891,7 @@
   <!-- ========================================================================= -->
   <!-- FOOTER (FIXED LUXURY SAAS BOTTOM BAR)                                     -->
   <!-- ========================================================================= -->
-  <footer class="fixed bottom-0 left-0 right-0 z-30 border-t border-[#e2f0ea] bg-white/95 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+  <footer class="fixed bottom-0 left-0 right-0 z-30 border-t border-[#EFEAE6] bg-white/95 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
     <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
       
       <!-- Upper Section -->
@@ -907,16 +899,16 @@
         
         <!-- Studio Identity & Location -->
         <div class="flex items-center gap-2.5 sm:gap-3">
-          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center text-[#0d9488] shadow-xs shrink-0">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#2D2327] flex items-center justify-center text-[#8E4D5E] shadow-2xs shrink-0">
             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
           </div>
           <div class="min-w-0">
-            <h3 class="font-bold text-xs sm:text-sm text-[#1e3a5f] leading-tight truncate">
+            <h3 class="font-bold text-xs sm:text-sm text-[#2D2327] leading-tight truncate">
               {{ salonProfile()?.name || 'Paola Andrea Aguilera Camacho' }}
             </h3>
-            <p class="text-[10px] sm:text-xs text-slate-500 font-medium truncate mt-0.5">
+            <p class="text-[10px] sm:text-xs text-stone-500 font-medium truncate mt-0.5">
               {{ salonProfile()?.business_type || 'Estudio Especializado' }} · {{ salonProfile()?.city || 'Bogotá, Colombia' }}
             </p>
           </div>
@@ -924,10 +916,10 @@
 
         <!-- Specialties & Hours (Desktop / Tablet) -->
         <div class="hidden sm:block text-right">
-          <p class="text-[11px] sm:text-xs text-slate-500 font-medium">
-            {{ salonProfile()?.specialties || 'Pestañas · Cejas · Faciales · Micropigmentación' }}
+          <p class="text-[11px] sm:text-xs text-[#8E4D5E] font-semibold">
+            {{ salonProfile()?.specialties || 'Manicura Rusa · Uñas en Poligel · Pedicura Spa · Belleza' }}
           </p>
-          <p class="text-[10px] sm:text-[11px] text-slate-600 font-medium mt-0.5">
+          <p class="text-[10px] sm:text-[11px] text-stone-500 font-medium mt-0.5">
             {{ salonProfile()?.schedule_summary || 'Lunes a Sábado 8:00 AM - 6:00 PM | Almuerzo 1:00 PM - 2:00 PM' }}
           </p>
         </div>
@@ -935,12 +927,12 @@
       </div>
 
       <!-- Lower Sub-footer Section -->
-      <div class="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between gap-3 text-[10px] sm:text-[11px] text-slate-400">
+      <div class="pt-2 mt-2 border-t border-stone-100 flex items-center justify-between gap-3 text-[10px] sm:text-[11px] text-stone-400">
         <div class="hidden xs:block">
           <span>Agenda · Clientes · Control</span>
         </div>
         <div class="w-full xs:w-auto text-center xs:text-right">
-          <span>Plataforma <strong class="font-bold text-slate-600">Cita Clave</strong> — desarrollada por <strong class="font-bold text-[#1e3a5f]">Nuvex Tecnología</strong> © 2026</span>
+          <span>Plataforma <strong class="font-bold text-stone-600">Cita Clave</strong> — desarrollada por <strong class="font-bold text-[#2D2327]">Nuvex Tecnología</strong> © 2026</span>
         </div>
       </div>
 
@@ -948,16 +940,31 @@
   </footer>
 
   <!-- ========================================================================= -->
+  <!-- BOTÓN FLOTANTE WHATSAPP (INTERACCIÓN DIRECTA & ASISTENCIA)                -->
+  <!-- ========================================================================= -->
+  <a [href]="getGeneralWhatsAppUrl()" 
+     target="_blank" 
+     rel="noopener noreferrer"
+     aria-label="Contactar por WhatsApp a Paola Aguilera"
+     title="Chatea con nosotros por WhatsApp"
+     class="fixed bottom-24 sm:bottom-24 right-5 sm:right-6 z-40 group flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20BD5A] text-white px-4 py-3 rounded-full shadow-[0_8px_24px_rgba(37,211,102,0.30)] hover:shadow-[0_12px_28px_rgba(37,211,102,0.40)] transition-all duration-200 hover:scale-[1.04] active:scale-[0.98]">
+    <svg class="w-5 h-5 shrink-0 fill-current" viewBox="0 0 24 24">
+      <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.542 1.897.82 2.791.82h.001c3.181 0 5.768-2.586 5.768-5.766 0-3.18-2.587-5.766-5.769-5.766zm3.376 8.204c-.149.419-.747.781-1.026.832-.27.05-.62.072-1.808-.419-1.52-.628-2.502-2.18-2.578-2.282-.075-.102-.614-.817-.614-1.558 0-.741.388-1.106.526-1.255.138-.149.3-.186.4-.186.1 0 .2.001.288.006.094.005.218-.035.341.262.126.305.433 1.056.471 1.134.038.077.063.168.013.268-.05.101-.075.163-.15.251-.075.088-.158.197-.225.264-.075.075-.153.156-.066.305.087.149.387.639.83 1.033.57.507 1.051.664 1.2.739.149.075.237.063.325-.038.088-.101.376-.438.476-.588.1-.15.2-.125.338-.075.138.05.877.413 1.027.488.15.075.25.112.288.175.037.063.037.363-.112.782z"/>
+    </svg>
+    <span class="text-xs font-bold tracking-wide">WhatsApp</span>
+  </a>
+
+  <!-- ========================================================================= -->
   <!-- MODAL INTERACTIVO DE CONSULTA DE CITA & CONFIRMACIÓN DE ASISTENCIA        -->
   <!-- ========================================================================= -->
-  <div *ngIf="showLookupModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+  <div *ngIf="showLookupModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in"
        (click)="closeLookupModal()">
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 sm:p-7 relative max-h-[90vh] overflow-y-auto animate-scale-up"
+    <div class="bg-white rounded-3xl border border-[#EFEAE6] shadow-xl max-w-lg w-full p-6 sm:p-7 relative max-h-[90vh] overflow-y-auto animate-scale-up"
          (click)="$event.stopPropagation()">
       
       <!-- Close Button -->
       <button (click)="closeLookupModal()" type="button"
-              class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer">
+              class="absolute top-5 right-5 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-[#2D2327] flex items-center justify-center transition-colors cursor-pointer">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -965,13 +972,13 @@
 
       <!-- Modal Header -->
       <div class="text-left mb-5">
-        <div class="w-10 h-10 rounded-2xl bg-[#e6f7f2] text-[#0d9488] flex items-center justify-center mb-2 shadow-xs border border-[#e2f0ea]">
+        <div class="w-10 h-10 rounded-2xl bg-[#FAF2F4] text-[#8E4D5E] flex items-center justify-center mb-2 shadow-2xs border border-[#EBD2D8]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
         </div>
-        <h3 class="text-lg sm:text-xl font-bold text-[#1e3a5f]">Consulta el Estado de tu Cita</h3>
-        <p class="text-xs text-slate-500 mt-0.5">Ingresa tu número de cita (ej: PA-2610...) o tu celular registrado</p>
+        <h3 class="font-serif text-lg sm:text-xl font-bold text-[#2D2327]">Consulta el Estado de tu Cita</h3>
+        <p class="text-xs text-stone-500 mt-0.5">Ingresa tu número de cita (ej: PA-2610...) o tu celular registrado</p>
       </div>
 
       <!-- Search Input Form -->
@@ -982,11 +989,11 @@
                  (input)="onLookupQueryChange($event)"
                  (keyup.enter)="performLookup()"
                  placeholder="PA-261008-7KVT o 3103248385"
-                 class="flex-1 px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488]">
+                 class="flex-1 px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-[#EFEAE6] text-[#2D2327] focus:outline-none focus:ring-2 focus:ring-[#8E4D5E]/20 focus:border-[#8E4D5E]">
           <button (click)="performLookup()"
                   [disabled]="isLookingUp()"
                   type="button"
-                  class="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#0d9488] hover:bg-[#0f766e] text-white transition-colors shadow-sm disabled:opacity-50 cursor-pointer">
+                  class="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#8E4D5E] hover:bg-[#793E4C] text-white transition-colors shadow-xs disabled:opacity-50 cursor-pointer">
             <span *ngIf="!isLookingUp()">Buscar</span>
             <span *ngIf="isLookingUp()">Buscando...</span>
           </button>
@@ -998,8 +1005,8 @@
         </div>
 
         <!-- Attendance Confirmed Success Alert -->
-        <div *ngIf="attendanceConfirmedSuccess()" class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-bold flex items-center gap-2">
-          <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div *ngIf="attendanceConfirmedSuccess()" class="p-3 rounded-xl bg-[#FAF5F6] border border-[#EBD2D8] text-xs text-[#8E4D5E] font-bold flex items-center gap-2">
+          <svg class="w-4 h-4 text-[#8E4D5E] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
           </svg>
           <span>{{ attendanceConfirmedSuccess() }}</span>
@@ -1009,28 +1016,28 @@
       <!-- ================================================================= -->
       <!-- VIEW 1: LIST OF APPOINTMENTS (When user has multiple appointments) -->
       <!-- ================================================================= -->
-      <div *ngIf="lookupViewMode() === 'list' && lookupResults().length > 1" class="space-y-3 pt-2 border-t border-slate-100 text-left">
+      <div *ngIf="lookupViewMode() === 'list' && lookupResults().length > 1" class="space-y-3 pt-2 border-t border-stone-100 text-left">
         <div class="flex items-center justify-between pb-1">
-          <span class="text-xs font-bold text-slate-800">
+          <span class="text-xs font-bold text-stone-800">
             Últimas {{ lookupResults().length }} citas agendadas
           </span>
-          <span class="text-[11px] text-slate-500 font-medium">Selecciona una para gestionar</span>
+          <span class="text-[11px] text-stone-500 font-medium">Selecciona una para gestionar</span>
         </div>
 
         <div class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
           <div *ngFor="let apt of lookupResults()"
-               class="p-4 bg-slate-50/70 hover:bg-white rounded-2xl border border-slate-200/90 hover:border-[#0d9488]/50 shadow-2xs hover:shadow-sm transition-all space-y-2.5">
+               class="p-4 bg-stone-50/70 hover:bg-white rounded-2xl border border-[#EFEAE6] hover:border-[#8E4D5E]/40 shadow-2xs hover:shadow-xs transition-all space-y-2.5">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
               <div>
-                <span class="text-[10px] text-slate-400 font-semibold uppercase block">Reserva</span>
-                <span class="font-mono font-bold text-xs sm:text-sm text-[#1e3a5f]">#{{ apt.appointment_number }}</span>
+                <span class="text-[10px] text-stone-400 font-semibold uppercase block">Reserva</span>
+                <span class="font-mono font-bold text-xs sm:text-sm text-[#2D2327]">#{{ apt.appointment_number }}</span>
               </div>
               <div class="self-start sm:self-center shrink-0">
                 <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-2xs"
                       [ngClass]="{
-                        'bg-[#e6f7f2] text-[#0d9488] border-[#a7f3d0]': apt.status === 'CONFIRMED',
+                        'bg-[#FAF2F4] text-[#8E4D5E] border-[#EBD2D8]': apt.status === 'CONFIRMED',
                         'bg-amber-50 text-amber-800 border-amber-200': apt.status === 'PENDING_VERIFICATION',
-                        'bg-slate-100 text-slate-700 border-slate-200': apt.status !== 'CONFIRMED' && apt.status !== 'PENDING_VERIFICATION'
+                        'bg-stone-100 text-stone-700 border-stone-200': apt.status !== 'CONFIRMED' && apt.status !== 'PENDING_VERIFICATION'
                       }">
                   {{ apt.status_label || apt.status }}
                 </span>
@@ -1038,18 +1045,18 @@
             </div>
 
             <div class="space-y-1 text-xs">
-              <div class="font-bold text-slate-900 leading-snug">{{ apt.service_name || apt.service?.name }}</div>
-              <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <div class="font-bold text-[#2D2327] leading-snug">{{ apt.service_name || apt.service?.name }}</div>
+              <div class="flex items-center justify-between text-[11px] text-stone-500">
                 <span>🗓️ {{ apt.booking_date || apt.date }} • {{ apt.start_time }}</span>
-                <span class="font-semibold text-slate-700">Saldo: ${{ formatPrice(apt.balance_due) }} COP</span>
+                <span class="font-semibold text-stone-700">Saldo: ${{ formatPrice(apt.balance_due) }} COP</span>
               </div>
             </div>
 
             <button type="button"
                     (click)="viewAppointmentDetail(apt)"
-                    class="w-full py-2 px-3 rounded-xl bg-white hover:bg-[#e6f7f2] text-[#1e3a5f] hover:text-[#0d9488] text-xs font-bold border border-slate-200 hover:border-[#0d9488]/40 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
+                    class="w-full py-2 px-3 rounded-xl bg-white hover:bg-[#FAF4F6] text-[#2D2327] hover:text-[#8E4D5E] text-xs font-bold border border-[#EFEAE6] hover:border-[#EBD2D8] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
               <span>Ver Detalle de la Cita</span>
-              <span class="text-[#0d9488] font-bold">→</span>
+              <span class="text-[#8E4D5E] font-bold">→</span>
             </button>
           </div>
         </div>
@@ -1058,30 +1065,30 @@
       <!-- ================================================================= -->
       <!-- VIEW 2: APPOINTMENT DETAIL (Single result or chosen from list)     -->
       <!-- ================================================================= -->
-      <div *ngIf="lookupViewMode() === 'detail' && lookupResult()" class="space-y-4 pt-2 border-t border-slate-100 text-left">
+      <div *ngIf="lookupViewMode() === 'detail' && lookupResult()" class="space-y-4 pt-2 border-t border-stone-100 text-left">
         
         <!-- Back to list button (only shown if there are multiple appointments) -->
         <div *ngIf="lookupResults().length > 1" class="pb-1">
           <button type="button"
                   (click)="backToAppointmentList()"
-                  class="inline-flex items-center gap-1.5 text-xs font-bold text-[#0d9488] hover:text-[#0f766e] bg-[#e6f7f2]/70 hover:bg-[#e6f7f2] px-3 py-1.5 rounded-xl border border-[#0d9488]/20 transition-all cursor-pointer">
+                  class="inline-flex items-center gap-1.5 text-xs font-bold text-[#8E4D5E] hover:text-[#793E4C] bg-[#FAF2F4] hover:bg-[#F5E9EC] px-3 py-1.5 rounded-xl border border-[#EBD2D8] transition-all cursor-pointer">
             <span class="text-sm leading-none">←</span>
             <span>Volver al listado de citas</span>
           </button>
         </div>
 
         <!-- Status & Code Banner -->
-        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div class="p-3.5 rounded-2xl bg-[#FAF5F6] border border-[#EBD2D8] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div>
-            <span class="text-[10px] text-slate-400 font-semibold uppercase block">Código de Reserva</span>
-            <span class="font-mono font-bold text-xs sm:text-sm text-[#1e3a5f]">#{{ lookupResult().appointment_number }}</span>
+            <span class="text-[10px] text-stone-400 font-semibold uppercase block">Código de Reserva</span>
+            <span class="font-mono font-bold text-xs sm:text-sm text-[#2D2327]">#{{ lookupResult().appointment_number }}</span>
           </div>
           <div class="self-start sm:self-center shrink-0">
             <span class="inline-block whitespace-nowrap px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider border shadow-2xs"
                   [ngClass]="{
-                    'bg-[#e6f7f2] text-[#0d9488] border-[#a7f3d0]': lookupResult().status === 'CONFIRMED',
+                    'bg-[#FAF2F4] text-[#8E4D5E] border-[#EBD2D8]': lookupResult().status === 'CONFIRMED',
                     'bg-amber-50 text-amber-800 border-amber-200': lookupResult().status === 'PENDING_VERIFICATION',
-                    'bg-slate-100 text-slate-700 border-slate-200': lookupResult().status !== 'CONFIRMED' && lookupResult().status !== 'PENDING_VERIFICATION'
+                    'bg-stone-100 text-stone-700 border-stone-200': lookupResult().status !== 'CONFIRMED' && lookupResult().status !== 'PENDING_VERIFICATION'
                   }">
               {{ lookupResult().status_label || lookupResult().status }}
             </span>
@@ -1089,51 +1096,51 @@
         </div>
 
         <!-- Details Grid -->
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-2 text-xs">
+        <div class="bg-white p-4 rounded-2xl border border-[#EFEAE6] space-y-2 text-xs">
           <div class="flex justify-between">
-            <span class="text-slate-500">Clienta:</span>
-            <span class="font-bold text-slate-900">{{ lookupResult().client_name }}</span>
+            <span class="text-stone-500">Clienta:</span>
+            <span class="font-bold text-[#2D2327]">{{ lookupResult().client_name }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Tratamiento:</span>
-            <span class="font-bold text-[#0d9488]">{{ lookupResult().service_name || lookupResult().service?.name }}</span>
+            <span class="text-stone-500">Tratamiento:</span>
+            <span class="font-bold text-[#8E4D5E]">{{ lookupResult().service_name || lookupResult().service?.name }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Fecha y Hora:</span>
-            <span class="font-bold text-slate-800">{{ lookupResult().booking_date || lookupResult().date }} • {{ lookupResult().start_time }}</span>
+            <span class="text-stone-500">Fecha y Hora:</span>
+            <span class="font-bold text-stone-800">{{ lookupResult().booking_date || lookupResult().date }} • {{ lookupResult().start_time }}</span>
           </div>
-          <div class="flex justify-between pt-2 border-t border-slate-100">
-            <span class="text-slate-500">Abono Recibido:</span>
-            <span class="font-bold text-[#0d9488]">${{ formatPrice(lookupResult().deposit_paid || lookupResult().deposit_amount) }} COP</span>
+          <div class="flex justify-between pt-2 border-t border-stone-100">
+            <span class="text-stone-500">Abono Recibido:</span>
+            <span class="font-bold text-[#8E4D5E]">${{ formatPrice(lookupResult().deposit_paid || lookupResult().deposit_amount) }} COP</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Saldo Pendiente en Local:</span>
-            <span class="font-bold text-[#1e3a5f]">${{ formatPrice(lookupResult().balance_due) }} COP</span>
+            <span class="text-stone-500">Saldo Pendiente en Local:</span>
+            <span class="font-bold text-[#2D2327]">${{ formatPrice(lookupResult().balance_due) }} COP</span>
           </div>
         </div>
 
         <!-- Attendance Confirmation Section -->
-        <div *ngIf="lookupResult().attendance_confirmed_at" class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
-          <div class="text-xs font-bold text-emerald-800 flex items-center justify-center gap-1.5">
-            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div *ngIf="lookupResult().attendance_confirmed_at" class="p-3.5 rounded-2xl bg-[#FAF5F6] border border-[#EBD2D8] text-center">
+          <div class="text-xs font-bold text-[#8E4D5E] flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4 text-[#8E4D5E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
             </svg>
             <span>Asistencia Confirmada por la Clienta</span>
           </div>
-          <p class="text-[11px] text-emerald-700 mt-0.5">
+          <p class="text-[11px] text-stone-600 mt-0.5">
             Has confirmado tu asistencia para esta cita. ¡Te esperamos puntualmente!
           </p>
         </div>
 
         <div *ngIf="lookupResult().status === 'CONFIRMED' && !lookupResult().attendance_confirmed_at"
-             class="p-4 rounded-2xl bg-[#f0fdf4] border border-[#86efac] text-center space-y-2">
-          <p class="text-xs text-[#166534] font-bold">
+             class="p-4 rounded-2xl bg-[#FAF5F6] border border-[#EBD2D8] text-center space-y-2">
+          <p class="text-xs text-[#2D2327] font-bold">
             ¿Confirmas tu asistencia para el día de tu cita?
           </p>
           <button (click)="confirmAttendanceInModal()"
                   [disabled]="isConfirmingAttendance()"
                   type="button"
-                  class="w-full py-2.5 px-4 bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm">
+                  class="w-full py-2.5 px-4 bg-[#8E4D5E] hover:bg-[#793E4C] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs">
             <span *ngIf="!isConfirmingAttendance()">✓ Confirmar Mi Asistencia en Línea</span>
             <span *ngIf="isConfirmingAttendance()">Confirmando...</span>
           </button>
@@ -1142,117 +1149,117 @@
         <!-- WhatsApp Action Button -->
         <a [href]="getLookupWhatsAppUrl(lookupResult())"
            target="_blank"
-           class="w-full py-3 px-4 bg-[#25d366] hover:bg-[#20bd5a] text-white font-bold rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-md block text-center">
+           class="w-full py-3 px-4 bg-[#25d366] hover:bg-[#20bd5a] text-white font-bold rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-xs block text-center">
           <span>Notificar por WhatsApp a Paola</span>
         </a>
       </div>
     </div>
   </div>
 
-    <!-- ========================================================================= -->
-    <!-- MODAL: POLÍTICA DE TRATAMIENTO DE DATOS PERSONALES (COLOMBIA LEY 1581)   -->
-    <!-- ========================================================================= -->
-    <div *ngIf="showPrivacyModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
-         (click)="closePrivacyModal()">
-      <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative max-h-[85vh] flex flex-col"
-           (click)="$event.stopPropagation()">
-        
-        <!-- Header -->
-        <div class="flex items-start justify-between pb-4 border-b border-slate-100">
-          <div>
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#0d9488] text-[10px] font-bold uppercase tracking-wider mb-1 border border-emerald-100">
-              <span>Habeas Data • Colombia</span>
-            </div>
-            <h3 class="font-bold text-lg sm:text-xl text-slate-900 tracking-tight">Política de Tratamiento de Datos Personales</h3>
-            <p class="text-xs text-slate-500 mt-0.5 font-medium">Ley Estatutaria 1581 de 2012 y Decreto 1377 de 2013</p>
+  <!-- ========================================================================= -->
+  <!-- MODAL: POLÍTICA DE TRATAMIENTO DE DATOS PERSONALES (COLOMBIA LEY 1581)   -->
+  <!-- ========================================================================= -->
+  <div *ngIf="showPrivacyModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in"
+       (click)="closePrivacyModal()">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-xl relative max-h-[85vh] flex flex-col border border-[#EFEAE6]"
+         (click)="$event.stopPropagation()">
+      
+      <!-- Header -->
+      <div class="flex items-start justify-between pb-4 border-b border-stone-100">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FAF2F4] text-[#8E4D5E] text-[10px] font-bold uppercase tracking-wider mb-1 border border-[#EBD2D8]">
+            <span>Habeas Data • Colombia</span>
           </div>
-          <button type="button" (click)="closePrivacyModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
+          <h3 class="font-serif font-bold text-lg sm:text-xl text-[#2D2327] tracking-tight">Política de Tratamiento de Datos Personales</h3>
+          <p class="text-xs text-stone-500 mt-0.5 font-medium">Ley Estatutaria 1581 de 2012 y Decreto 1377 de 2013</p>
         </div>
-
-        <!-- Body Scrollable -->
-        <div class="overflow-y-auto py-4 space-y-4 text-xs text-slate-600 leading-relaxed pr-2">
-          <div>
-            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">1. Responsable del Tratamiento</h4>
-            <p>
-              El establecimiento de comercio <strong>{{ salonProfile()?.display_name || salonProfile()?.name || 'La Belle Nails' }}</strong> (en adelante, "El Establecimiento"), domiciliado en Colombia, actúa como Responsable del Tratamiento de los datos personales suministrados voluntariamente por el titular con ocasión del agendamiento y reserva de servicios de belleza y cuidado estético.
-            </p>
-          </div>
-
-          <div>
-            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">2. Marco Normativo</h4>
-            <p>
-              La presente política se fundamenta en el Artículo 15 de la Constitución Política de Colombia, la <strong>Ley Estatutaria 1581 de 2012</strong>, el <strong>Decreto Reglamentario 1377 de 2013</strong> (compilado en el Decreto Único Reglamentario 1074 de 2015) y los lineamientos de la Superintendencia de Industria y Comercio (SIC).
-            </p>
-          </div>
-
-          <div>
-            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">3. Datos Personales Recopilados</h4>
-            <ul class="list-disc pl-5 space-y-1">
-              <li><strong>Identificación y contacto:</strong> Nombre y apellidos completos, número de teléfono móvil / WhatsApp y correo electrónico.</li>
-              <li><strong>Datos operativos de servicio:</strong> Tratamiento seleccionado, fecha, hora del turno, número de cita y comprobantes de abono o pago.</li>
-              <li><strong>Datos de salud y bioseguridad (Sensibles):</strong> Indicaciones voluntarias sobre alergias, hipersensibilidad o condiciones dermatológicas informadas por el cliente.</li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">4. Finalidades del Tratamiento</h4>
-            <p class="mb-1">Los datos personales recolectados se tratarán exclusivamente para:</p>
-            <ul class="list-disc pl-5 space-y-1">
-              <li>Gestionar, asegurar y coordinar el agendamiento del turno solicitado.</li>
-              <li>Enviar notificaciones operativas y recordatorios automáticos vía WhatsApp o correo electrónico 24 horas antes del servicio.</li>
-              <li>Generar y remitir el voucher digital de confirmación, así como la liquidación del anticipo y saldo en el local.</li>
-              <li>Contactar al cliente ante cualquier novedad, cambio de horario o caso de fuerza mayor.</li>
-              <li>Aplicar medidas de bioseguridad preventiva para evitar reacciones adversas durante el procedimiento estético.</li>
-              <li>Cumplir con las obligaciones legales, tributarias y contables en la República de Colombia.</li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">5. Tratamiento de Datos Sensibles</h4>
-            <p>
-              El titular no está obligado a responder preguntas sobre datos sensibles. Los datos referidos a alergias o sensibilidad cutánea tienen carácter estrictamente confidencial y se utilizarán de forma exclusiva para garantizar la salud, bienestar y bioseguridad del cliente durante la aplicación del tratamiento.
-            </p>
-          </div>
-
-          <div>
-            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">6. Derechos del Titular (Habeas Data)</h4>
-            <p class="mb-1">De conformidad con la Ley 1581 de 2012, el titular de la información tiene derecho a:</p>
-            <ul class="list-disc pl-5 space-y-1">
-              <li>Conocer, actualizar y rectificar sus datos personales en cualquier momento.</li>
-              <li>Solicitar prueba de la autorización otorgada para el tratamiento.</li>
-              <li>Ser informado sobre el uso que se le ha dado a sus datos.</li>
-              <li>Revocar la autorización o solicitar la supresión de sus datos cuando no exista obligación legal o contractual de conservarlos.</li>
-              <li>Presentar quejas ante la Superintendencia de Industria y Comercio (SIC) por infracciones a la ley.</li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">7. Canales para el Ejercicio de Derechos</h4>
-            <p>
-              El titular podrá ejercer sus derechos mediante comunicación directa al canal oficial de WhatsApp del establecimiento o al correo electrónico registrado. Las consultas serán atendidas en un plazo máximo de diez (10) días hábiles y los reclamos en un plazo máximo de quince (15) días hábiles.
-            </p>
-          </div>
-
-          <div>
-            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1">8. Seguridad y Confidencialidad</h4>
-            <p>
-              El Establecimiento implementa medidas técnicas y administrativas para impedir la adulteración, pérdida, consulta o acceso no autorizado a los datos. Los datos personales nunca serán vendidos, transferidos ni compartidos con fines comerciales no autorizados.
-            </p>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-          <button type="button" (click)="closePrivacyModal()" class="px-5 py-2.5 rounded-full text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">
-            Cerrar
-          </button>
-          <button type="button" (click)="acceptPrivacyPolicy()" class="px-6 py-2.5 rounded-full text-xs font-bold bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-md shadow-teal-500/20 transition-all cursor-pointer">
-            Entendido y Aceptar
-          </button>
-        </div>
-
+        <button type="button" (click)="closePrivacyModal()" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 flex items-center justify-center transition-colors cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
       </div>
+
+      <!-- Body Scrollable -->
+      <div class="overflow-y-auto py-4 space-y-4 text-xs text-stone-600 leading-relaxed pr-2">
+        <div>
+          <h4 class="font-bold text-[#2D2327] text-xs uppercase tracking-wider mb-1">1. Responsable del Tratamiento</h4>
+          <p>
+            El establecimiento de comercio <strong>{{ salonProfile()?.display_name || salonProfile()?.name || 'Paola Aguilera' }}</strong> (en adelante, "El Establecimiento"), domiciliado en Colombia, actúa como Responsable del Tratamiento de los datos personales suministrados voluntariamente por el titular con ocasión del agendamiento y reserva de servicios de belleza y cuidado estético.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-[#2D2327] text-xs uppercase tracking-wider mb-1">2. Marco Normativo</h4>
+          <p>
+            La presente política se fundamenta en el Artículo 15 de la Constitución Política de Colombia, la <strong>Ley Estatutaria 1581 de 2012</strong>, el <strong>Decreto Reglamentario 1377 de 2013</strong> (compilado en el Decreto Único Reglamentario 1074 de 2015) y los lineamientos de la Superintendencia de Industria y Comercio (SIC).
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-[#2D2327] text-xs uppercase tracking-wider mb-1">3. Datos Personales Recopilados</h4>
+          <ul class="list-disc pl-5 space-y-1">
+            <li><strong>Identificación y contacto:</strong> Nombre y apellidos completos, número de teléfono móvil / WhatsApp y correo electrónico.</li>
+            <li><strong>Datos operativos de servicio:</strong> Tratamiento seleccionado, fecha, hora del turno, número de cita y comprobantes de abono o pago.</li>
+            <li><strong>Datos de salud y bioseguridad (Sensibles):</strong> Indicaciones voluntarias sobre alergias, hipersensibilidad o condiciones dermatológicas informadas por el cliente.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-[#2D2327] text-xs uppercase tracking-wider mb-1">4. Finalidades del Tratamiento</h4>
+          <p class="mb-1">Los datos personales recolectados se tratarán exclusivamente para:</p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li>Gestionar, asegurar y coordinar el agendamiento del turno solicitado.</li>
+            <li>Enviar notificaciones operativas y recordatorios automáticos vía WhatsApp o correo electrónico 24 horas antes del servicio.</li>
+            <li>Generar y remitir el voucher digital de confirmación, así como la liquidación del anticipo y saldo en el local.</li>
+            <li>Contactar al cliente ante cualquier novedad, cambio de horario o caso de fuerza mayor.</li>
+            <li>Aplicar medidas de bioseguridad preventiva para evitar reacciones adversas durante el procedimiento estético.</li>
+            <li>Cumplir con las obligaciones legales, tributarias y contables en la República de Colombia.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-[#2D2327] text-xs uppercase tracking-wider mb-1">5. Tratamiento de Datos Sensibles</h4>
+          <p>
+            El titular no está obligado a responder preguntas sobre datos sensibles. Los datos referidos a alergias o sensibilidad cutánea tienen carácter estrictamente confidencial y se utilizarán de forma exclusiva para garantizar la salud, bienestar y bioseguridad del cliente durante la aplicación del tratamiento.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-[#2D2327] text-xs uppercase tracking-wider mb-1">6. Derechos del Titular (Habeas Data)</h4>
+          <p class="mb-1">De conformidad con la Ley 1581 de 2012, el titular de la información tiene derecho a:</p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li>Conocer, actualizar y rectificar sus datos personales en cualquier momento.</li>
+            <li>Solicitar prueba de la autorización otorgada para el tratamiento.</li>
+            <li>Ser informado sobre el uso que se le ha dado a sus datos.</li>
+            <li>Revocar la autorización o solicitar la supresión de sus datos cuando no exista obligación legal o contractual de conservarlos.</li>
+            <li>Presentar quejas ante la Superintendencia de Industria y Comercio (SIC) por infracciones a la ley.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-[#2D2327] text-xs uppercase tracking-wider mb-1">7. Canales para el Ejercicio de Derechos</h4>
+          <p>
+            El titular podrá ejercer sus derechos mediante comunicación directa al canal oficial de WhatsApp del establecimiento o al correo electrónico registrado. Las consultas serán atendidas en un plazo máximo de diez (10) días hábiles y los reclamos en un plazo máximo de quince (15) días hábiles.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-[#2D2327] text-xs uppercase tracking-wider mb-1">8. Seguridad y Confidencialidad</h4>
+          <p>
+            El Establecimiento implementa medidas técnicas y administrativas para impedir la adulteración, pérdida, consulta o acceso no autorizado a los datos. Los datos personales nunca serán vendidos, transferidos ni compartidos con fines comerciales no autorizados.
+          </p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="pt-4 border-t border-stone-100 flex items-center justify-end gap-3">
+        <button type="button" (click)="closePrivacyModal()" class="px-5 py-2.5 rounded-full text-xs font-semibold text-stone-600 hover:bg-stone-100 transition-colors cursor-pointer">
+          Cerrar
+        </button>
+        <button type="button" (click)="acceptPrivacyPolicy()" class="px-6 py-2.5 rounded-full text-xs font-bold bg-[#8E4D5E] hover:bg-[#793E4C] text-white shadow-xs transition-all cursor-pointer">
+          Entendido y Aceptar
+        </button>
+      </div>
+
     </div>
+  </div>
 

@@ -31,7 +31,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->profile(\App\Filament\Pages\Auth\CustomEditProfile::class, isSimple: false)
             ->tenant(Tenant::class, slugAttribute: 'slug')
+            ->tenantMenu(false)
             ->brandName('Cita Clave')
             ->brandLogo(fn () => asset('images/brand/citaclave-logo-light.png'))
             ->brandLogoHeight('3.8rem')
@@ -53,6 +55,10 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::HEAD_END,
                 fn (): string => '<link rel="stylesheet" href="' . asset('css/nuvex-admin-theme.css') . '?v=' . (file_exists(public_path('css/nuvex-admin-theme.css')) ? filemtime(public_path('css/nuvex-admin-theme.css')) : time()) . '">'
             )
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_NAV_START,
+                fn () => view('filament.components.sidebar-profile-spotlight')
+            )
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label('OPERATIVA'),
@@ -65,7 +71,6 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->widgets([
-                \App\Filament\Widgets\SalonSpotlightWidget::class,
                 \App\Filament\Widgets\SalonAnalyticsDashboardWidget::class,
             ])
             ->middleware([

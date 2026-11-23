@@ -39,13 +39,13 @@
             right: -40px;
             width: 260px;
             height: 260px;
-            background: radial-gradient(circle, rgba(0, 201, 117, 0.12) 0%, rgba(0, 201, 117, 0) 70%);
+            background: rgba(13, 148, 136, 0.06);
             border-radius: 50%;
             pointer-events: none;
         }
 
         .dark .nuvex-spotlight-bg-glow {
-            background: radial-gradient(circle, rgba(0, 201, 117, 0.08) 0%, rgba(0, 201, 117, 0) 70%);
+            background: rgba(13, 148, 136, 0.08);
         }
 
         .nuvex-spotlight-content {
@@ -83,14 +83,14 @@
             width: 68px;
             height: 68px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+            background: #0d9488;
             color: #FFFFFF;
             font-size: 1.4rem;
             font-weight: 800;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 16px rgba(13, 148, 136, 0.3);
+            box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
             border: 3px solid rgba(255, 255, 255, 0.9);
         }
 

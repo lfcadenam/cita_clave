@@ -319,11 +319,11 @@ class TenantResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->content(view('filament.super-admin.tenants.card-grid'))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre del Salón')
                     ->searchable()
-                    ->sortable()
                     ->weight('bold'),
 
                 Tables\Columns\TextColumn::make('slug')
@@ -332,8 +332,7 @@ class TenantResource extends Resource
                     ->color('gray'),
 
                 Tables\Columns\TextColumn::make('city')
-                    ->label('Ciudad')
-                    ->sortable(),
+                    ->label('Ciudad'),
 
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Teléfono'),
@@ -358,8 +357,7 @@ class TenantResource extends Resource
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Registrado')
-                    ->dateTime('d/m/Y')
-                    ->sortable(),
+                    ->dateTime('d/m/Y'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('subscription_status')
@@ -375,11 +373,7 @@ class TenantResource extends Resource
             ->actions([
                 EditAction::make(),
             ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array

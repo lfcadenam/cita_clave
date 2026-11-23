@@ -7,61 +7,61 @@
 
     <!-- Hero / Presentation Banner -->
     <div class="text-center mb-8">
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#e6f7f2] text-[#0d9488] text-[11px] font-bold uppercase tracking-widest mb-3 border border-[#e2f0ea] shadow-sm">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#0d9488]"></i>
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FAF2F4] text-[#8E4D5E] text-[11px] font-bold uppercase tracking-widest mb-3 border border-[#EFEAE6] shadow-sm">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#8E4D5E]"></i>
             <span>Agenda en Línea • Confirmación Inmediata</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl  font-bold text-slate-900 tracking-tight leading-tight">
-            Reserva tu Experiencia de Belleza
+        <h2 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2D2327] tracking-tight leading-tight">
+            Reserva tu Cita <span class="italic font-normal text-[#8E4D5E]">de Belleza</span>
         </h2>
-        <p class="text-slate-600 text-sm sm:text-base mt-2 max-w-xl mx-auto leading-relaxed">
-            Realza tu mirada y cuida tu piel con tratamientos personalizados en un ambiente exclusivo.
+        <p class="text-stone-600 text-sm sm:text-base mt-2 max-w-xl mx-auto leading-relaxed">
+            Manicura rusa, uñas en poligel, pedicura spa y tratamientos personalizados en un ambiente exclusivo.
         </p>
     </div>
 
     <!-- Stepper Navigation -->
     <div class="flex items-center justify-between mb-8 px-4 sm:px-12 relative max-w-2xl mx-auto">
-        <div class="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-1 bg-[#e6f7f2] -z-0"></div>
-        <div class="absolute left-10 top-1/2 -translate-y-1/2 h-1 bg-[#0d9488] -z-0 transition-all duration-300"
+        <div class="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-1 bg-[#EFEAE6] -z-0"></div>
+        <div class="absolute left-10 top-1/2 -translate-y-1/2 h-1 bg-[#8E4D5E] -z-0 transition-all duration-300"
              :style="'width: ' + ((step - 1) / 3 * 100) + '%'"></div>
 
         <!-- Step 1 Indicator -->
         <button @click="if (selectedService) goToStep(1)" class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none cursor-pointer">
             <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
-                 :class="step >= 1 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+                 :class="step >= 1 ? 'bg-[#8E4D5E] text-white shadow-md shadow-xs ring-4 ring-[#FAF2F4]' : 'bg-white text-slate-400 border border-slate-200'">
                 <template x-if="step > 1"><i data-lucide="check" class="w-4 h-4"></i></template>
                 <template x-if="step <= 1"><span>1</span></template>
             </div>
-            <span class="text-[11px] font-bold tracking-wide" :class="step >= 1 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Servicio</span>
+            <span class="text-[11px] font-bold tracking-wide" :class="step >= 1 ? 'text-[#2D2327] font-extrabold' : 'text-slate-400'">Servicio</span>
         </button>
 
         <!-- Step 2 Indicator -->
         <button @click="if (selectedService && selectedDate) goToStep(2)" class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none cursor-pointer">
             <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
-                 :class="step >= 2 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+                 :class="step >= 2 ? 'bg-[#8E4D5E] text-white shadow-md shadow-xs ring-4 ring-[#FAF2F4]' : 'bg-white text-slate-400 border border-slate-200'">
                 <template x-if="step > 2"><i data-lucide="check" class="w-4 h-4"></i></template>
                 <template x-if="step <= 2"><span>2</span></template>
             </div>
-            <span class="text-[11px] font-bold tracking-wide" :class="step >= 2 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Horario</span>
+            <span class="text-[11px] font-bold tracking-wide" :class="step >= 2 ? 'text-[#2D2327] font-extrabold' : 'text-slate-400'">Horario</span>
         </button>
 
         <!-- Step 3 Indicator -->
         <button @click="if (selectedService && selectedSlot) goToStep(3)" class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none cursor-pointer">
             <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
-                 :class="step >= 3 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+                 :class="step >= 3 ? 'bg-[#8E4D5E] text-white shadow-md shadow-xs ring-4 ring-[#FAF2F4]' : 'bg-white text-slate-400 border border-slate-200'">
                 <template x-if="step > 3"><i data-lucide="check" class="w-4 h-4"></i></template>
                 <template x-if="step <= 3"><span>3</span></template>
             </div>
-            <span class="text-[11px] font-bold tracking-wide" :class="step >= 3 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Tus Datos</span>
+            <span class="text-[11px] font-bold tracking-wide" :class="step >= 3 ? 'text-[#2D2327] font-extrabold' : 'text-slate-400'">Tus Datos</span>
         </button>
 
         <!-- Step 4 Indicator -->
         <button class="relative z-10 flex flex-col items-center gap-1.5 group focus:outline-none">
             <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200"
-                 :class="step >= 4 ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/30 ring-4 ring-[#e6f7f2]' : 'bg-white text-slate-400 border border-slate-200'">
+                 :class="step >= 4 ? 'bg-[#8E4D5E] text-white shadow-md shadow-xs ring-4 ring-[#FAF2F4]' : 'bg-white text-slate-400 border border-slate-200'">
                 <span>4</span>
             </div>
-            <span class="text-[11px] font-bold tracking-wide" :class="step >= 4 ? 'text-[#1e3a5f] font-extrabold' : 'text-slate-400'">Abono</span>
+            <span class="text-[11px] font-bold tracking-wide" :class="step >= 4 ? 'text-[#2D2327] font-extrabold' : 'text-slate-400'">Abono</span>
         </button>
     </div>
 
@@ -77,7 +77,7 @@
                 <div class="relative w-full sm:w-64">
                     <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
                     <input type="text" x-model="searchQuery" placeholder="Buscar tratamiento..."
-                           class="w-full pl-9 pr-3.5 py-1.5 rounded-full border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488] bg-white shadow-sm font-medium">
+                           class="w-full pl-9 pr-3.5 py-1.5 rounded-full border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#8E4D5E]/20 focus:border-[#8E4D5E] bg-white shadow-sm font-medium">
                 </div>
             </div>
 
@@ -90,27 +90,27 @@
                 </button>
                 <button type="button" @click="activeCategory = 'PESTANAS_CEJAS'"
                         class="flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer"
-                        :class="activeCategory === 'PESTANAS_CEJAS' ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/20' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#e6f7f2]'">
+                        :class="activeCategory === 'PESTANAS_CEJAS' ? 'bg-[#8E4D5E] text-white shadow-md shadow-xs' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#FAF2F4]'">
                     Pestañas & Cejas
                 </button>
                 <button type="button" @click="activeCategory = 'FACIAL'"
                         class="flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer"
-                        :class="activeCategory === 'FACIAL' ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/20' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#e6f7f2]'">
+                        :class="activeCategory === 'FACIAL' ? 'bg-[#8E4D5E] text-white shadow-md shadow-xs' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#FAF2F4]'">
                     Cuidado Facial
                 </button>
                 <button type="button" @click="activeCategory = 'LABIOS'"
                         class="flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer"
-                        :class="activeCategory === 'LABIOS' ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/20' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#e6f7f2]'">
+                        :class="activeCategory === 'LABIOS' ? 'bg-[#8E4D5E] text-white shadow-md shadow-xs' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#FAF2F4]'">
                     Labios
                 </button>
                 <button type="button" @click="activeCategory = 'CORPORAL_MASAJES'"
                         class="flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer"
-                        :class="activeCategory === 'CORPORAL_MASAJES' ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/20' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#e6f7f2]'">
+                        :class="activeCategory === 'CORPORAL_MASAJES' ? 'bg-[#8E4D5E] text-white shadow-md shadow-xs' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#FAF2F4]'">
                     Masajes & Spa
                 </button>
                 <button type="button" @click="activeCategory = 'DEPILACION'"
                         class="flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer"
-                        :class="activeCategory === 'DEPILACION' ? 'bg-[#0d9488] text-white shadow-md shadow-teal-500/20' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#e6f7f2]'">
+                        :class="activeCategory === 'DEPILACION' ? 'bg-[#8E4D5E] text-white shadow-md shadow-xs' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-[#FAF2F4]'">
                     Depilación
                 </button>
             </div>
@@ -123,12 +123,12 @@
                  @click="selectService({{ $service->toJson() }})"
                  class="group rounded-3xl border transition-all duration-300 cursor-pointer bg-white overflow-hidden flex flex-col justify-between hover:shadow-xl hover:shadow-teal-500/10 hover:-translate-y-1 relative"
                  :class="selectedService?.id === {{ $service->id }}
-                     ? 'border-[#0d9488] ring-2 ring-[#0d9488]/30 shadow-lg shadow-teal-200/60 bg-gradient-to-b from-[#e6f7f2]/40 to-white'
-                     : 'border-slate-200/80 hover:border-[#e2f0ea]'">
+                     ? 'border-[#8E4D5E] ring-2 ring-[#8E4D5E]/30 shadow-lg shadow-xs bg-[#FAF5F6]'
+                     : 'border-slate-200/80 hover:border-[#EFEAE6]'">
                 
                 <!-- Selected Ribbon Badge -->
                 <template x-if="selectedService?.id === {{ $service->id }}">
-                    <div class="absolute top-3 right-3 z-20 px-3 py-1 rounded-full bg-[#0d9488] text-white text-[10px] font-bold uppercase tracking-wider shadow-md flex items-center gap-1">
+                    <div class="absolute top-3 right-3 z-20 px-3 py-1 rounded-full bg-[#8E4D5E] text-white text-[10px] font-bold uppercase tracking-wider shadow-md flex items-center gap-1">
                         <i data-lucide="check" class="w-3 h-3"></i>
                         <span>Elegido</span>
                     </div>
@@ -136,10 +136,10 @@
 
                 <div>
                     <!-- Image with Overlay & Floating Badges -->
-                    <div class="relative h-44 sm:h-48 w-full overflow-hidden bg-[#e6f7f2]">
+                    <div class="relative h-44 sm:h-48 w-full overflow-hidden bg-[#FAF2F4]">
                         <img src="{{ $service->image_url }}" alt="{{ $service->name }}"
                              class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out">
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-black/20"></div>
+                        <div class="absolute inset-0 bg-slate-900/30"></div>
 
                         <!-- Category Pill (Top Left) -->
                         <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-extrabold uppercase tracking-wider shadow-sm">
@@ -155,7 +155,7 @@
 
                     <!-- Content -->
                     <div class="p-4 sm:p-5">
-                        <h4 class=" font-bold text-slate-900 text-base sm:text-lg leading-snug group-hover:text-[#0d9488] transition-colors">
+                        <h4 class=" font-bold text-slate-900 text-base sm:text-lg leading-snug group-hover:text-[#8E4D5E] transition-colors">
                             {{ $service->name }}
                         </h4>
                         <p class="text-slate-500 text-xs mt-1.5 leading-relaxed line-clamp-2">
@@ -187,8 +187,8 @@
                     <button type="button"
                             class="px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
                             :class="selectedService?.id === {{ $service->id }}
-                                ? 'bg-[#0d9488] text-white shadow-teal-500/30'
-                                : 'bg-[#e6f7f2] text-[#1e3a5f] hover:bg-[#0d9488] hover:text-white'">
+                                ? 'bg-[#8E4D5E] text-white shadow-xs'
+                                : 'bg-[#FAF2F4] text-[#2D2327] hover:bg-[#8E4D5E] hover:text-white'">
                         <span x-text="selectedService?.id === {{ $service->id }} ? 'Continuar' : 'Agendar Cita'"></span>
                         <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                     </button>
@@ -203,9 +203,9 @@
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h3 class=" font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">2. Selecciona Fecha</h3>
-                <p class="text-xs text-[#1e3a5f] font-semibold mt-0.5" x-text="'Tratamiento: ' + (selectedService ? selectedService.name : '')"></p>
+                <p class="text-xs text-[#2D2327] font-semibold mt-0.5" x-text="'Tratamiento: ' + (selectedService ? selectedService.name : '')"></p>
             </div>
-            <button @click="goToStep(1)" class="text-xs font-bold text-[#0d9488] hover:underline flex items-center gap-1 cursor-pointer">
+            <button @click="goToStep(1)" class="text-xs font-bold text-[#8E4D5E] hover:underline flex items-center gap-1 cursor-pointer">
                 <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
                 <span>Cambiar servicio</span>
             </button>
@@ -220,8 +220,8 @@
                     <div class="relative inline-flex">
                         <button type="button"
                                 @click="openCalendarPicker()"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:border-[#0d9488] hover:text-[#0d9488] text-[11px] font-semibold text-slate-600 transition-all cursor-pointer shadow-xs active:scale-95">
-                            <svg class="w-3.5 h-3.5 text-[#0d9488]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:border-[#8E4D5E] hover:text-[#8E4D5E] text-[11px] font-semibold text-slate-600 transition-all cursor-pointer shadow-xs active:scale-95">
+                            <svg class="w-3.5 h-3.5 text-[#8E4D5E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                                 <line x1="16" y1="2" x2="16" y2="6"></line>
                                 <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -268,14 +268,14 @@
                             :disabled="!day.is_open"
                             class="flex-shrink-0 w-20 py-2.5 px-2 rounded-2xl border text-center transition-all duration-200 cursor-pointer"
                             :class="selectedDate === day.date
-                                ? 'border-[#0d9488] bg-[#0d9488] text-white shadow-md shadow-teal-500/25 ring-2 ring-[#0d9488]/20'
+                                ? 'border-[#8E4D5E] bg-[#8E4D5E] text-white shadow-md shadow-xs ring-2 ring-[#8E4D5E]/20'
                                 : (day.is_open ? 'border-slate-200 bg-white hover:border-[#99f6e4] text-slate-800 shadow-sm' : 'opacity-40 bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed')">
                         <span class="block text-[11px] font-bold uppercase tracking-wider" x-text="day.day_short"></span>
                         <span class="block text-xl font-bold leading-tight my-0.5" x-text="day.day_number"></span>
                         <span class="block text-[10px] font-bold uppercase tracking-wider -mt-0.5"
                               :class="selectedDate === day.date ? 'text-teal-100' : 'text-slate-400'"
                               x-text="day.month_short"></span>
-                        <span class="block text-[9px] font-semibold mt-1" :class="selectedDate === day.date ? 'text-teal-200 font-bold' : (day.is_open ? 'text-[#0d9488]' : 'text-slate-400')" x-text="day.is_open ? 'Abierto' : 'Cerrado'"></span>
+                        <span class="block text-[9px] font-semibold mt-1" :class="selectedDate === day.date ? 'text-teal-200 font-bold' : (day.is_open ? 'text-[#8E4D5E]' : 'text-slate-400')" x-text="day.is_open ? 'Abierto' : 'Cerrado'"></span>
                     </button>
                 </template>
             </div>
@@ -292,14 +292,14 @@
 
             <!-- Loading Spinner -->
             <div x-show="loadingSlots" class="text-center py-10">
-                <div class="w-8 h-8 border-3 border-[#0d9488] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                <div class="w-8 h-8 border-3 border-[#8E4D5E] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                 <p class="text-xs text-slate-500 font-medium">Calculando el próximo turno disponible...</p>
             </div>
 
             <!-- Single Slot Card (Only 1 Next Available Slot) -->
             <div x-show="!loadingSlots && selectedSlot" class="max-w-lg mx-auto my-3">
-                <div class="p-6 sm:p-7 rounded-3xl bg-gradient-to-b from-[#e6f7f2]/60 to-white border-2 border-[#0d9488] shadow-xl shadow-teal-200/50 text-center relative overflow-hidden ring-4 ring-[#e6f7f2]">
-                    <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-extrabold bg-[#0d9488] text-white uppercase tracking-wider shadow-sm mb-3">
+                <div class="p-6 sm:p-7 rounded-3xl bg-[#FAF5F6] border-2 border-[#8E4D5E] shadow-xl shadow-xs text-center relative overflow-hidden ring-4 ring-[#FAF2F4]">
+                    <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-extrabold bg-[#8E4D5E] text-white uppercase tracking-wider shadow-sm mb-3">
                         <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
                         <span>Único Turno Inmediato Disponible</span>
                     </div>
@@ -307,7 +307,7 @@
                     <div class="text-3xl sm:text-4xl  font-bold text-slate-900 tracking-tight my-1.5" x-text="selectedSlot?.start_formatted"></div>
                     
                     <div class="flex items-center justify-center gap-2 text-xs text-slate-600 font-medium my-2.5">
-                        <span class="bg-[#e6f7f2] text-[#1e3a5f] px-3.5 py-1 rounded-full font-bold border border-[#e2f0ea]">
+                        <span class="bg-[#FAF2F4] text-[#2D2327] px-3.5 py-1 rounded-full font-bold border border-[#EFEAE6]">
                             Finaliza a las <span x-text="selectedSlot?.end_formatted"></span>
                         </span>
                     </div>
@@ -319,14 +319,14 @@
             </div>
 
             <!-- Empty State / Waitlist Offer -->
-            <div x-show="!loadingSlots && !selectedSlot" class="text-center py-8 px-4 rounded-3xl bg-[#e6f7f2]/50 border border-[#e2f0ea]">
-                <div class="w-11 h-11 rounded-full bg-[#e6f7f2] text-[#0d9488] mx-auto flex items-center justify-center mb-2.5">
+            <div x-show="!loadingSlots && !selectedSlot" class="text-center py-8 px-4 rounded-3xl bg-[#FAF2F4]/50 border border-[#EFEAE6]">
+                <div class="w-11 h-11 rounded-full bg-[#FAF2F4] text-[#8E4D5E] mx-auto flex items-center justify-center mb-2.5">
                     <i data-lucide="calendar-x" class="w-5 h-5"></i>
                 </div>
                 <h4 class=" font-bold text-slate-900 text-base">No hay turnos disponibles para esta fecha</h4>
                 <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">La agenda para este día está completa o coincide con el horario de almuerzo de Paola.</p>
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-2 mt-4">
-                    <button type="button" @click="openWaitlistModal()" class="px-5 py-2.5 rounded-full text-xs font-bold bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-md shadow-teal-500/20 transition-all cursor-pointer">
+                    <button type="button" @click="openWaitlistModal()" class="px-5 py-2.5 rounded-full text-xs font-bold bg-[#8E4D5E] text-white hover:bg-[#793E4C] shadow-md shadow-xs transition-all cursor-pointer">
                         🙋‍♀️ Unirme a la Lista de Espera
                     </button>
                 </div>
@@ -339,7 +339,7 @@
                     @click="goToStep(3)"
                     :disabled="!selectedSlot"
                     class="px-8 py-3.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-2 tracking-wide cursor-pointer shadow-md"
-                    :class="selectedSlot ? 'bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white hover:from-[#0f766e] hover:to-[#115e59] shadow-teal-500/25 hover:scale-[1.02]' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'">
+                    :class="selectedSlot ? 'bg-[#8E4D5E] text-white hover:bg-[#793E4C] shadow-xs hover:scale-[1.02]' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'">
                 <span>Continuar a Mis Datos</span>
                 <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
@@ -355,36 +355,36 @@
                 <h3 class=" font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">3. Tus Datos de Contacto</h3>
                 <p class="text-xs text-slate-500 font-medium mt-0.5">Ingresa tus datos para apartar tu turno y enviarte la confirmación por WhatsApp.</p>
             </div>
-            <button @click="goToStep(2)" class="text-xs font-bold text-[#0d9488] hover:text-[#162d4a] flex items-center gap-1.5 transition-colors cursor-pointer">
+            <button @click="goToStep(2)" class="text-xs font-bold text-[#8E4D5E] hover:text-[#1D1619] flex items-center gap-1.5 transition-colors cursor-pointer">
                 <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
                 <span>Cambiar horario</span>
             </button>
         </div>
 
         <!-- Luxury Booking Summary Card -->
-        <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#e6f7f2]/90 via-[#e6f7f2]/50 to-white border border-[#e2f0ea] mb-6 shadow-sm relative overflow-hidden">
+        <div class="p-4 sm:p-5 rounded-3xl bg-[#FAF5F6] border border-[#EFEAE6] mb-6 shadow-sm relative overflow-hidden">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 
                 <!-- Service & Schedule Info -->
                 <div class="flex items-start sm:items-center gap-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-white text-[#0d9488] flex-shrink-0 flex items-center justify-center shadow-md border border-[#e2f0ea]">
+                    <div class="w-12 h-12 rounded-2xl bg-white text-[#8E4D5E] flex-shrink-0 flex items-center justify-center shadow-md border border-[#EFEAE6]">
                         <i data-lucide="sparkles" class="w-6 h-6"></i>
                     </div>
                     <div>
                         <div class="flex items-center gap-2 flex-wrap">
                             <h4 class=" font-bold text-slate-900 text-base sm:text-lg leading-tight" x-text="selectedService?.name"></h4>
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#e6f7f2] text-[#1e3a5f] uppercase tracking-wider"
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FAF2F4] text-[#2D2327] uppercase tracking-wider"
                                   x-text="selectedService?.formatted_duration || (selectedService?.duration_minutes + ' min')"></span>
                         </div>
                         
                         <!-- Formatted Spanish Date & Time -->
                         <div class="flex items-center gap-2 mt-1.5 text-xs text-slate-600 font-medium flex-wrap">
-                            <span class="inline-flex items-center gap-1 font-semibold text-slate-800 bg-white/80 px-2.5 py-1 rounded-lg border border-[#e2f0ea] shadow-xs">
-                                <i data-lucide="calendar" class="w-3.5 h-3.5 text-[#0d9488]"></i>
+                            <span class="inline-flex items-center gap-1 font-semibold text-slate-800 bg-white/80 px-2.5 py-1 rounded-lg border border-[#EFEAE6] shadow-xs">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5 text-[#8E4D5E]"></i>
                                 <span x-text="formatDisplayDate(selectedDate)"></span>
                             </span>
-                            <span class="inline-flex items-center gap-1 font-bold text-[#162d4a] bg-[#e6f7f2] px-2.5 py-1 rounded-lg">
-                                <i data-lucide="clock" class="w-3.5 h-3.5 text-[#0d9488]"></i>
+                            <span class="inline-flex items-center gap-1 font-bold text-[#1D1619] bg-[#FAF2F4] px-2.5 py-1 rounded-lg">
+                                <i data-lucide="clock" class="w-3.5 h-3.5 text-[#8E4D5E]"></i>
                                 <span x-text="selectedSlot?.start_formatted + ' a ' + selectedSlot?.end_formatted"></span>
                             </span>
                         </div>
@@ -392,10 +392,10 @@
                 </div>
 
                 <!-- Financial Settlement Box -->
-                <div class="flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 md:border-l border-[#e2f0ea] pt-3 md:pt-0 md:pl-5">
+                <div class="flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 md:border-l border-[#EFEAE6] pt-3 md:pt-0 md:pl-5">
                     <div class="text-left md:text-right">
                         <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">Abono Requerido</span>
-                        <span class=" font-bold text-[#1e3a5f] text-lg sm:text-xl" x-text="'$' + formatPrice(selectedService?.deposit_amount) + ' COP'"></span>
+                        <span class=" font-bold text-[#2D2327] text-lg sm:text-xl" x-text="'$' + formatPrice(selectedService?.deposit_amount) + ' COP'"></span>
                     </div>
                     <span class="text-[11px] text-slate-500 font-medium block mt-0.5">
                         Saldo en local: <strong class="text-slate-700" x-text="'$' + formatPrice(selectedService?.base_price - selectedService?.deposit_amount) + ' COP'"></strong>
@@ -405,7 +405,7 @@
         </div>
 
         <!-- Saved Device Profile Banner (Zero-Click Booking Experience) -->
-        <div x-show="hasSavedDeviceProfile" x-transition class="mb-5 p-4 rounded-3xl bg-gradient-to-r from-emerald-50 via-emerald-50/60 to-white border border-emerald-200/90 text-emerald-950 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div x-show="hasSavedDeviceProfile" x-transition class="mb-5 p-4 rounded-3xl bg-emerald-50 border border-emerald-200/90 text-emerald-950 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
                     <i data-lucide="user-check" class="w-5 h-5"></i>
@@ -442,7 +442,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-1.5">
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                            WhatsApp / Celular <span class="text-[#0d9488]">*</span>
+                            WhatsApp / Celular <span class="text-[#8E4D5E]">*</span>
                         </label>
                         <template x-if="cleanPhone(clientForm.phone).length === 10">
                             <span class="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
@@ -460,8 +460,8 @@
                                @input="handlePhoneInput($event)"
                                placeholder="310 000 0000"
                                maxlength="12"
-                               class="w-full pl-20 pr-4 py-3 rounded-2xl border text-sm font-medium font-mono transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#0d9488]/20"
-                               :class="cleanPhone(clientForm.phone).length === 10 ? 'border-slate-300 focus:border-[#0d9488] bg-white' : 'border-slate-200 focus:border-[#0d9488] bg-slate-50/30'">
+                               class="w-full pl-20 pr-4 py-3 rounded-2xl border text-sm font-medium font-mono transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#8E4D5E]/20"
+                               :class="cleanPhone(clientForm.phone).length === 10 ? 'border-slate-300 focus:border-[#8E4D5E] bg-white' : 'border-slate-200 focus:border-[#8E4D5E] bg-slate-50/30'">
                     </div>
                     <p class="text-[10px] text-slate-400 mt-1">Te enviaremos los recordatorios y la ubicación exacta a este WhatsApp.</p>
                 </div>
@@ -470,7 +470,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-1.5">
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                            Nombre Completo <span class="text-[#0d9488]">*</span>
+                            Nombre Completo <span class="text-[#8E4D5E]">*</span>
                         </label>
                         <template x-if="clientForm.name.trim().length >= 3">
                             <span class="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
@@ -482,8 +482,8 @@
                            x-model="clientForm.name"
                            @input="updateIcons()"
                            placeholder="Ej: Valentina Gómez Restrepo"
-                           class="w-full px-4 py-3 rounded-2xl border text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#0d9488]/20"
-                           :class="clientForm.name.trim().length >= 3 ? 'border-slate-300 focus:border-[#0d9488] bg-white' : 'border-slate-200 focus:border-[#0d9488] bg-slate-50/30'">
+                           class="w-full px-4 py-3 rounded-2xl border text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#8E4D5E]/20"
+                           :class="clientForm.name.trim().length >= 3 ? 'border-slate-300 focus:border-[#8E4D5E] bg-white' : 'border-slate-200 focus:border-[#8E4D5E] bg-slate-50/30'">
                     <p class="text-[10px] text-slate-400 mt-1">Tu nombre para personalizar tu atención en cabina.</p>
                 </div>
             </div>
@@ -504,7 +504,7 @@
                        x-model="clientForm.email"
                        @input="updateIcons()"
                        placeholder="tucorreo@gmail.com"
-                       class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#0d9488]/20 focus:border-[#0d9488] bg-slate-50/30">
+                       class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#8E4D5E]/20 focus:border-[#8E4D5E] bg-slate-50/30">
                 <p class="text-[10px] text-slate-400 mt-1">Para recibir tu recibo digital y sincronizar con Google Calendar / Apple Calendar.</p>
             </div>
 
@@ -516,25 +516,25 @@
                 <textarea x-model="clientForm.notes"
                           rows="2"
                           placeholder="Ej: Tengo piel sensible con tendencia a rojez, primera vez que me realizo pestañas..."
-                          class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-3 focus:ring-[#0d9488]/20 focus:border-[#0d9488] bg-slate-50/30"></textarea>
+                          class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-3 focus:ring-[#8E4D5E]/20 focus:border-[#8E4D5E] bg-slate-50/30"></textarea>
                 
                 <!-- Quick Suggestion Tag Chips -->
                 <div class="mt-2 flex items-center gap-1.5 flex-wrap">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">Sugerencias rápidas:</span>
                     <button type="button" @click="appendNoteTag('✨ Primera vez con Paola')"
-                            class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#e6f7f2] text-[#1e3a5f] hover:bg-[#0d9488] hover:text-white transition-all border border-[#e2f0ea] cursor-pointer">
+                            class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#FAF2F4] text-[#2D2327] hover:bg-[#8E4D5E] hover:text-white transition-all border border-[#EFEAE6] cursor-pointer">
                         ✨ Primera vez
                     </button>
                     <button type="button" @click="appendNoteTag('🌿 Piel sensible / Alergias')"
-                            class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#e6f7f2] text-[#1e3a5f] hover:bg-[#0d9488] hover:text-white transition-all border border-[#e2f0ea] cursor-pointer">
+                            class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#FAF2F4] text-[#2D2327] hover:bg-[#8E4D5E] hover:text-white transition-all border border-[#EFEAE6] cursor-pointer">
                         🌿 Piel sensible
                     </button>
                     <button type="button" @click="appendNoteTag('👁️ Retiro de pestañas previas')"
-                            class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#e6f7f2] text-[#1e3a5f] hover:bg-[#0d9488] hover:text-white transition-all border border-[#e2f0ea] cursor-pointer">
+                            class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#FAF2F4] text-[#2D2327] hover:bg-[#8E4D5E] hover:text-white transition-all border border-[#EFEAE6] cursor-pointer">
                         👁️ Retiro de pestañas
                     </button>
                     <button type="button" @click="appendNoteTag('⏰ Salir antes de cierta hora')"
-                            class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#e6f7f2] text-[#1e3a5f] hover:bg-[#0d9488] hover:text-white transition-all border border-[#e2f0ea] cursor-pointer">
+                            class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#FAF2F4] text-[#2D2327] hover:bg-[#8E4D5E] hover:text-white transition-all border border-[#EFEAE6] cursor-pointer">
                         ⏰ Tiempo justo
                     </button>
                 </div>
@@ -542,7 +542,7 @@
 
             <!-- Remember Me Switch -->
             <div class="pt-2 border-t border-slate-100 flex items-center gap-2.5">
-                <input type="checkbox" id="rememberMe" x-model="rememberMe" class="w-4 h-4 text-[#0d9488] rounded border-slate-300 focus:ring-[#0d9488] cursor-pointer">
+                <input type="checkbox" id="rememberMe" x-model="rememberMe" class="w-4 h-4 text-[#8E4D5E] rounded border-slate-300 focus:ring-[#8E4D5E] cursor-pointer">
                 <label for="rememberMe" class="text-xs text-slate-600 font-medium cursor-pointer select-none">
                     Guardar mis datos en este dispositivo para futuras reservas rápidas (1-Click)
                 </label>
@@ -554,9 +554,9 @@
                     <input type="checkbox"
                            id="acceptTermsBlade"
                            x-model="clientForm.accept_terms"
-                           class="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]/20 focus:ring-2 accent-[#0d9488] cursor-pointer">
+                           class="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#8E4D5E] focus:ring-[#8E4D5E]/20 focus:ring-2 accent-[#8E4D5E] cursor-pointer">
                     <span class="text-xs text-slate-600 leading-relaxed select-none">
-                        Acepto la <button type="button" @click.prevent.stop="openPrivacyModal()" class="text-[#0d9488] font-bold underline hover:text-[#0f766e] transition-colors cursor-pointer inline">Política de Tratamiento de Datos Personales</button> de acuerdo con la Ley 1581 de 2012 de Colombia y autorizo el uso de mis datos para la gestión y confirmación de mi cita. <span class="text-rose-500 font-bold">*</span>
+                        Acepto la <button type="button" @click.prevent.stop="openPrivacyModal()" class="text-[#8E4D5E] font-bold underline hover:text-[#793E4C] transition-colors cursor-pointer inline">Política de Tratamiento de Datos Personales</button> de acuerdo con la Ley 1581 de 2012 de Colombia y autorizo el uso de mis datos para la gestión y confirmación de mi cita. <span class="text-rose-500 font-bold">*</span>
                     </span>
                 </label>
                 <template x-if="!clientForm.accept_terms && (clientForm.name || clientForm.phone)">
@@ -612,7 +612,7 @@
                     :disabled="!isClientFormValid() || holdingSlot"
                     class="w-full sm:w-auto px-8 py-3.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 tracking-wide cursor-pointer shadow-md"
                     :class="isClientFormValid() && !holdingSlot
-                        ? 'bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white hover:from-[#0f766e] hover:to-[#115e59] shadow-teal-500/30 hover:scale-[1.02]'
+                        ? 'bg-[#8E4D5E] text-white hover:bg-[#793E4C] shadow-xs hover:scale-[1.02]'
                         : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'">
                 <template x-if="holdingSlot">
                     <span class="flex items-center gap-2">
@@ -649,9 +649,9 @@
                 <span class="font-medium">Valor Total del Servicio</span>
                 <span class="font-bold text-slate-900  text-base" x-text="'$' + formatPrice(selectedService?.base_price) + ' COP'"></span>
             </div>
-            <div class="flex justify-between items-center text-xs text-[#1e3a5f] font-bold py-2.5 border-b border-slate-100">
+            <div class="flex justify-between items-center text-xs text-[#2D2327] font-bold py-2.5 border-b border-slate-100">
                 <span>Monto de Abono a Pagar Hoy</span>
-                <span class=" text-lg text-[#0d9488]" x-text="Number(selectedService?.deposit_amount || 0) <= 0 ? '$0 COP (Exento / Sin anticipo)' : ('$' + formatPrice(selectedService?.deposit_amount) + ' COP')"></span>
+                <span class=" text-lg text-[#8E4D5E]" x-text="Number(selectedService?.deposit_amount || 0) <= 0 ? '$0 COP (Exento / Sin anticipo)' : ('$' + formatPrice(selectedService?.deposit_amount) + ' COP')"></span>
             </div>
             <div class="flex justify-between items-center text-xs text-slate-500 pt-2.5">
                 <span class="font-medium">Saldo Restante a Pagar en el Local</span>
@@ -660,7 +660,7 @@
         </div>
 
         <!-- ZERO DEPOSIT / VIP DIRECT CONFIRMATION (NO COMPROBANTE / NO TRANSFERENCIA) -->
-        <div x-show="Number(selectedService?.deposit_amount || 0) <= 0" class="bg-gradient-to-br from-emerald-50/90 via-teal-50/50 to-white p-6 rounded-3xl border border-emerald-200/80 shadow-sm space-y-4 mb-6">
+        <div x-show="Number(selectedService?.deposit_amount || 0) <= 0" class="bg-emerald-50 p-6 rounded-3xl border border-emerald-200/80 shadow-sm space-y-4 mb-6">
             <div class="flex items-start gap-3.5">
                 <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 shadow-inner mt-0.5">
                     <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
@@ -677,7 +677,7 @@
             <button type="button"
                     @click="submitZeroDepositBooking()"
                     :disabled="submittingBooking"
-                    class="w-full py-4 rounded-full text-xs sm:text-sm font-bold bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-lg shadow-teal-500/25 transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
+                    class="w-full py-4 rounded-full text-xs sm:text-sm font-bold bg-[#8E4D5E] text-white hover:bg-[#793E4C] shadow-lg shadow-xs transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
                 <template x-if="submittingBooking">
                     <span class="flex items-center gap-2">
                         <div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -694,7 +694,7 @@
         <div x-show="Number(selectedService?.deposit_amount || 0) > 0" class="grid grid-cols-2 gap-3 mb-6">
             <button type="button" @click="paymentMethod = 'NEQUI_TRANSFER'"
                     class="p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer"
-                    :class="paymentMethod === 'NEQUI_TRANSFER' ? 'border-[#0d9488] bg-[#e6f7f2]/50 ring-2 ring-[#0d9488]/20 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'">
+                    :class="paymentMethod === 'NEQUI_TRANSFER' ? 'border-[#8E4D5E] bg-[#FAF2F4]/50 ring-2 ring-[#8E4D5E]/20 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-xs font-bold text-slate-900">📲 Nequi / Daviplata</span>
                     <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase tracking-wider">0% Comisión</span>
@@ -708,7 +708,7 @@
                     class="p-4 rounded-2xl border text-left transition-all duration-200"
                     :class="!boldEnabled 
                         ? 'opacity-40 cursor-not-allowed bg-slate-50 border-slate-200 select-none' 
-                        : (paymentMethod === 'BOLD_ONLINE' ? 'border-[#0d9488] bg-[#e6f7f2]/50 ring-2 ring-[#0d9488]/20 shadow-sm cursor-pointer' : 'border-slate-200 bg-white hover:border-slate-300 cursor-pointer')">
+                        : (paymentMethod === 'BOLD_ONLINE' ? 'border-[#8E4D5E] bg-[#FAF2F4]/50 ring-2 ring-[#8E4D5E]/20 shadow-sm cursor-pointer' : 'border-slate-200 bg-white hover:border-slate-300 cursor-pointer')">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-xs font-bold" :class="boldEnabled ? 'text-slate-900' : 'text-slate-400'">💳 Pago en Línea (Bold)</span>
                     <template x-if="!boldEnabled">
@@ -739,14 +739,14 @@
             <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Cargar Comprobante de Transferencia *</label>
                 <input type="file" @change="handleFileUpload($event)" accept="image/*"
-                       class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#e6f7f2] file:text-[#1e3a5f] hover:file:bg-[#ccfbf1] cursor-pointer border border-slate-200 rounded-2xl p-2 bg-slate-50/50">
+                       class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#FAF2F4] file:text-[#2D2327] hover:file:bg-[#ccfbf1] cursor-pointer border border-slate-200 rounded-2xl p-2 bg-slate-50/50">
                 <p class="text-[10px] text-slate-400 mt-1.5">Adjunta una foto o captura de pantalla donde se vea claramente el valor y número de aprobación.</p>
             </div>
 
             <button type="button"
                     @click="submitNequiBooking()"
                     :disabled="submittingBooking"
-                    class="w-full py-3.5 rounded-full text-xs font-bold bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-md shadow-teal-500/25 transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
+                    class="w-full py-3.5 rounded-full text-xs font-bold bg-[#8E4D5E] text-white hover:bg-[#793E4C] shadow-md shadow-xs transition-all flex items-center justify-center gap-2 tracking-wide cursor-pointer">
                 <template x-if="submittingBooking">
                     <span>Registrando y subiendo comprobante...</span>
                 </template>
@@ -758,7 +758,7 @@
 
         <!-- BOLD ONLINE PAYMENT BUTTON -->
         <div x-show="Number(selectedService?.deposit_amount || 0) > 0 && paymentMethod === 'BOLD_ONLINE'" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm text-center space-y-4">
-            <div class="w-12 h-12 rounded-full bg-[#e6f7f2] text-[#0d9488] mx-auto flex items-center justify-center shadow-inner">
+            <div class="w-12 h-12 rounded-full bg-[#FAF2F4] text-[#8E4D5E] mx-auto flex items-center justify-center shadow-inner">
                 <i data-lucide="credit-card" class="w-6 h-6"></i>
             </div>
             <div>
@@ -808,7 +808,7 @@
                         <option value="afternoon">Tarde (2:00 PM - 6:00 PM)</option>
                     </select>
                 </div>
-                <button type="button" @click="submitWaitlist()" class="w-full py-3 rounded-full text-xs font-bold bg-[#0d9488] text-white mt-4 hover:bg-[#0f766e] shadow-md shadow-teal-500/20 tracking-wide cursor-pointer">
+                <button type="button" @click="submitWaitlist()" class="w-full py-3 rounded-full text-xs font-bold bg-[#8E4D5E] text-white mt-4 hover:bg-[#793E4C] shadow-md shadow-xs tracking-wide cursor-pointer">
                     Anotarme a la Lista de Espera
                 </button>
             </div>
@@ -824,7 +824,7 @@
             <!-- Header -->
             <div class="flex items-start justify-between pb-4 border-b border-slate-100">
                 <div>
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#0d9488] text-[10px] font-bold uppercase tracking-wider mb-1 border border-emerald-100">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#8E4D5E] text-[10px] font-bold uppercase tracking-wider mb-1 border border-emerald-100">
                         <span>Habeas Data • Colombia</span>
                     </div>
                     <h3 class="font-bold text-lg sm:text-xl text-slate-900 tracking-tight">Política de Tratamiento de Datos Personales</h3>
@@ -912,7 +912,7 @@
                 <button type="button" @click="closePrivacyModal()" class="px-5 py-2.5 rounded-full text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">
                     Cerrar
                 </button>
-                <button type="button" @click="acceptPrivacyPolicy()" class="px-6 py-2.5 rounded-full text-xs font-bold bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-md shadow-teal-500/20 transition-all cursor-pointer">
+                <button type="button" @click="acceptPrivacyPolicy()" class="px-6 py-2.5 rounded-full text-xs font-bold bg-[#8E4D5E] hover:bg-[#793E4C] text-white shadow-md shadow-xs transition-all cursor-pointer">
                     Entendido y Aceptar
                 </button>
             </div>

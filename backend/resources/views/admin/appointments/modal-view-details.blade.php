@@ -32,7 +32,7 @@
 
         /* Banner Superior */
         .nuvex-detail-banner {
-            background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+            background: #F8FAFC;
             border: 1px solid #E2E8F0;
             border-radius: 20px;
             padding: 1.25rem 1.5rem;
@@ -44,7 +44,7 @@
         }
 
         .dark .nuvex-detail-banner {
-            background: linear-gradient(135deg, #1E293B 0%, #182234 100%);
+            background: #1E293B;
             border-color: rgba(255, 255, 255, 0.08);
         }
 
