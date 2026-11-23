@@ -14,17 +14,20 @@ class SuperAdminSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@nuvex-tecnologia.com'],
-            [
-                'name' => 'Super Admin Nuvex',
-                'password' => Hash::make('Paola2026!*'),
-                'role' => UserRole::SUPER_ADMIN,
-                'phone' => '3001234567',
-                'is_active' => true,
-                'email_verified_at' => now(),
-                'tenant_id' => null,
-            ]
-        );
+        if (User::where('email', 'admin@nuvex-tecnologia.com')->exists()) {
+            $this->command?->info("ℹ️ Super Admin 'admin@nuvex-tecnologia.com' ya existe. Se omitió para preservar credenciales y perfil.");
+            return;
+        }
+
+        User::create([
+            'email' => 'admin@nuvex-tecnologia.com',
+            'name' => 'Super Admin Nuvex',
+            'password' => Hash::make('Paola2026!*'),
+            'role' => UserRole::SUPER_ADMIN,
+            'phone' => '3001234567',
+            'is_active' => true,
+            'email_verified_at' => now(),
+            'tenant_id' => null,
+        ]);
     }
 }

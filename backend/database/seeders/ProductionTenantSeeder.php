@@ -20,7 +20,13 @@ class ProductionTenantSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Tenant Principal de Producción
+        // Si el salón ya existe, no sobrescribir datos ni configuraciones personalizadas en producción
+        if (Tenant::where('slug', 'labellenails')->exists()) {
+            $this->command?->info("ℹ️ El salón 'labellenails' ya existe. Se omitió la inicialización para preservar los cambios de producción.");
+            return;
+        }
+
+        // 1. Tenant Principal de Producción (solo aprovisionamiento inicial)
         $tenant = Tenant::updateOrCreate(
             ['slug' => 'labellenails'],
             [

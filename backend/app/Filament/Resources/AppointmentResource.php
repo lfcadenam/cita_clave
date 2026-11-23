@@ -208,13 +208,21 @@ class AppointmentResource extends Resource
                                     ->placeholder('310 123 4567')
                                     ->tel()
                                     ->prefix('+57')
-                                    ->required(),
+                                    ->required()
+                                    ->dehydrateStateUsing(function ($state) {
+                                        if (!$state) return null;
+                                        $clean = preg_replace('/[^0-9]/', '', (string) $state);
+                                        if (str_starts_with($clean, '57') && strlen($clean) === 12) {
+                                            $clean = substr($clean, 2);
+                                        }
+                                        return $clean;
+                                    }),
 
                                 Forms\Components\TextInput::make('client_email')
                                     ->label('Correo Electrónico (Opcional)')
                                     ->placeholder('ejemplo@correo.com')
                                     ->email(),
-                            ])->columns(2),
+                            ])->columns(['default' => 1, 'sm' => 2]),
 
                         Section::make('Programación del Servicio')
                             ->description('Fecha, horario y tratamiento de belleza')
@@ -257,7 +265,8 @@ class AppointmentResource extends Resource
                                         if ($service = Service::find($state)) {
                                             $set('total_amount', $service->base_price);
                                             $set('deposit_amount', $service->deposit_amount);
-                                            $set('balance_due', $service->base_price - $service->deposit_amount);
+                                            $paid = (float) ($get('deposit_paid') ?: 0);
+                                            $set('balance_due', max(0, $service->base_price - $paid));
 
                                             if ($record && $record->exists && $get('start_time')) {
                                                 try {
@@ -292,6 +301,55 @@ class AppointmentResource extends Resource
                                         }
                                     })
                                     ->columnSpanFull(),
+
+                                Forms\Components\Select::make('suggested_slot')
+                                    ->label('Turnos Disponibles del Día (Selección Rápida)')
+                                    ->placeholder('Selecciona un turno libre del catálogo...')
+                                    ->options(function ($get) {
+                                        $serviceId = $get('service_id');
+                                        $date = $get('appointment_date') ?: now()->toDateString();
+                                        if (!$serviceId || !($service = Service::find($serviceId))) {
+                                            return [];
+                                        }
+                                        try {
+                                            $slots = app(\App\Services\BookingAvailabilityService::class)->getAvailableSlots($service, $date, false);
+                                            if (empty($slots)) {
+                                                return [];
+                                            }
+                                            $options = [];
+                                            $duration = (int) $service->duration_minutes;
+                                            $durationFormatted = $duration >= 60
+                                                ? (floor($duration / 60) . 'h ' . ($duration % 60 ? ($duration % 60 . 'm') : ''))
+                                                : "{$duration} min";
+
+                                            foreach ($slots as $slot) {
+                                                $startCarbon = \Carbon\Carbon::createFromFormat('H:i', $slot['start_time']);
+                                                $group = $startCarbon->hour < 12
+                                                    ? 'Mañana (8:00 AM – 12:00 PM)'
+                                                    : 'Tarde (12:00 PM – 6:00 PM)';
+
+                                                $key = "{$slot['start_time']}|{$slot['end_time']}";
+                                                $label = "{$slot['start_formatted']} – {$slot['end_formatted']} ({$durationFormatted})";
+                                                $options[$group][$key] = $label;
+                                            }
+                                            return $options;
+                                        } catch (\Throwable $e) {
+                                            return [];
+                                        }
+                                    })
+                                    ->searchable()
+                                    ->preload()
+                                    ->reactive()
+                                    ->afterStateUpdated(function ($state, $set) {
+                                        if ($state) {
+                                            $parts = explode('|', $state);
+                                            $set('start_time', $parts[0] ?? null);
+                                            $set('end_time', $parts[1] ?? null);
+                                        }
+                                    })
+                                    ->dehydrated(false)
+                                    ->columnSpanFull()
+                                    ->helperText('Horarios calculados según la duración del tratamiento y espacios libres. Al elegir uno, se sincronizan las horas de inicio y fin.'),
 
                                 Forms\Components\TimePicker::make('start_time')
                                     ->label('Hora de Inicio')
@@ -412,7 +470,7 @@ class AppointmentResource extends Resource
                                             };
                                         },
                                     ]),
-                            ])->columns(2),
+                            ])->columns(['default' => 1, 'sm' => 2]),
                     ])->columnSpan(['default' => 12, 'lg' => 6]),
 
                     // Columna Derecha: Estado, Finanzas y Comprobante (6 columnas)
@@ -458,6 +516,18 @@ class AppointmentResource extends Resource
                                     ->prefix('$')
                                     ->default(0)
                                     ->reactive()
+                                    ->hintAction(
+                                        Action::make('applyDeposit')
+                                            ->label('Abono Requerido')
+                                            ->icon('heroicon-m-sparkles')
+                                            ->tooltip('Copiar el valor de Abono Requerido a Abono Recibido')
+                                            ->action(function ($set, $get) {
+                                                $dep = (float) ($get('deposit_amount') ?: 0);
+                                                $total = (float) ($get('total_amount') ?: 0);
+                                                $set('deposit_paid', $dep);
+                                                $set('balance_due', max(0, $total - $dep));
+                                            })
+                                    )
                                     ->afterStateUpdated(function ($state, $set, $get) {
                                         $total = (float) ($get('total_amount') ?: 0);
                                         $set('balance_due', max(0, $total - (float) $state));
@@ -468,7 +538,8 @@ class AppointmentResource extends Resource
                                     ->numeric()
                                     ->prefix('$')
                                     ->default(0)
-                                    ->extraInputAttributes(['class' => 'font-bold text-teal-700']),
+                                    ->readOnly()
+                                    ->extraInputAttributes(['class' => 'font-bold text-teal-700 bg-slate-50']),
 
                                 Forms\Components\FileUpload::make('deposit_proof_image')
                                     ->label('Comprobante Nequi (Opcional)')
@@ -483,7 +554,7 @@ class AppointmentResource extends Resource
                                     ->placeholder('Ej: Abono registrado en caja o cuenta Nequi')
                                     ->rows(2)
                                     ->columnSpanFull(),
-                            ])->columns(2),
+                            ])->columns(['default' => 1, 'sm' => 2]),
                     ])->columnSpan(['default' => 12, 'lg' => 6]),
                 ]),
         ];

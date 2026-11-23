@@ -98,33 +98,50 @@ class AppointmentCalendarPage extends Page
                 ->modalSubmitActionLabel('Crear Cita / Reserva')
                 ->modalWidth(Width::SevenExtraLarge)
                 ->form(AppointmentResource::getFormComponents())
-                ->fillForm(function (): array {
-                    $date = $this->currentDate ?: now()->toDateString();
-                    $firstService = Service::where('is_active', true)->orderBy('sort_order')->first();
+                ->fillForm(function (array $arguments = []): array {
+                    $date = !empty($arguments['date']) ? $arguments['date'] : ($this->currentDate ?: now()->toDateString());
+                    $firstService = !empty($arguments['service_id'])
+                        ? Service::find($arguments['service_id'])
+                        : Service::where('is_active', true)->orderBy('sort_order')->first();
 
-                    $slotData = [
-                        'start_time' => '08:00',
-                        'end_time' => '09:00',
-                    ];
+                    $startTime = !empty($arguments['start_time']) ? $arguments['start_time'] : null;
+                    $endTime = null;
 
                     if ($firstService) {
-                        $nextSlot = AppointmentResource::findNextAvailableSlot($firstService, $date);
-                        if ($nextSlot) {
-                            $slotData = $nextSlot;
+                        if ($startTime) {
+                            try {
+                                $endTime = Carbon::createFromFormat('H:i', substr($startTime, 0, 5))
+                                    ->addMinutes($firstService->duration_minutes)
+                                    ->format('H:i');
+                            } catch (\Throwable $e) {
+                                $endTime = null;
+                            }
+                        }
+
+                        if (!$startTime || !$endTime) {
+                            $nextSlot = AppointmentResource::findNextAvailableSlot($firstService, $date);
+                            if ($nextSlot) {
+                                $startTime = $nextSlot['start_time'];
+                                $endTime = $nextSlot['end_time'];
+                            }
                         }
                     }
+
+                    $total = $firstService?->base_price ?? 0;
+                    $deposit = $firstService?->deposit_amount ?? 0;
+                    $depositPaid = 0;
 
                     return [
                         'appointment_date' => $date,
                         'service_id' => $firstService?->id,
-                        'total_amount' => $firstService?->base_price,
-                        'deposit_amount' => $firstService?->deposit_amount,
-                        'balance_due' => $firstService ? ($firstService->base_price - $firstService->deposit_amount) : 0,
-                        'start_time' => $slotData['start_time'],
-                        'end_time' => $slotData['end_time'],
+                        'total_amount' => $total,
+                        'deposit_amount' => $deposit,
+                        'deposit_paid' => $depositPaid,
+                        'balance_due' => max(0, $total - $depositPaid),
+                        'start_time' => $startTime ?: '08:00',
+                        'end_time' => $endTime ?: '09:00',
                         'status' => AppointmentStatus::CONFIRMED->value,
                         'payment_method' => PaymentMethod::CASH_AT_LOCATION->value,
-                        'deposit_paid' => 0,
                     ];
                 })
                 ->before(function (CreateAction $action, array $data) {
@@ -246,7 +263,7 @@ class AppointmentCalendarPage extends Page
     {
         $this->currentDate = $date;
         $this->closeDayModal();
-        $this->mountAction('newAppointment');
+        $this->mountAction('newAppointment', ['date' => $date]);
     }
 
     public function getSelectedDayAppointmentsProperty()
@@ -590,6 +607,7 @@ class AppointmentCalendarPage extends Page
             $carbonHour = Carbon::createFromTime($h, 0);
             $hours[] = [
                 'hour24' => sprintf('%02d:00', $h),
+                'time24' => sprintf('%02d:00', $h),
                 'hourNumber' => $h,
                 'label' => $carbonHour->format('g A'),
             ];

@@ -1173,7 +1173,21 @@ input[type="number"]::-webkit-outer-spin-button {
 /* ==========================================================================
    12. MODALES ELEVADOS Y SECCIONES INTERNAS
    ========================================================================== */
+.fi-modal-window-ctn {
+  padding: 1rem !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
 .fi-modal-window {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: calc(100vh - 2.5rem) !important;
+  max-height: calc(100dvh - 2.5rem) !important;
   border-radius: 26px !important;
   border: 1px solid var(--nuvex-border-light) !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
@@ -1186,12 +1200,15 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .fi-modal-header {
+  flex-shrink: 0 !important;
   padding: 1.25rem 1.75rem !important;
   border-bottom: 1px solid #F1F5F9 !important;
+  background-color: #FFFFFF !important;
 }
 
 .dark .fi-modal-header {
   border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: var(--nuvex-surface-dark) !important;
 }
 
 .fi-modal-heading {
@@ -1206,7 +1223,35 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .fi-modal-content {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
   padding: 1.5rem 1.75rem !important;
+  max-height: calc(100vh - 12rem) !important;
+  max-height: calc(100dvh - 12rem) !important;
+}
+
+/* Scrollbar estilizada y suave para el contenido del modal */
+.fi-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.fi-modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.fi-modal-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.fi-modal-content::-webkit-scrollbar-thumb:hover {
+  background: #00c975;
+}
+.dark .fi-modal-content::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+.dark .fi-modal-content::-webkit-scrollbar-thumb:hover {
+  background: #00c975;
 }
 
 /* Tarjetas de Sección internas en Modales */
@@ -1246,14 +1291,53 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .fi-modal-footer {
-  padding: 1.25rem 1.75rem !important;
+  flex-shrink: 0 !important;
+  padding: 1.125rem 1.75rem !important;
   border-top: 1px solid #F1F5F9 !important;
   background-color: #FFFFFF !important;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.03) !important;
+  position: relative !important;
+  z-index: 10 !important;
 }
 
 .dark .fi-modal-footer {
   border-top-color: rgba(255, 255, 255, 0.08) !important;
   background-color: #1E293B !important;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Responsive Ergonómico para Dispositivos Móviles y Tablets */
+@media (max-width: 768px) {
+  .fi-modal-window-ctn {
+    padding: 0.5rem !important;
+    align-items: flex-end !important;
+  }
+  .fi-modal-window {
+    max-height: calc(100vh - 1rem) !important;
+    max-height: calc(100dvh - 1rem) !important;
+    border-radius: 20px 20px 14px 14px !important;
+    width: 100% !important;
+  }
+  .fi-modal-header {
+    padding: 1rem 1.25rem !important;
+  }
+  .fi-modal-content {
+    padding: 1rem 1.25rem !important;
+    max-height: calc(100vh - 10rem) !important;
+    max-height: calc(100dvh - 10rem) !important;
+  }
+  .fi-modal-footer {
+    padding: 0.875rem 1.25rem !important;
+  }
+  .fi-modal-footer .fi-modal-actions {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+  .fi-modal-footer .fi-modal-actions > * {
+    width: 100% !important;
+  }
 }
 
 /* ==========================================================================

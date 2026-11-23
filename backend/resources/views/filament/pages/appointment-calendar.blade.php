@@ -682,7 +682,7 @@
         .gcal-grid-lines {
             position: absolute;
             inset: 0;
-            pointer-events: none;
+            pointer-events: auto;
         }
 
         .gcal-hour-grid-row {
@@ -690,6 +690,12 @@
             border-bottom: 1px solid #E2E8F0;
             box-sizing: border-box;
             position: relative;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .gcal-hour-grid-row:hover {
+            background-color: rgba(0, 201, 117, 0.08);
         }
 
         .gcal-half-hour-line {
@@ -2415,7 +2421,9 @@
                                         <!-- Horizontal Grid Lines -->
                                         <div class="gcal-grid-lines">
                                             @foreach($data['hours'] as $h)
-                                                <div class="gcal-hour-grid-row">
+                                                <div class="gcal-hour-grid-row"
+                                                     wire:click="mountAction('newAppointment', { date: '{{ $day['date'] }}', start_time: '{{ $h['time24'] ?? ($h['hour24'] ?? '08:00') }}' })"
+                                                     title="Agendar nueva cita el {{ $day['date'] }} a las {{ $h['label'] }}">
                                                     <div class="gcal-half-hour-line"></div>
                                                 </div>
                                             @endforeach
@@ -2444,7 +2452,7 @@
                                                 $leftPct = $apt->calendar_left_pct ?? 0;
                                                 $widthPct = $apt->calendar_width_pct ?? 100;
                                             @endphp
-                                            <div wire:click="selectAppointment({{ $apt->id }})"
+                                            <div wire:click.stop="selectAppointment({{ $apt->id }})"
                                                  class="gcal-event-card {{ $theme['theme'] }} status-{{ $apt->status->value }}"
                                                  style="top: {{ $apt->calendar_top }}px; height: {{ $apt->calendar_height }}px; left: calc({{ $leftPct }}% + 2px); width: calc({{ $widthPct }}% - 4px); background-color: {{ $theme['bg'] }}; border-color: {{ $theme['border'] }}; border-left-color: {{ $theme['stripe'] }} !important;"
                                                  title="{{ $apt->service?->name }} • {{ $apt->client_name }} ({{ $apt->formatted_time_range }})">
