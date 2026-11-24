@@ -16,8 +16,8 @@ export class AdminLoginComponent {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  email = signal<string>('paola@nuvex-belleza.com');
-  password = signal<string>('Paola2026!*');
+  email = signal<string>('');
+  password = signal<string>('');
   showPassword = signal<boolean>(false);
   isLoading = signal<boolean>(false);
   errorMessage = signal<string | null>(null);

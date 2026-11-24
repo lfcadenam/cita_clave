@@ -23,7 +23,8 @@ class AuthController extends Controller
             'tenant_slug' => 'nullable|string',
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $email = trim(strtolower($validated['email']));
+        $user = User::whereRaw('LOWER(TRIM(email)) = ?', [$email])->first();
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return response()->json([

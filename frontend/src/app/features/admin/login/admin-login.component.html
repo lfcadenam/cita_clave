@@ -64,11 +64,12 @@
             <input 
               type="email" 
               name="email"
+              autocomplete="username"
               [ngModel]="email()"
               (ngModelChange)="email.set($event)"
               required
               class="w-full pl-10 pr-4 py-2.5 rounded-2xl text-xs bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00C975] focus:bg-white transition-all font-medium"
-              placeholder="admin@ejemplo.com"
+              placeholder="paola@labellenailsbog.com"
             />
           </div>
         </div>
@@ -87,6 +88,7 @@
             <input 
               [type]="showPassword() ? 'text' : 'password'" 
               name="password"
+              autocomplete="current-password"
               [ngModel]="password()"
               (ngModelChange)="password.set($event)"
               required
@@ -134,7 +136,7 @@
         <div class="flex items-center justify-center gap-2 pt-1 text-[11px]">
           <button 
             type="button" 
-            (click)="setCredentials('paola@nuvex-belleza.com', 'Paola2026!*')"
+            (click)="setCredentials('paola@labellenailsbog.com', 'Paola2026!LaBelle')"
             class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 transition-colors font-medium cursor-pointer"
           >
             Administradora
@@ -142,7 +144,7 @@
           <span class="text-slate-300">•</span>
           <button 
             type="button" 
-            (click)="setCredentials('citaclave@gmail.com', 'Admin2026!*')"
+            (click)="setCredentials('admin@nuvex-tecnologia.com', 'Paola2026!*')"
             class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 transition-colors font-medium cursor-pointer"
           >
             Super Administrador
