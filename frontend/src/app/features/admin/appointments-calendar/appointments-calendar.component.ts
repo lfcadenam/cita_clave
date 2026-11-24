@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { AppointmentAdminService } from '../../../core/services/appointment-admin.service';
+import { AppointmentAdminService, CreateAppointmentPayload } from '../../../core/services/appointment-admin.service';
 import { CalendarAdminService } from '../../../core/services/calendar-admin.service';
 import { CustomerAdminService } from '../../../core/services/customer-admin.service';
 import { ServiceAdminService, AdminServiceItem } from '../../../core/services/service-admin.service';
@@ -228,8 +228,23 @@ export class AppointmentsCalendarComponent implements OnInit {
   readonly baseHour = 8;
   readonly slotHeightPx = 64;
 
-  // Detalle de Cita Seleccionada
+  // Detalle y Edición de Cita Seleccionada
   selectedAppointment = signal<AdminAppointment | null>(null);
+  isEditingAppointment = signal<boolean>(false);
+  isSavingAppointmentEdit = signal<boolean>(false);
+  editAppointmentError = signal<string | null>(null);
+
+  editServiceId = signal<number | null>(null);
+  editAppointmentDate = signal<string>('');
+  editStartTime = signal<string>('');
+  editEndTime = signal<string>('');
+  editClientName = signal<string>('');
+  editClientPhone = signal<string>('');
+  editTotalAmount = signal<number>(0);
+  editDepositPaid = signal<number>(0);
+  editStatus = signal<AppointmentStatus>('CONFIRMED');
+  editAdminNotes = signal<string>('');
+  protected readonly Math = Math;
 
   // =========================================================================
   // MODAL: AGENDAR NUEVA CITA / RESERVA (Diseño en 2 Columnas)
@@ -782,6 +797,15 @@ export class AppointmentsCalendarComponent implements OnInit {
     });
 
     // Mantener la lista completa para modales de agendamiento si aún no se ha cargado
+    if (this.servicesList().length === 0) {
+      this.serviceAdminService.getServices(true).subscribe({
+        next: (svcs) => this.servicesList.set(svcs),
+        error: (err) => console.warn('Error al precargar servicios completos:', err)
+      });
+    }
+  }
+
+  ensureServicesLoaded(): void {
     if (this.servicesList().length === 0) {
       this.serviceAdminService.getServices(true).subscribe({
         next: (svcs) => this.servicesList.set(svcs),
@@ -1451,6 +1475,112 @@ export class AppointmentsCalendarComponent implements OnInit {
 
   closeDetailModal(): void {
     this.selectedAppointment.set(null);
+    this.isEditingAppointment.set(false);
+    this.editAppointmentError.set(null);
+  }
+
+  startEditingSelectedAppointment(): void {
+    const apt = this.selectedAppointment();
+    if (!apt) return;
+
+    this.ensureServicesLoaded();
+    this.editServiceId.set(apt.service?.id || null);
+    this.editAppointmentDate.set(apt.date);
+    this.editStartTime.set(apt.start_time ? apt.start_time.substring(0, 5) : '08:00');
+    this.editEndTime.set(apt.end_time ? apt.end_time.substring(0, 5) : '09:00');
+    this.editClientName.set(apt.client.name);
+    this.editClientPhone.set(apt.client.phone);
+    this.editTotalAmount.set(apt.financials?.total_amount || 0);
+    this.editDepositPaid.set(apt.financials?.deposit_paid || 0);
+    this.editStatus.set(apt.status);
+    this.editAdminNotes.set(apt.notes?.admin_notes || '');
+    this.editAppointmentError.set(null);
+    this.isEditingAppointment.set(true);
+  }
+
+  cancelEditingSelectedAppointment(): void {
+    this.isEditingAppointment.set(false);
+    this.editAppointmentError.set(null);
+  }
+
+  onEditServiceChange(serviceId: any): void {
+    const numId = Number(serviceId);
+    this.editServiceId.set(numId);
+    const svc = this.servicesList().find(s => s.id === numId);
+    if (svc) {
+      if (this.editStartTime()) {
+        const [h, m] = this.editStartTime().split(':').map(n => parseInt(n, 10) || 0);
+        const totalMin = h * 60 + m + (svc.duration_minutes || 60);
+        const endH = Math.floor(totalMin / 60) % 24;
+        const endM = totalMin % 60;
+        this.editEndTime.set(`${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`);
+      }
+      if (!this.editTotalAmount() || this.editTotalAmount() === 0) {
+        this.editTotalAmount.set(svc.base_price || 0);
+      }
+    }
+  }
+
+  onEditStartTimeChange(startTime: string): void {
+    this.editStartTime.set(startTime);
+    const svc = this.servicesList().find(s => s.id === Number(this.editServiceId()));
+    const dur = svc?.duration_minutes || 60;
+    if (startTime && startTime.includes(':')) {
+      const [h, m] = startTime.split(':').map(n => parseInt(n, 10) || 0);
+      const totalMin = h * 60 + m + dur;
+      const endH = Math.floor(totalMin / 60) % 24;
+      const endM = totalMin % 60;
+      this.editEndTime.set(`${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`);
+    }
+  }
+
+  saveEditedAppointment(): void {
+    const apt = this.selectedAppointment();
+    if (!apt) return;
+
+    if (!this.editClientName().trim() || !this.editClientPhone().trim()) {
+      this.editAppointmentError.set('El nombre y teléfono de la clienta son obligatorios.');
+      return;
+    }
+
+    if (!this.editAppointmentDate() || !this.editStartTime()) {
+      this.editAppointmentError.set('Debes indicar fecha y hora de inicio.');
+      return;
+    }
+
+    this.isSavingAppointmentEdit.set(true);
+    this.editAppointmentError.set(null);
+
+    const payload: Partial<CreateAppointmentPayload> = {
+      client_name: this.editClientName().trim(),
+      client_phone: this.editClientPhone().trim(),
+      appointment_date: this.editAppointmentDate(),
+      start_time: this.editStartTime(),
+      end_time: this.editEndTime(),
+      service_id: Number(this.editServiceId()) || apt.service.id,
+      total_amount: Number(this.editTotalAmount()) || 0,
+      deposit_paid: Number(this.editDepositPaid()) || 0,
+      status: this.editStatus(),
+      admin_notes: this.editAdminNotes()
+    };
+
+    this.appointmentService.updateAppointment(apt.id, payload).subscribe({
+      next: (updatedApt) => {
+        this.isSavingAppointmentEdit.set(false);
+        this.isEditingAppointment.set(false);
+        this.selectedAppointment.set(updatedApt);
+        this.loadAppointmentsForCurrentRange();
+        this.loadDailySummary();
+      },
+      error: (err) => {
+        this.isSavingAppointmentEdit.set(false);
+        if (err.status === 422 && err.error?.message) {
+          this.editAppointmentError.set(err.error.message);
+        } else {
+          this.editAppointmentError.set('No se pudo actualizar la cita. Verifica que no haya conflictos de horario.');
+        }
+      }
+    });
   }
 
   // =========================================================================

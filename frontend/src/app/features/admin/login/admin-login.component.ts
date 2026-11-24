@@ -26,12 +26,6 @@ export class AdminLoginComponent {
     this.showPassword.update(v => !v);
   }
 
-  setCredentials(emailVal: string, passwordVal: string): void {
-    this.email.set(emailVal);
-    this.password.set(passwordVal);
-    this.errorMessage.set(null);
-  }
-
   onSubmit(): void {
     if (!this.email() || !this.password()) {
       this.errorMessage.set('Por favor completa todos los campos.');
