@@ -27,6 +27,7 @@ class Appointment extends Model
         'appointment_number',
         'user_id',
         'service_id',
+        'services_payload',
         'client_name',
         'client_phone',
         'client_email',
@@ -58,6 +59,7 @@ class Appointment extends Model
             'appointment_date' => 'date',
             'status' => AppointmentStatus::class,
             'payment_method' => PaymentMethod::class,
+            'services_payload' => 'array',
             'total_amount' => 'decimal:2',
             'deposit_amount' => 'decimal:2',
             'deposit_paid' => 'decimal:2',
@@ -68,6 +70,18 @@ class Appointment extends Model
             'cancelled_at' => 'datetime',
             'payment_gateway_payload' => 'array',
         ];
+    }
+
+    public function getServicesNamesAttribute(): string
+    {
+        if (!empty($this->services_payload) && is_array($this->services_payload)) {
+            $names = array_filter(array_column($this->services_payload, 'name'));
+            if (!empty($names)) {
+                return implode(' + ', $names);
+            }
+        }
+
+        return $this->service?->name ?? 'Servicio';
     }
 
     protected static function boot()

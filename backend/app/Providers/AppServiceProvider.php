@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Protección estricta en producción: Prohíbe migrate:fresh, migrate:reset o db:wipe
+        DB::prohibitDestructiveCommands($this->app->isProduction());
+
         // Rate limiter para endpoints sensibles (60 peticiones/minuto por IP para navegación fluida)
         RateLimiter::for('api-sensitive', function (Request $request) {
             return Limit::perMinute(60)->by($request->ip());

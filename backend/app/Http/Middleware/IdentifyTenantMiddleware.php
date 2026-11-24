@@ -32,6 +32,11 @@ class IdentifyTenantMiddleware
                 $tenant = Tenant::where('is_active', true)->where('slug', $slug)->first();
             }
 
+            // 2b. Búsqueda por el usuario autenticado si tiene tenant asignado
+            if (! $tenant && $request->user() && $request->user()->tenant_id) {
+                $tenant = Tenant::where('is_active', true)->find($request->user()->tenant_id);
+            }
+
             // 3. Búsqueda por coincidencia de dominio asignado
             if (! $tenant) {
                 $tenant = Tenant::where('is_active', true)

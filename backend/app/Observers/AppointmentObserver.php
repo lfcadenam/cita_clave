@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Enums\AppointmentStatus;
+use App\Enums\PaymentMethod;
 use App\Models\Appointment;
 use App\Services\AppointmentMailNotificationService;
 use App\Services\WhatsAppNotificationService;
@@ -45,13 +46,49 @@ class AppointmentObserver
      */
     public function updated(Appointment $appointment): void
     {
-        // Detectar si el estado transitó a CONFIRMADO
-        if ($appointment->wasChanged('status') && $appointment->status === AppointmentStatus::CONFIRMED) {
+        // 1. Detectar si el estado transitó a CONFIRMADO (Abono verificado o cita confirmada)
+        if (
+            !$appointment->skipObserverConfirmWhatsApp
+            && $appointment->wasChanged('status')
+            && $appointment->status === AppointmentStatus::CONFIRMED
+        ) {
             $originalStatus = $appointment->getOriginal('status');
             
             // Si el estado previo no era CONFIRMED, notificamos que el pago fue validado y la cita confirmada
             if ($originalStatus !== AppointmentStatus::CONFIRMED && $originalStatus !== AppointmentStatus::CONFIRMED->value) {
-                $this->mailService->sendPaymentConfirmedEmail($appointment);
+                // Notificación por correo a la clienta
+                try {
+                    $this->mailService->sendPaymentConfirmedEmail($appointment);
+                } catch (\Throwable $e) {
+                    Log::warning("No se pudo enviar correo de confirmación de cita #{$appointment->appointment_number}: " . $e->getMessage());
+                }
+
+                // Notificación por WhatsApp a la clienta
+                try {
+                    if ($appointment->payment_method === PaymentMethod::NEQUI_TRANSFER) {
+                        $this->whatsAppService->sendDepositApproved($appointment);
+                    } else {
+                        $this->whatsAppService->sendBookingConfirmation($appointment);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning("No se pudo enviar WhatsApp de confirmación/abono aprobado para cita #{$appointment->appointment_number}: " . $e->getMessage());
+                }
+            }
+        }
+
+        // 2. Detectar si el estado transitó a CANCELADO
+        if (
+            !$appointment->skipObserverCancelWhatsApp
+            && $appointment->wasChanged('status')
+            && $appointment->status === AppointmentStatus::CANCELLED
+        ) {
+            $originalStatus = $appointment->getOriginal('status');
+            if ($originalStatus !== AppointmentStatus::CANCELLED && $originalStatus !== AppointmentStatus::CANCELLED->value) {
+                try {
+                    $this->whatsAppService->sendAppointmentCancelled($appointment, $appointment->cancellation_reason);
+                } catch (\Throwable $e) {
+                    Log::warning("No se pudo enviar WhatsApp de cancelación para cita #{$appointment->appointment_number}: " . $e->getMessage());
+                }
             }
         }
 

@@ -1,18 +1,86 @@
-/* Custom micro-scrollbar for calendar columns */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+/* Contenedor y Layout SaaS en 2 Columnas */
+.salonesgo-container {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  width: 100%;
 }
 
-::-webkit-scrollbar-track {
+.salonesgo-grid-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 1024px) {
+  .salonesgo-grid-layout {
+    flex-direction: row;
+    gap: 24px;
+    align-items: flex-start;
+  }
+}
+
+/* Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
   border-radius: 9999px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.65);
+}
+
+/* Grilla Horaria Estilo Google Calendar */
+.gcal-wrapper {
+  user-select: none;
+}
+
+.gcal-time-axis-slot {
+  box-sizing: border-box;
+}
+
+.gcal-hour-grid-row {
+  box-sizing: border-box;
+}
+
+.gcal-event-card {
+  box-sizing: border-box;
+  animation: fadeIn 0.15s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Vista Mes: Tablas y Celdas */
+.salonesgo-month-table {
+  min-width: 650px;
+}
+
+.salonesgo-month-table td {
+  height: 110px;
+  vertical-align: top;
+}
+
+.salonesgo-event-pill {
+  transition: all 0.15s ease;
+}
+
+/* Sombras suaves */
+.card-shadow {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
 }

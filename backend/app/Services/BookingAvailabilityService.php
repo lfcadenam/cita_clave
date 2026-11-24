@@ -24,9 +24,15 @@ class BookingAvailabilityService
      * @param Service $service
      * @param Carbon|string $date
      * @param bool $strictAntiGaps
+     * @param int|null $customDurationMinutes
      * @return array
      */
-    public function getAvailableSlots(Service $service, Carbon|string $date, bool $strictAntiGaps = true): array
+    public function getAvailableSlots(
+        Service $service, 
+        Carbon|string $date, 
+        bool $strictAntiGaps = true, 
+        ?int $customDurationMinutes = null
+    ): array
     {
         $targetDate = is_string($date) ? Carbon::parse($date)->startOfDay() : $date->copy()->startOfDay();
 
@@ -137,7 +143,9 @@ class BookingAvailabilityService
             }
         }
 
-        $serviceDuration = (int) $service->duration_minutes;
+        $serviceDuration = ($customDurationMinutes && $customDurationMinutes > 0) 
+            ? (int) $customDurationMinutes 
+            : (int) $service->duration_minutes;
         $stepMinutes = $schedule->slot_interval_minutes ?: 15;
 
         // 3. Generate candidate slots evaluating free windows and flexible lunch shift

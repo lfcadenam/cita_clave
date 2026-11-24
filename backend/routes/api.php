@@ -1,13 +1,24 @@
 <?php
 
+use App\Http\Controllers\Api\v1\Admin\AppointmentAdminController;
+use App\Http\Controllers\Api\v1\Admin\BlockedSlotAdminController;
+use App\Http\Controllers\Api\v1\Admin\CalendarAdminController;
+use App\Http\Controllers\Api\v1\Admin\CustomerAdminController;
+use App\Http\Controllers\Api\v1\Admin\ServiceAdminController;
+use App\Http\Controllers\Api\v1\Admin\WaitlistAdminController;
+use App\Http\Controllers\Api\v1\Admin\WhatsAppAdminController;
+use App\Http\Controllers\Api\v1\Admin\WorkingScheduleAdminController;
 use App\Http\Controllers\Api\v1\AppointmentBookingController;
+use App\Http\Controllers\Api\v1\Auth\AuthController;
 use App\Http\Controllers\Api\v1\AvailabilityController;
 use App\Http\Controllers\Api\v1\IntegrationController;
 use App\Http\Controllers\Api\v1\MetaWhatsAppWebhookController;
 use App\Http\Controllers\Api\v1\PaymentController;
 use App\Http\Controllers\Api\v1\ServiceController;
+use App\Http\Controllers\Api\v1\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\Api\v1\TenantProfileController;
 use App\Http\Controllers\Api\v1\WaitlistController;
+use App\Http\Middleware\IdentifyTenantMiddleware;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -87,4 +98,83 @@ Route::prefix('v1')->group(function () {
         Route::post('/appointments/{appointmentNumber}/notified', [IntegrationController::class, 'markNotified']);
     });
 
+    // =========================================================================
+    // 4. AUTENTICACIÓN Y ADMINISTRACIÓN HEADLESS (Angular Admin SPA)
+    // =========================================================================
+    Route::prefix('auth')->group(function () {
+        Route::post('/login', [AuthController::class, 'login']);
+
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/me', [AuthController::class, 'me']);
+            Route::post('/logout', [AuthController::class, 'logout']);
+        });
+    });
+
+    Route::prefix('admin')->middleware(['auth:sanctum', IdentifyTenantMiddleware::class])->group(function () {
+        // Citas / Agenda
+        Route::get('/appointments', [AppointmentAdminController::class, 'index']);
+        Route::post('/appointments', [AppointmentAdminController::class, 'store']);
+        Route::get('/appointments/{id}', [AppointmentAdminController::class, 'show']);
+        Route::put('/appointments/{id}', [AppointmentAdminController::class, 'update']);
+        Route::patch('/appointments/{id}/status', [AppointmentAdminController::class, 'updateStatus']);
+        Route::post('/appointments/{id}/approve-nequi', [AppointmentAdminController::class, 'approveNequi']);
+        Route::post('/appointments/{id}/reject-nequi', [AppointmentAdminController::class, 'rejectNequi']);
+
+        // Calendario y Disponibilidad Administrativa
+        Route::get('/calendar/slots', [CalendarAdminController::class, 'slots']);
+        Route::get('/calendar/summary', [CalendarAdminController::class, 'summary']);
+
+        // Clientes (CRM)
+        Route::get('/customers', [CustomerAdminController::class, 'index']);
+        Route::post('/customers', [CustomerAdminController::class, 'store']);
+        Route::get('/customers/{id}', [CustomerAdminController::class, 'show']);
+        Route::put('/customers/{id}', [CustomerAdminController::class, 'update']);
+
+        // Servicios / Catálogo
+        Route::get('/services', [ServiceAdminController::class, 'index']);
+        Route::post('/services', [ServiceAdminController::class, 'store']);
+        Route::get('/services/{id}', [ServiceAdminController::class, 'show']);
+        Route::put('/services/{id}', [ServiceAdminController::class, 'update']);
+        Route::post('/services/{id}', [ServiceAdminController::class, 'update']);
+        Route::delete('/services/{id}', [ServiceAdminController::class, 'destroy']);
+
+        // Jornadas y Horarios de Trabajo
+        Route::get('/working-schedules', [WorkingScheduleAdminController::class, 'index']);
+        Route::put('/working-schedules/{id}', [WorkingScheduleAdminController::class, 'update']);
+        Route::post('/working-schedules/batch', [WorkingScheduleAdminController::class, 'batchUpdate']);
+
+        // Bloqueos de Horario (Almuerzo / Vacaciones)
+        Route::get('/blocked-slots', [BlockedSlotAdminController::class, 'index']);
+        Route::post('/blocked-slots', [BlockedSlotAdminController::class, 'store']);
+        Route::delete('/blocked-slots/{id}', [BlockedSlotAdminController::class, 'destroy']);
+
+        // Lista de Espera
+        Route::get('/waitlist', [WaitlistAdminController::class, 'index']);
+        Route::patch('/waitlist/{id}/status', [WaitlistAdminController::class, 'updateStatus']);
+        Route::delete('/waitlist/{id}', [WaitlistAdminController::class, 'destroy']);
+
+        // Canal WhatsApp (Meta Cloud API)
+        Route::get('/settings/whatsapp', [WhatsAppAdminController::class, 'getSettings']);
+        Route::get('/settings/whatsapp/status', [WhatsAppAdminController::class, 'checkStatus']);
+        Route::put('/settings/whatsapp', [WhatsAppAdminController::class, 'updateSettings']);
+        Route::post('/settings/whatsapp/register-pin', [WhatsAppAdminController::class, 'registerPin']);
+        Route::get('/settings/whatsapp/templates', [WhatsAppAdminController::class, 'syncTemplates']);
+        Route::post('/settings/whatsapp/test', [WhatsAppAdminController::class, 'sendTest']);
+    });
+
+    // =========================================================================
+    // 5. SUPER ADMINISTRADOR NUVEX (Multi-Tenant & Plataforma)
+    // =========================================================================
+    Route::prefix('super-admin')->middleware(['auth:sanctum'])->group(function () {
+        Route::get('/analytics', [SuperAdminController::class, 'analytics']);
+        Route::get('/tenants', [SuperAdminController::class, 'tenants']);
+        Route::post('/tenants', [SuperAdminController::class, 'createTenant']);
+        Route::put('/tenants/{id}', [SuperAdminController::class, 'updateTenant']);
+        Route::get('/users', [SuperAdminController::class, 'users']);
+        Route::post('/users', [SuperAdminController::class, 'createUser']);
+        Route::put('/users/{id}', [SuperAdminController::class, 'updateUser']);
+        Route::delete('/users/{id}', [SuperAdminController::class, 'deleteUser']);
+    });
+
 });
+

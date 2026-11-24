@@ -239,5 +239,45 @@ class WhatsAppNotificationFlowTest extends TestCase
             ->expectsOutputToContain('registrado y activado exitosamente')
             ->assertSuccessful();
     }
+
+    public function test_observer_dispatches_whatsapp_when_status_transitions_to_confirmed_and_cancelled(): void
+    {
+        config(['whatsapp.driver' => 'log']);
+        config(['mail.notifications_enabled' => false]); // Evita envíos reales de correo durante el test
+
+        $appointment = Appointment::create([
+            'tenant_id' => $this->tenant->id,
+            'service_id' => $this->service->id,
+            'client_name' => 'Marcela Gomez',
+            'client_phone' => '3145556677',
+            'client_email' => 'marcela@ejemplo.com',
+            'appointment_date' => now()->addDays(2)->toDateString(),
+            'start_time' => '11:00:00',
+            'end_time' => '12:00:00',
+            'total_amount' => 70000,
+            'deposit_amount' => 30000,
+            'deposit_paid' => 0,
+            'balance_due' => 70000,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+            'status' => AppointmentStatus::PENDING_VERIFICATION,
+        ]);
+
+        // Transición a CONFIRMED (Dispara observer: email + whatsApp sendDepositApproved)
+        $appointment->update([
+            'status' => AppointmentStatus::CONFIRMED,
+            'deposit_paid' => 30000,
+            'balance_due' => 40000,
+        ]);
+        $this->assertEquals(AppointmentStatus::CONFIRMED, $appointment->fresh()->status);
+
+        // Transición a CANCELLED (Dispara observer: whatsApp sendAppointmentCancelled)
+        $appointment->update([
+            'status' => AppointmentStatus::CANCELLED,
+            'cancellation_reason' => 'Motivos personales de la clienta',
+            'cancelled_at' => now(),
+        ]);
+        $this->assertEquals(AppointmentStatus::CANCELLED, $appointment->fresh()->status);
+        $this->assertEquals('Motivos personales de la clienta', $appointment->fresh()->cancellation_reason);
+    }
 }
 

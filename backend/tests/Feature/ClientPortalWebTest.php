@@ -27,7 +27,7 @@ class ClientPortalWebTest extends TestCase
 
         $response->assertSuccessful();
         $response->assertSee('Paola Aguilera');
-        $response->assertSee('Reserva tu Experiencia de Belleza');
+        $response->assertSee('Reserva tu Cita');
         $response->assertSee('Limpieza Facial Profunda');
         $response->assertSee('Extensiones de Pestanas');
     }

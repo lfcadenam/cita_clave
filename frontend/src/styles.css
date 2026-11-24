@@ -4,10 +4,36 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Nuvex UI Tokens - Pure Light Mode */
+  --nvl-primary-50: #f0fdf4;
+  --nvl-primary-100: #dcfce7;
+  --nvl-primary-500: #00C975;
+  --nvl-primary-600: #00b067;
+  --nvl-primary-700: #047857;
+  --nvl-canvas-bg: #F8FAFC;
+  --nvl-card-bg: #FFFFFF;
+  --nvl-text-primary: #0F172A;
+  --nvl-text-secondary: #334155;
+  --nvl-text-muted: #64748B;
+  --nvl-border-color: #E2E8F0;
+
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+
 @layer base {
   body {
-    @apply bg-[#FAF8F5] text-[#2D2327] font-sans antialiased selection:bg-[#8E4D5E] selection:text-white min-h-screen;
+    background-color: var(--nvl-canvas-bg, #F8FAFC);
+    color: var(--nvl-text-primary, #0F172A);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
   }
+}
+
+/* Nuvex Soft-Clay Card Shadows */
+.card-soft-shadow {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 20px 40px -10px rgba(0, 0, 0, 0.05);
 }
 
 /* Custom subtle scrollbar */
@@ -19,11 +45,11 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d4d4d8;
-  border-radius: 4px;
+  background: #cbd5e1;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1aa;
+  background: #94a3b8;
 }
 
 /* Hide scrollbars completely on touch / horizontal pills */
