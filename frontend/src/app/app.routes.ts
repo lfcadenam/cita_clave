@@ -19,6 +19,16 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'admin/labellenails',
+    redirectTo: 'admin/calendario',
+    pathMatch: 'full'
+  },
+  {
+    path: 'admin/labellenails/:sub',
+    redirectTo: 'admin/calendario',
+    pathMatch: 'full'
+  },
+  {
     path: 'admin/citas',
     redirectTo: 'admin/calendario',
     pathMatch: 'full'
@@ -27,6 +37,11 @@ export const routes: Routes = [
     path: 'admin/calendario',
     component: AppointmentsCalendarComponent,
     canActivate: [authGuard]
+  },
+  {
+    path: 'admin/:tenant',
+    redirectTo: 'admin/calendario',
+    pathMatch: 'full'
   },
   {
     path: '**',
