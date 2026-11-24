@@ -31,6 +31,7 @@ class AppointmentAdminController extends Controller
             'search' => 'nullable|string|max:100',
             'per_page' => 'nullable|integer|min:1|max:200',
             'all' => 'nullable|boolean',
+            'exclude_cancelled' => 'nullable|boolean',
         ]);
 
         $query = Appointment::query()
@@ -54,6 +55,8 @@ class AppointmentAdminController extends Controller
         if (! empty($validated['status'])) {
             $statuses = array_map('trim', explode(',', $validated['status']));
             $query->whereIn('status', $statuses);
+        } elseif ($request->boolean('exclude_cancelled', false)) {
+            $query->where('status', '!=', AppointmentStatus::CANCELLED->value);
         }
 
         // Filtro por servicio

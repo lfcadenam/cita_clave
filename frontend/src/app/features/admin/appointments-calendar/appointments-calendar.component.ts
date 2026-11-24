@@ -601,7 +601,7 @@ export class AppointmentsCalendarComponent implements OnInit {
     const startMonday = this.getMondayOfDate(firstDayOfMonth);
 
     const cells: CalendarMonthCell[] = [];
-    const allApts = this.filteredAppointments();
+    const allApts = this.filteredAppointments().filter(a => a.status !== 'CANCELLED');
 
     for (let i = 0; i < 42; i++) {
       const d = new Date(startMonday);
@@ -632,6 +632,9 @@ export class AppointmentsCalendarComponent implements OnInit {
 
     if (status !== 'all') {
       list = list.filter(a => a.status === status);
+    } else {
+      // Las citas canceladas nunca deben aparecer en el calendario ni en la vista general
+      list = list.filter(a => a.status !== 'CANCELLED');
     }
 
     if (svcId) {
@@ -652,8 +655,9 @@ export class AppointmentsCalendarComponent implements OnInit {
 
   statusCounts = computed(() => {
     const all = this.appointments();
+    const active = all.filter(a => a.status !== 'CANCELLED');
     return {
-      all: all.length,
+      all: active.length,
       confirmed: all.filter(a => a.status === 'CONFIRMED').length,
       pendingVerification: all.filter(a => a.status === 'PENDING_VERIFICATION').length,
       completed: all.filter(a => a.status === 'COMPLETED').length,
@@ -662,7 +666,7 @@ export class AppointmentsCalendarComponent implements OnInit {
   });
 
   recentOrUpcomingAppointments = computed(() => {
-    const list = [...this.appointments()];
+    const list = this.appointments().filter(a => a.status !== 'CANCELLED');
     list.sort((a, b) => (b.date + ' ' + b.start_time).localeCompare(a.date + ' ' + a.start_time));
     return list.slice(0, 6);
   });
@@ -735,6 +739,7 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.appointmentService.getAppointments({
       start_date: startDate,
       end_date: endDate,
+      exclude_cancelled: true,
       all: true
     }).subscribe({
       next: (res) => {
@@ -1734,17 +1739,18 @@ export class AppointmentsCalendarComponent implements OnInit {
   getAppointmentsForDateAndHour(dateStr: string, hourNum: number): AdminAppointment[] {
     return this.filteredAppointments().filter(a => {
       if (a.date !== dateStr) return false;
+      if (a.status === 'CANCELLED') return false;
       const startH = parseInt(a.start_time.split(':')[0], 10);
       return startH === hourNum;
     });
   }
 
   getAppointmentsForDate(dateStr: string): AdminAppointment[] {
-    return this.filteredAppointments().filter(a => a.date === dateStr);
+    return this.filteredAppointments().filter(a => a.date === dateStr && a.status !== 'CANCELLED');
   }
 
   getPositionedAppointmentsForDate(dateStr: string): PositionedAppointment[] {
-    const apts = this.filteredAppointments().filter(a => a.date === dateStr);
+    const apts = this.filteredAppointments().filter(a => a.date === dateStr && a.status !== 'CANCELLED');
     if (!apts.length) return [];
 
     // 1. Mapeo a objetos con métricas de tiempo y geometría vertical

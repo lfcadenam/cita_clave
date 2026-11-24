@@ -12,6 +12,7 @@ export interface AppointmentFilterParams {
   service_id?: number;
   search?: string;
   all?: boolean;
+  exclude_cancelled?: boolean;
   per_page?: number;
   page?: number;
 }
@@ -54,6 +55,7 @@ export class AppointmentAdminService {
     if (filters.service_id) params = params.set('service_id', filters.service_id.toString());
     if (filters.search) params = params.set('search', filters.search);
     if (filters.all) params = params.set('all', '1');
+    if (filters.exclude_cancelled) params = params.set('exclude_cancelled', '1');
     if (filters.per_page) params = params.set('per_page', filters.per_page.toString());
     if (filters.page) params = params.set('page', filters.page.toString());
 
