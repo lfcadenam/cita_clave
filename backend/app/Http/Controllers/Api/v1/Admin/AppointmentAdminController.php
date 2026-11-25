@@ -32,6 +32,7 @@ class AppointmentAdminController extends Controller
             'per_page' => 'nullable|integer|min:1|max:200',
             'all' => 'nullable|boolean',
             'exclude_cancelled' => 'nullable|boolean',
+            'order_dir' => 'nullable|string|in:asc,desc',
         ]);
 
         $query = Appointment::query()
@@ -74,9 +75,12 @@ class AppointmentAdminController extends Controller
             });
         }
 
-        // Ordenamiento natural de agenda
-        $query->orderBy('appointment_date', 'asc')
-              ->orderBy('start_time', 'asc');
+        // Ordenamiento: si es calendario (con fecha inicio), ascendente; si es listado tabular, descendente por defecto
+        $defaultOrder = (! empty($validated['start_date']) || ! empty($validated['date'])) ? 'asc' : 'desc';
+        $orderDir = $validated['order_dir'] ?? $defaultOrder;
+
+        $query->orderBy('appointment_date', $orderDir)
+              ->orderBy('start_time', $orderDir);
 
         if ($request->boolean('all', false)) {
             $appointments = $query->get();
@@ -89,7 +93,7 @@ class AppointmentAdminController extends Controller
             ]);
         }
 
-        $perPage = (int) ($validated['per_page'] ?? 50);
+        $perPage = (int) ($validated['per_page'] ?? 10);
         $paginated = $query->paginate($perPage);
 
         return response()->json([
@@ -414,9 +418,13 @@ class AppointmentAdminController extends Controller
 
         $appointment->save();
 
-        // Actualizar ficha de cliente si cambió teléfono o nombre
+        // Actualizar ficha de cliente si cambió teléfono o nombre sin duplicar registros
         try {
-            Customer::syncFromAppointment($appointment);
+            $customer = Customer::syncFromAppointment($appointment);
+            if ($customer && $appointment->customer_id !== $customer->id) {
+                $appointment->customer_id = $customer->id;
+                $appointment->saveQuietly();
+            }
         } catch (\Throwable $e) {}
 
         $appointment->load(['service', 'customer']);

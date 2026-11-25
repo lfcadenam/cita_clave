@@ -82,8 +82,8 @@ class WhatsAppNotificationService
             return false;
         }
 
-        $appointment->loadMissing(['tenant', 'service']);
-        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $appointment->loadMissing(['tenant', 'service', 'customer']);
+        $clientName = $appointment->getNotificationClientName();
         $serviceName = $appointment->service?->name ?? 'Servicio';
         $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
         $startTime = substr($appointment->start_time, 0, 5);
@@ -173,9 +173,12 @@ class WhatsAppNotificationService
             return false;
         }
 
-        $appointment->loadMissing(['tenant', 'service']);
+        $appointment->loadMissing(['tenant', 'service', 'customer']);
         $serviceName = $appointment->service?->name ?? 'Tratamiento Especializado';
-        $clientName = trim($appointment->client_name);
+        $clientNickname = $appointment->customer?->nickname;
+        $clientName = !empty($clientNickname)
+            ? trim($appointment->client_name) . " ({$clientNickname})"
+            : trim($appointment->client_name);
         $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM [de] YYYY');
         $startTime = substr($appointment->start_time, 0, 5);
         $totalFormatted = number_format($appointment->total_amount, 0, ',', '.');
@@ -239,10 +242,10 @@ class WhatsAppNotificationService
             return false;
         }
 
-        $appointment->loadMissing(['tenant', 'service']);
+        $appointment->loadMissing(['tenant', 'service', 'customer']);
         $salonName = $appointment->tenant?->name ?: 'Estudio Paola Aguilera';
         $salonCity = $appointment->tenant?->city ?: 'Bogotá';
-        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $clientName = $appointment->getNotificationClientName();
         $serviceName = $appointment->service?->name ?? 'Servicio';
         $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
         $startTime = substr($appointment->start_time, 0, 5);
@@ -287,8 +290,8 @@ class WhatsAppNotificationService
             return false;
         }
 
-        $appointment->loadMissing(['tenant', 'service']);
-        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $appointment->loadMissing(['tenant', 'service', 'customer']);
+        $clientName = $appointment->getNotificationClientName();
         $serviceName = $appointment->service?->name ?? 'Servicio';
         $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
 
@@ -324,8 +327,8 @@ class WhatsAppNotificationService
             return false;
         }
 
-        $appointment->loadMissing(['tenant', 'service']);
-        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $appointment->loadMissing(['tenant', 'service', 'customer']);
+        $clientName = $appointment->getNotificationClientName();
         $serviceName = $appointment->service?->name ?? 'Servicio';
         $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
         $startTime = substr($appointment->start_time, 0, 5);
@@ -364,8 +367,8 @@ class WhatsAppNotificationService
             return false;
         }
 
-        $appointment->loadMissing(['tenant', 'service']);
-        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $appointment->loadMissing(['tenant', 'service', 'customer']);
+        $clientName = $appointment->getNotificationClientName();
         $serviceName = $appointment->service?->name ?? 'Servicio';
         $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
         $startTime = substr($appointment->start_time, 0, 5);
@@ -409,9 +412,9 @@ class WhatsAppNotificationService
             return false;
         }
 
-        $appointment->loadMissing(['tenant', 'service']);
+        $appointment->loadMissing(['tenant', 'service', 'customer']);
         $salonName = $appointment->tenant?->name ?: 'Paola Aguilera Belleza & Estética';
-        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $clientName = $appointment->getNotificationClientName();
         $serviceName = $appointment->service?->name ?? 'Servicio';
         $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
         $startTime = substr($appointment->start_time, 0, 5);
@@ -465,10 +468,10 @@ class WhatsAppNotificationService
             return false;
         }
 
-        $appointment->loadMissing(['tenant', 'service']);
+        $appointment->loadMissing(['tenant', 'service', 'customer']);
         $salonName = $appointment->tenant?->name ?: 'Estudio Paola Aguilera';
         $salonCity = $appointment->tenant?->city ?: 'Bogotá';
-        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $clientName = $appointment->getNotificationClientName();
         $serviceName = $appointment->service?->name ?? 'Servicio';
         $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
         $startTime = substr($appointment->start_time, 0, 5);
@@ -504,9 +507,9 @@ class WhatsAppNotificationService
      */
     public function sendAttendanceConfirmedNotification(Appointment $appointment): bool
     {
-        $appointment->loadMissing(['tenant', 'service']);
+        $appointment->loadMissing(['tenant', 'service', 'customer']);
         $salonName = $appointment->tenant?->name ?: 'La Belle Nails Bogotá';
-        $clientName = explode(' ', trim($appointment->client_name))[0];
+        $clientName = $appointment->getNotificationClientName();
         $serviceName = $appointment->service?->name ?? 'Servicio';
         $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
         $startTime = substr($appointment->start_time, 0, 5);
@@ -586,9 +589,9 @@ class WhatsAppNotificationService
                 }
 
                 // Estrategia 2: Fallback oficial a la plantilla aprobada en Meta para producción (confirmacion_cita)
-                $appointment->loadMissing('service');
+                $appointment->loadMissing(['service', 'customer']);
                 $apptNum = (string) $appointment->appointment_number;
-                $clientName = explode(' ', trim((string) ($appointment->client_name ?: 'Clienta')))[0];
+                $clientName = $appointment->getNotificationClientName();
                 $serviceName = $appointment->service?->name ?? 'Servicio';
                 $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM') . ' a las ' . substr((string) $appointment->start_time, 0, 5);
                 $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");

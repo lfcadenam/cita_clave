@@ -20,7 +20,7 @@ import {
   AdminSlot, 
   AdminSlotsResponse 
 } from '../../../core/models/admin-appointment.models';
-import { AdminCustomer } from '../../../core/models/admin-customer.models';
+import { AdminCustomer, CustomerAppointmentHistoryItem } from '../../../core/models/admin-customer.models';
 import { WorkingSchedule, BlockedSlot } from '../../../core/models/admin-schedule.models';
 import { WaitlistItem } from '../../../core/models/admin-waitlist.models';
 import { 
@@ -65,6 +65,13 @@ export interface PositionedAppointment {
   isCompact: boolean;
   isMicro: boolean;
   statusClass: string;
+}
+
+export interface PositionedBlockedSlot {
+  slot: BlockedSlot;
+  topPx: number;
+  heightPx: number;
+  timeRange: string;
 }
 
 export type AdminSection = 
@@ -194,6 +201,16 @@ export class AppointmentsCalendarComponent implements OnInit {
   filterStatus = signal<string>('all');
   selectedServiceFilter = signal<number | null>(null);
   searchQuery = signal<string>('');
+
+  // Estado y Paginación para Tabla de Gestión de Citas y Reservas
+  tableAppointments = signal<AdminAppointment[]>([]);
+  tableCitasPage = signal<number>(1);
+  tableCitasPerPage = signal<number>(10);
+  tableCitasTotalPages = signal<number>(1);
+  tableCitasTotalItems = signal<number>(0);
+  tableCitasStatusFilter = signal<string>('all');
+  tableCitasSearch = signal<string>('');
+  isLoadingTableCitas = signal<boolean>(false);
 
   // Resumen / KPIs
   kpis = signal<CalendarKPIs>({
@@ -470,12 +487,37 @@ export class AppointmentsCalendarComponent implements OnInit {
   crmSearch = signal<string>('');
   showCustomerModal = signal<boolean>(false);
   editingCustomer = signal<AdminCustomer | null>(null);
-  customerForm = {
+  isSavingCustomer = signal<boolean>(false);
+  customerFormError = signal<string | null>(null);
+
+  // Modal para Eliminar / Desactivar clienta
+  showDeleteCustomerModal = signal<boolean>(false);
+  customerToDelete = signal<AdminCustomer | null>(null);
+  isDeletingCustomer = signal<boolean>(false);
+
+  customerForm: {
+    name: string;
+    nickname: string;
+    phone: string;
+    email: string;
+    notes: string;
+    is_legacy?: boolean;
+    is_active?: boolean;
+  } = {
     name: '',
+    nickname: '',
     phone: '',
     email: '',
-    notes: ''
+    notes: '',
+    is_legacy: false,
+    is_active: true
   };
+
+  // Modal de Citas Agendadas por Clienta (Historial CRM)
+  showCustomerAppointmentsModal = signal<boolean>(false);
+  selectedCustomerForAppointments = signal<AdminCustomer | null>(null);
+  customerAppointmentsList = signal<CustomerAppointmentHistoryItem[]>([]);
+  isLoadingCustomerAppointments = signal<boolean>(false);
 
   // =========================================================================
   // ESTADO Y GESTIÓN PARA HORARIOS & BLOQUEOS
@@ -690,6 +732,8 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.loadCatalogServices(1);
     this.loadCrmCustomers(1);
     this.loadAppointmentsForCurrentRange();
+    this.loadBlockedSlots();
+    this.loadTableAppointments(1);
     this.loadDailySummary();
   }
 
@@ -702,9 +746,10 @@ export class AppointmentsCalendarComponent implements OnInit {
 
     if (section === 'escritorio' || section === 'calendario') {
       this.loadAppointmentsForCurrentRange();
+      this.loadBlockedSlots();
       this.loadDailySummary();
     } else if (section === 'citas') {
-      this.loadAppointmentsForCurrentRange();
+      this.loadTableAppointments(1);
     } else if (section === 'servicios') {
       this.loadCatalogServices();
     } else if (section === 'clientes') {
@@ -722,11 +767,63 @@ export class AppointmentsCalendarComponent implements OnInit {
   }
 
   // =========================================================================
+  // CARGA DE DATOS PARA GESTIÓN DE CITAS Y RESERVAS (TABLA COMPLETA PAGINADA)
+  // =========================================================================
+  loadTableAppointments(page: number = 1): void {
+    this.isLoadingTableCitas.set(true);
+    const statusVal = this.tableCitasStatusFilter();
+
+    this.appointmentService.getAppointments({
+      page,
+      per_page: this.tableCitasPerPage(),
+      status: statusVal !== 'all' ? statusVal : undefined,
+      search: this.tableCitasSearch().trim() || undefined,
+      order_dir: 'desc'
+    }).subscribe({
+      next: (res) => {
+        this.tableAppointments.set(res.data || []);
+        if (res.meta) {
+          this.tableCitasPage.set(res.meta.current_page || page);
+          this.tableCitasTotalPages.set(res.meta.last_page || 1);
+          this.tableCitasTotalItems.set(res.meta.total || res.data?.length || 0);
+        }
+        this.isLoadingTableCitas.set(false);
+      },
+      error: (err) => {
+        console.error('Error al cargar tabla completa de citas:', err);
+        this.isLoadingTableCitas.set(false);
+      }
+    });
+  }
+
+  onTableSearchChange(query: string): void {
+    this.tableCitasSearch.set(query);
+    this.loadTableAppointments(1);
+  }
+
+  setTableStatusFilter(status: string): void {
+    this.tableCitasStatusFilter.set(status);
+    this.loadTableAppointments(1);
+  }
+
+  setTableCitasPage(page: number): void {
+    if (page >= 1 && page <= this.tableCitasTotalPages() && page !== this.tableCitasPage()) {
+      this.loadTableAppointments(page);
+    }
+  }
+
+  setTableCitasPerPage(perPage: number): void {
+    this.tableCitasPerPage.set(perPage);
+    this.loadTableAppointments(1);
+  }
+
+  // =========================================================================
   // CARGA DE DATOS DESDE LA API REST (CALENDARIO)
   // =========================================================================
 
   loadAppointmentsForCurrentRange(): void {
     this.isLoading.set(true);
+    this.loadBlockedSlots();
     let startDate: string;
     let endDate: string;
 
@@ -986,46 +1083,153 @@ export class AppointmentsCalendarComponent implements OnInit {
 
   openCreateCustomerModal(): void {
     this.editingCustomer.set(null);
+    this.customerFormError.set(null);
     this.customerForm = {
       name: '',
+      nickname: '',
       phone: '',
       email: '',
-      notes: ''
+      notes: '',
+      is_legacy: false,
+      is_active: true
     };
     this.showCustomerModal.set(true);
   }
 
   openEditCustomerModal(cust: AdminCustomer): void {
     this.editingCustomer.set(cust);
+    this.customerFormError.set(null);
     this.customerForm = {
       name: cust.name,
+      nickname: cust.nickname || '',
       phone: cust.phone,
       email: cust.email || '',
-      notes: cust.notes || ''
+      notes: cust.notes || '',
+      is_legacy: !!cust.is_legacy,
+      is_active: cust.is_active !== false
     };
     this.showCustomerModal.set(true);
   }
 
+  closeCustomerModal(): void {
+    this.showCustomerModal.set(false);
+    this.editingCustomer.set(null);
+    this.customerFormError.set(null);
+  }
+
   saveCustomer(): void {
-    if (!this.customerForm.name.trim() || !this.customerForm.phone.trim()) return;
+    if (!this.customerForm.name.trim() || !this.customerForm.phone.trim()) {
+      this.customerFormError.set('El nombre y el celular de la clienta son campos obligatorios.');
+      return;
+    }
+
+    this.isSavingCustomer.set(true);
+    this.customerFormError.set(null);
+
+    const payload = {
+      name: this.customerForm.name.trim(),
+      nickname: this.customerForm.nickname?.trim() || null,
+      phone: this.customerForm.phone.trim(),
+      email: this.customerForm.email?.trim() || null,
+      notes: this.customerForm.notes?.trim() || null,
+      is_legacy: this.customerForm.is_legacy,
+      is_active: this.customerForm.is_active
+    };
 
     if (this.editingCustomer()) {
-      this.customerService.updateCustomer(this.editingCustomer()!.id, this.customerForm).subscribe({
+      this.customerService.updateCustomer(this.editingCustomer()!.id, payload).subscribe({
         next: () => {
-          this.showCustomerModal.set(false);
+          this.isSavingCustomer.set(false);
+          this.closeCustomerModal();
           this.loadCrmCustomers(this.crmPage());
         },
-        error: (err) => console.error('Error al actualizar clienta:', err)
+        error: (err) => {
+          this.isSavingCustomer.set(false);
+          const msg = err.error?.message || 'Error al actualizar los datos de la clienta.';
+          this.customerFormError.set(msg);
+          console.error('Error al actualizar clienta:', err);
+        }
       });
     } else {
-      this.customerService.createCustomer(this.customerForm).subscribe({
+      this.customerService.createCustomer(payload).subscribe({
         next: () => {
-          this.showCustomerModal.set(false);
+          this.isSavingCustomer.set(false);
+          this.closeCustomerModal();
           this.loadCrmCustomers(1);
         },
-        error: (err) => console.error('Error al registrar clienta:', err)
+        error: (err) => {
+          this.isSavingCustomer.set(false);
+          const msg = err.error?.message || 'Error al registrar la nueva clienta.';
+          this.customerFormError.set(msg);
+          console.error('Error al registrar clienta:', err);
+        }
       });
     }
+  }
+
+  openDeleteCustomerConfirm(cust: AdminCustomer): void {
+    this.customerToDelete.set(cust);
+    this.showDeleteCustomerModal.set(true);
+  }
+
+  closeDeleteCustomerConfirm(): void {
+    this.showDeleteCustomerModal.set(false);
+    this.customerToDelete.set(null);
+  }
+
+  confirmDeleteOrDeactivateCustomer(): void {
+    const cust = this.customerToDelete();
+    if (!cust) return;
+
+    this.isDeletingCustomer.set(true);
+    this.customerService.deleteCustomer(cust.id).subscribe({
+      next: () => {
+        this.isDeletingCustomer.set(false);
+        this.closeDeleteCustomerConfirm();
+        this.loadCrmCustomers(this.crmPage());
+      },
+      error: (err) => {
+        this.isDeletingCustomer.set(false);
+        console.error('Error al eliminar o desactivar clienta:', err);
+      }
+    });
+  }
+
+  toggleCustomerActive(cust: AdminCustomer): void {
+    this.customerService.toggleActive(cust.id).subscribe({
+      next: () => {
+        this.loadCrmCustomers(this.crmPage());
+      },
+      error: (err) => {
+        console.error('Error al cambiar estado activo/inactivo de la clienta:', err);
+      }
+    });
+  }
+
+  openCustomerAppointmentsModal(customer: AdminCustomer): void {
+    this.selectedCustomerForAppointments.set(customer);
+    this.customerAppointmentsList.set([]);
+    this.isLoadingCustomerAppointments.set(true);
+    this.showCustomerAppointmentsModal.set(true);
+
+    this.customerService.getCustomer(customer.id).subscribe({
+      next: (fullCustomer) => {
+        this.selectedCustomerForAppointments.set(fullCustomer);
+        this.customerAppointmentsList.set(fullCustomer.appointments || []);
+        this.isLoadingCustomerAppointments.set(false);
+      },
+      error: (err) => {
+        console.error('Error al cargar historial de citas de la clienta:', err);
+        this.isLoadingCustomerAppointments.set(false);
+      }
+    });
+  }
+
+  closeCustomerAppointmentsModal(): void {
+    this.showCustomerAppointmentsModal.set(false);
+    this.selectedCustomerForAppointments.set(null);
+    this.customerAppointmentsList.set([]);
+    this.isLoadingCustomerAppointments.set(false);
   }
 
   // =========================================================================
@@ -1059,14 +1263,18 @@ export class AppointmentsCalendarComponent implements OnInit {
     });
   }
 
-  openCreateBlockModal(): void {
+  openCreateBlockModal(defaultDate?: string, defaultHour?: string): void {
+    const startTime = defaultHour ? `${defaultHour}:00` : '13:00';
+    const endH = defaultHour ? (parseInt(defaultHour, 10) + 1).toString().padStart(2, '0') : '14';
+    const endTime = `${endH}:00`;
+
     this.blockForm = {
-      title: 'Almuerzo / Pausa Activa',
-      blocked_date: '',
-      start_time: '13:00',
-      end_time: '14:00',
-      is_recurring: true,
-      reason: 'Pausa para almuerzo'
+      title: 'Pausa / Bloqueo de Horario',
+      blocked_date: defaultDate || this.selectedDateStr() || '',
+      start_time: startTime,
+      end_time: endTime,
+      is_recurring: !defaultDate,
+      reason: 'Horario reservado / no disponible'
     };
     this.showBlockModal.set(true);
   }
@@ -1084,6 +1292,7 @@ export class AppointmentsCalendarComponent implements OnInit {
       next: () => {
         this.showBlockModal.set(false);
         this.loadBlockedSlots();
+        this.loadAppointmentsForCurrentRange();
       },
       error: (err) => console.error('Error al crear bloqueo:', err)
     });
@@ -1092,7 +1301,10 @@ export class AppointmentsCalendarComponent implements OnInit {
   deleteBlockedSlot(id: number): void {
     if (!confirm('¿Deseas eliminar este bloqueo de horario?')) return;
     this.scheduleService.deleteBlockedSlot(id).subscribe({
-      next: () => this.loadBlockedSlots(),
+      next: () => {
+        this.loadBlockedSlots();
+        this.loadAppointmentsForCurrentRange();
+      },
       error: (err) => console.error('Error al eliminar bloqueo:', err)
     });
   }
@@ -1380,6 +1592,7 @@ export class AppointmentsCalendarComponent implements OnInit {
       next: () => {
         this.loadAppointmentsForCurrentRange();
         this.loadDailySummary();
+        this.loadTableAppointments(this.tableCitasPage());
       },
       error: (err) => {
         console.error('Error al aprobar Nequi:', err);
@@ -1393,6 +1606,7 @@ export class AppointmentsCalendarComponent implements OnInit {
       next: () => {
         this.loadAppointmentsForCurrentRange();
         this.loadDailySummary();
+        this.loadTableAppointments(this.tableCitasPage());
       },
       error: (err) => console.error('Error al actualizar estado:', err)
     });
@@ -1571,6 +1785,7 @@ export class AppointmentsCalendarComponent implements OnInit {
         this.selectedAppointment.set(updatedApt);
         this.loadAppointmentsForCurrentRange();
         this.loadDailySummary();
+        this.loadTableAppointments(this.tableCitasPage());
       },
       error: (err) => {
         this.isSavingAppointmentEdit.set(false);
@@ -1850,6 +2065,7 @@ export class AppointmentsCalendarComponent implements OnInit {
         this.closeNewAppointmentModal();
         this.loadAppointmentsForCurrentRange();
         this.loadDailySummary();
+        this.loadTableAppointments(1);
       },
       error: (err) => {
         this.isSavingAppointment.set(false);
@@ -2006,6 +2222,69 @@ export class AppointmentsCalendarComponent implements OnInit {
     return result;
   }
 
+  // =========================================================================
+  // BLOQUEOS DE HORARIO EN EL CALENDARIO (Almuerzos, Pausas y Bloqueos Puntuales)
+  // =========================================================================
+
+  getBlockedSlotsForDate(dateStr: string): BlockedSlot[] {
+    return this.blockedSlots().filter(slot => {
+      if (slot.is_recurring) return true;
+      if (!slot.blocked_date) return false;
+      const slotDate = slot.blocked_date.includes('T') ? slot.blocked_date.split('T')[0] : slot.blocked_date;
+      return slotDate === dateStr;
+    });
+  }
+
+  getPositionedBlockedSlotsForDate(dateStr: string): PositionedBlockedSlot[] {
+    const slots = this.getBlockedSlotsForDate(dateStr);
+    if (!slots.length) return [];
+
+    return slots.map(slot => {
+      const [startH, startM] = (slot.start_time || '13:00').split(':').map(n => parseInt(n, 10) || 0);
+      const [endH, endM] = (slot.end_time || '14:00').split(':').map(n => parseInt(n, 10) || 0);
+
+      const clampedStartH = Math.max(this.baseHour, startH);
+      const startMinutes = (clampedStartH - this.baseHour) * 60 + startM;
+      const endMinutes = (endH - this.baseHour) * 60 + endM;
+      const duration = Math.max(15, endMinutes - startMinutes);
+
+      const topPx = Math.max(0, (startMinutes / 60) * this.slotHeightPx);
+      const heightPx = Math.max(26, (duration / 60) * this.slotHeightPx);
+
+      const startFormatted = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
+      const endFormatted = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+
+      return {
+        slot,
+        topPx,
+        heightPx,
+        timeRange: `${startFormatted} – ${endFormatted}`
+      };
+    });
+  }
+
+  getBlockedSlotsForDateAndHour(dateStr: string, hourNum: number): BlockedSlot[] {
+    const slots = this.getBlockedSlotsForDate(dateStr);
+    return slots.filter(slot => {
+      const [startH] = (slot.start_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+      const [endH, endM] = (slot.end_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+
+      if (endM > 0) {
+        return hourNum >= startH && hourNum <= endH;
+      }
+      return hourNum >= startH && hourNum < endH;
+    });
+  }
+
+  onBlockedSlotClicked(slot: BlockedSlot, event: MouseEvent): void {
+    event.stopPropagation();
+    const typeStr = slot.is_recurring ? 'Recurrente Diario' : `Fecha puntual (${slot.blocked_date})`;
+    const range = slot.time_range || `${slot.start_time?.substring(0, 5)} – ${slot.end_time?.substring(0, 5)}`;
+    if (confirm(`🔒 Horario Bloqueado:\n"${slot.title}"\nHorario: ${range}\nTipo: ${typeStr}\n${slot.reason ? 'Motivo: ' + slot.reason + '\n' : ''}\n¿Deseas eliminar este bloqueo para habilitar el horario en el calendario?`)) {
+      this.deleteBlockedSlot(slot.id);
+    }
+  }
+
   calculateEventTop(startTime: string): number {
     const [hStr, mStr] = startTime.split(':');
     const h = parseInt(hStr, 10);
@@ -2043,7 +2322,7 @@ export class AppointmentsCalendarComponent implements OnInit {
     }).format(value);
   }
 
-  getStatusBadgeClass(status: AppointmentStatus): string {
+  getStatusBadgeClass(status: AppointmentStatus | string): string {
     switch (status) {
       case 'CONFIRMED':
         return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
@@ -2058,7 +2337,7 @@ export class AppointmentsCalendarComponent implements OnInit {
     }
   }
 
-  getStatusLabel(status: AppointmentStatus): string {
+  getStatusLabel(status: AppointmentStatus | string): string {
     switch (status) {
       case 'CONFIRMED':
         return 'Confirmada';

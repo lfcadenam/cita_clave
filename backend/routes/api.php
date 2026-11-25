@@ -129,6 +129,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/customers', [CustomerAdminController::class, 'store']);
         Route::get('/customers/{id}', [CustomerAdminController::class, 'show']);
         Route::put('/customers/{id}', [CustomerAdminController::class, 'update']);
+        Route::delete('/customers/{id}', [CustomerAdminController::class, 'destroy']);
+        Route::post('/customers/{id}/toggle-active', [CustomerAdminController::class, 'toggleActive']);
 
         // Servicios / Catálogo
         Route::get('/services', [ServiceAdminController::class, 'index']);

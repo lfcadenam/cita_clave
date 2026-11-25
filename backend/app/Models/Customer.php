@@ -17,9 +17,11 @@ class Customer extends Model
     protected $fillable = [
         'tenant_id',
         'name',
+        'nickname',
         'phone',
         'email',
         'is_legacy',
+        'is_active',
         'notes',
         'registered_at',
     ];
@@ -28,6 +30,7 @@ class Customer extends Model
     {
         return [
             'is_legacy' => 'boolean',
+            'is_active' => 'boolean',
             'registered_at' => 'datetime',
         ];
     }
@@ -49,6 +52,10 @@ class Customer extends Model
             if ($customer->isDirty('phone') && !empty($customer->phone)) {
                 $customer->phone = preg_replace('/[^0-9]/', '', (string) $customer->phone);
             }
+        });
+
+        static::saved(function ($customer) {
+            $customer->linkMatchingAppointments();
         });
     }
 
@@ -87,12 +94,37 @@ class Customer extends Model
         return $this->appointments()->count() >= 2;
     }
 
+    public function getAppointmentsCountAttribute(): int
+    {
+        $direct = $this->appointments()->count();
+        if ($direct > 0) {
+            return $direct;
+        }
+
+        $clean = $this->getCleanPhone();
+        $phones = array_filter([$clean, (string) $this->phone]);
+        if (strlen($clean) === 10 && str_starts_with($clean, '3')) {
+            $phones[] = '57' . $clean;
+        } elseif (strlen($clean) === 12 && str_starts_with($clean, '57')) {
+            $phones[] = substr($clean, 2);
+        }
+
+        return Appointment::query()
+            ->where(function ($q) use ($phones) {
+                $q->where('customer_id', $this->id);
+                if (! empty($phones)) {
+                    $q->orWhereIn('client_phone', $phones);
+                }
+            })
+            ->count();
+    }
+
     /**
      * Retorna la configuración de badge de fidelidad.
      */
     public function getLoyaltyBadge(): array
     {
-        $count = $this->appointments()->count();
+        $count = $this->appointments_count;
 
         // Clienta antigua histórica sin citas en el nuevo sistema
         if ($this->is_legacy && $count === 0) {
@@ -137,9 +169,29 @@ class Customer extends Model
      */
     public function getCompletedAppointmentsCount(): int
     {
-        return $this->appointments()
+        $count = $this->appointments()
             ->whereIn('status', [AppointmentStatus::COMPLETED, AppointmentStatus::CONFIRMED])
             ->count();
+
+        if ($count === 0) {
+            $clean = $this->getCleanPhone();
+            $phones = array_filter([$clean, (string) $this->phone]);
+            if (strlen($clean) === 10 && str_starts_with($clean, '3')) {
+                $phones[] = '57' . $clean;
+            } elseif (strlen($clean) === 12 && str_starts_with($clean, '57')) {
+                $phones[] = substr($clean, 2);
+            }
+
+            $count = Appointment::query()
+                ->where(function ($q) use ($phones) {
+                    $q->where('customer_id', $this->id)
+                      ->orWhereIn('client_phone', $phones);
+                })
+                ->whereIn('status', [AppointmentStatus::COMPLETED, AppointmentStatus::CONFIRMED])
+                ->count();
+        }
+
+        return $count;
     }
 
     /**
@@ -147,9 +199,29 @@ class Customer extends Model
      */
     public function getTotalSpentAttribute(): float
     {
-        return (float) $this->appointments()
+        $spent = (float) $this->appointments()
             ->whereIn('status', [AppointmentStatus::COMPLETED, AppointmentStatus::CONFIRMED])
             ->sum('total_amount');
+
+        if ($spent == 0) {
+            $clean = $this->getCleanPhone();
+            $phones = array_filter([$clean, (string) $this->phone]);
+            if (strlen($clean) === 10 && str_starts_with($clean, '3')) {
+                $phones[] = '57' . $clean;
+            } elseif (strlen($clean) === 12 && str_starts_with($clean, '57')) {
+                $phones[] = substr($clean, 2);
+            }
+
+            $spent = (float) Appointment::query()
+                ->where(function ($q) use ($phones) {
+                    $q->where('customer_id', $this->id)
+                      ->orWhereIn('client_phone', $phones);
+                })
+                ->whereIn('status', [AppointmentStatus::COMPLETED, AppointmentStatus::CONFIRMED])
+                ->sum('total_amount');
+        }
+
+        return $spent;
     }
 
     /**
@@ -173,6 +245,18 @@ class Customer extends Model
     public function getLastAppointment(): ?Appointment
     {
         return $this->appointments()->first();
+    }
+
+    /**
+     * Retorna el apodo para notificaciones de WhatsApp o el primer nombre si no tiene apodo.
+     */
+    public function getNotificationName(): string
+    {
+        if (! empty($this->nickname)) {
+            return trim($this->nickname);
+        }
+
+        return explode(' ', trim((string) ($this->name ?: 'Clienta')))[0];
     }
 
     /**
@@ -255,12 +339,68 @@ class Customer extends Model
     }
 
     /**
+     * Vincula citas existentes que tengan este número telefónico pero tengan customer_id vacío.
+     */
+    public function linkMatchingAppointments(): void
+    {
+        $clean = $this->getCleanPhone();
+        if (empty($clean)) {
+            return;
+        }
+
+        $phones = [$clean, (string) $this->phone];
+        if (strlen($clean) === 10 && str_starts_with($clean, '3')) {
+            $phones[] = '57' . $clean;
+        } elseif (strlen($clean) === 12 && str_starts_with($clean, '57')) {
+            $phones[] = substr($clean, 2);
+        }
+
+        Appointment::query()
+            ->where(function ($q) {
+                $q->whereNull('customer_id')
+                  ->orWhere('customer_id', 0);
+            })
+            ->whereIn('client_phone', $phones)
+            ->update(['customer_id' => $this->id]);
+    }
+
+    /**
      * Sincronizar o crear cliente a partir de datos de una cita.
+     * Evita estrictamente la duplicación y preserva el nivel de fidelidad (is_legacy / citas acumuladas).
      */
     public static function syncFromAppointment(Appointment $appointment): self
     {
         $cleanPhone = preg_replace('/[^0-9]/', '', (string) $appointment->client_phone);
 
+        // 1. Si la cita ya tiene customer_id explícito, buscar la ficha de esa clienta
+        if (! empty($appointment->customer_id)) {
+            $customer = static::where('tenant_id', $appointment->tenant_id)->find($appointment->customer_id);
+            if ($customer) {
+                $updated = false;
+                // Si el teléfono de la cita cambió y es válido, actualizarlo sin crear duplicado
+                if (! empty($cleanPhone) && $customer->phone !== $cleanPhone) {
+                    $customer->phone = $cleanPhone;
+                    $updated = true;
+                }
+                // Si el nombre de la cita es más completo, enriquecerlo
+                if (! empty($appointment->client_name) && (empty($customer->name) || $customer->name === 'Clienta')) {
+                    $customer->name = trim($appointment->client_name);
+                    $updated = true;
+                }
+                // Si el correo está disponible, guardarlo
+                if (! empty($appointment->client_email) && empty($customer->email)) {
+                    $customer->email = trim($appointment->client_email);
+                    $updated = true;
+                }
+                if ($updated) {
+                    $customer->save();
+                }
+
+                return $customer;
+            }
+        }
+
+        // 2. Si no tiene customer_id, buscar por coincidencia de teléfono normalizado
         $searchPhones = [$cleanPhone];
         if (strlen($cleanPhone) === 10 && str_starts_with($cleanPhone, '3')) {
             $searchPhones[] = '57' . $cleanPhone;
@@ -283,16 +423,18 @@ class Customer extends Model
             $customer->name = $appointment->client_name ?: 'Clienta';
             $customer->email = $appointment->client_email;
             $customer->registered_at = $appointment->appointment_date ?? now();
+            $customer->is_legacy = false;
+            $customer->is_active = true;
             $customer->save();
         } else {
             // Actualizar nombre o email si antes estaba vacío
             $updated = false;
-            if (empty($customer->name) && !empty($appointment->client_name)) {
-                $customer->name = $appointment->client_name;
+            if ((empty($customer->name) || $customer->name === 'Clienta') && ! empty($appointment->client_name)) {
+                $customer->name = trim($appointment->client_name);
                 $updated = true;
             }
-            if (empty($customer->email) && !empty($appointment->client_email)) {
-                $customer->email = $appointment->client_email;
+            if (empty($customer->email) && ! empty($appointment->client_email)) {
+                $customer->email = trim($appointment->client_email);
                 $updated = true;
             }
             if ($updated) {

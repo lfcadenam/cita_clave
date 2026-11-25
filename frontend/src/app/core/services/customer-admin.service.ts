@@ -83,4 +83,18 @@ export class CustomerAdminService {
       map(res => res.data)
     );
   }
+
+  /**
+   * Eliminar o desactivar clienta según tenga citas asociadas.
+   */
+  deleteCustomer(id: number): Observable<{ success: boolean; action: 'deactivated' | 'deleted'; message: string; data?: AdminCustomer }> {
+    return this.http.delete<{ success: boolean; action: 'deactivated' | 'deleted'; message: string; data?: AdminCustomer }>(`${this.apiUrl}/${id}`);
+  }
+
+  /**
+   * Alternar estado activo / inactivo de la clienta.
+   */
+  toggleActive(id: number): Observable<{ success: boolean; message: string; data: AdminCustomer }> {
+    return this.http.post<{ success: boolean; message: string; data: AdminCustomer }>(`${this.apiUrl}/${id}/toggle-active`, {});
+  }
 }

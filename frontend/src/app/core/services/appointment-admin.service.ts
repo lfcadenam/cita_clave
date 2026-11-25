@@ -15,6 +15,7 @@ export interface AppointmentFilterParams {
   exclude_cancelled?: boolean;
   per_page?: number;
   page?: number;
+  order_dir?: 'asc' | 'desc';
 }
 
 export interface CreateAppointmentPayload {
@@ -58,6 +59,7 @@ export class AppointmentAdminService {
     if (filters.exclude_cancelled) params = params.set('exclude_cancelled', '1');
     if (filters.per_page) params = params.set('per_page', filters.per_page.toString());
     if (filters.page) params = params.set('page', filters.page.toString());
+    if (filters.order_dir) params = params.set('order_dir', filters.order_dir);
 
     return this.http.get<{ success: boolean; data: AdminAppointment[]; meta?: any }>(this.apiUrl, { params }).pipe(
       map(res => ({

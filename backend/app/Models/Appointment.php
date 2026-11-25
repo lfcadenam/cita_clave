@@ -312,4 +312,16 @@ class Appointment extends Model
 
         return false;
     }
+
+    /**
+     * Retorna el apodo preferido de la clienta (si está registrado en su ficha CRM) o su primer nombre para notificaciones.
+     */
+    public function getNotificationClientName(): string
+    {
+        if ($this->customer && ! empty($this->customer->nickname)) {
+            return trim($this->customer->nickname);
+        }
+
+        return explode(' ', trim((string) ($this->client_name ?: 'Clienta')))[0];
+    }
 }
