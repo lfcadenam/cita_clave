@@ -44,6 +44,8 @@ services:
       DB_DATABASE: ${DB_DATABASE:-citaclave}
       DB_USERNAME: ${DB_USERNAME:-citaclave_user}
       DB_PASSWORD: ${DB_PASSWORD:-SecretDb2026!}
+      MAIL_MAILER: log
+      MAIL_NOTIFICATIONS_ENABLED: "false"
     volumes:
       - backend_storage:/var/www/backend/storage
     depends_on:
@@ -79,6 +81,8 @@ services:
       DB_DATABASE: ${DB_DATABASE:-citaclave}
       DB_USERNAME: ${DB_USERNAME:-citaclave_user}
       DB_PASSWORD: ${DB_PASSWORD:-SecretDb2026!}
+      MAIL_MAILER: log
+      MAIL_NOTIFICATIONS_ENABLED: "false"
     volumes:
       - backend_storage:/var/www/backend/storage
     depends_on:
@@ -111,6 +115,8 @@ services:
       DB_DATABASE: ${DB_DATABASE:-citaclave}
       DB_USERNAME: ${DB_USERNAME:-citaclave_user}
       DB_PASSWORD: ${DB_PASSWORD:-SecretDb2026!}
+      MAIL_MAILER: log
+      MAIL_NOTIFICATIONS_ENABLED: "false"
     volumes:
       - backend_storage:/var/www/backend/storage
     depends_on:
