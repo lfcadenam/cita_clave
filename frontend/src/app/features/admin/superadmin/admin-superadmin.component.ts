@@ -7,7 +7,8 @@ import {
   SuperAdminService, 
   PlatformAnalytics, 
   SuperTenant, 
-  SuperUser 
+  SuperUser,
+  ReminderSettingsData 
 } from '../../../core/services/super-admin.service';
 import { NuvexNotificationService } from '../../../core/services/nuvex-notification.service';
 
@@ -25,11 +26,23 @@ export class AdminSuperAdminComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   readonly isSuperAdmin = this.authService.isSuperAdmin;
-  readonly activeTab = signal<'all' | 'tenants' | 'users'>('all');
+  readonly activeTab = signal<'all' | 'tenants' | 'users' | 'reminders'>('all');
 
   readonly superAnalytics = signal<PlatformAnalytics | null>(null);
   readonly superTenants = signal<SuperTenant[]>([]);
   readonly superUsers = signal<SuperUser[]>([]);
+
+  // Estado del Programador de Recordatorios
+  readonly reminderSettings = signal<ReminderSettingsData | null>(null);
+  readonly reminderTime = signal<string>('10:00');
+  readonly isReminderEnabled = signal<boolean>(true);
+  readonly isSavingReminder = signal<boolean>(false);
+
+  // Disparo manual
+  readonly manualDate = signal<string>('');
+  readonly manualForce = signal<boolean>(false);
+  readonly isExecutingManual = signal<boolean>(false);
+  readonly manualOutput = signal<string | null>(null);
 
   readonly showTenantModal = signal<boolean>(false);
   tenantForm = {
@@ -53,10 +66,20 @@ export class AdminSuperAdminComponent implements OnInit {
   ngOnInit(): void {
     if (this.isSuperAdmin()) {
       this.loadSuperAdminData();
+      this.loadReminderSettings();
+
+      // Fecha de mañana por defecto para el disparador manual
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      this.manualDate.set(tomorrow.toISOString().split('T')[0]);
+
       this.route.queryParamMap.subscribe(params => {
         const tab = params.get('tab');
-        if (tab === 'tenants' || tab === 'users') {
+        if (tab === 'tenants' || tab === 'users' || tab === 'reminders') {
           this.activeTab.set(tab);
+          if (tab === 'reminders') {
+            this.loadReminderSettings();
+          }
         } else {
           this.activeTab.set('all');
         }
@@ -64,8 +87,11 @@ export class AdminSuperAdminComponent implements OnInit {
     }
   }
 
-  setActiveTab(tab: 'all' | 'tenants' | 'users'): void {
+  setActiveTab(tab: 'all' | 'tenants' | 'users' | 'reminders'): void {
     this.activeTab.set(tab);
+    if (tab === 'reminders') {
+      this.loadReminderSettings();
+    }
   }
 
   loadSuperAdminData(): void {
@@ -228,5 +254,76 @@ export class AdminSuperAdminComponent implements OnInit {
 
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(amount);
+  }
+
+  // =========================================================================
+  // GESTIÓN DE HORARIOS Y AUTOMATIZACIONES DE RECORDATORIOS
+  // =========================================================================
+
+  loadReminderSettings(): void {
+    this.superAdminService.getReminderSettings().subscribe({
+      next: (res) => {
+        this.reminderSettings.set(res);
+        this.reminderTime.set(res.reminder_time || '10:00');
+        this.isReminderEnabled.set(res.is_enabled);
+      },
+      error: (err) => console.error('Error al cargar configuración de recordatorios:', err)
+    });
+  }
+
+  setTimePreset(time: string): void {
+    this.reminderTime.set(time);
+  }
+
+  saveReminderSettings(): void {
+    const time = this.reminderTime();
+    if (!time || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) {
+      this.nuvexNotify.warning('Formato inválido', 'Debes ingresar una hora en formato HH:mm (ej. 10:00 o 08:30).');
+      return;
+    }
+
+    this.isSavingReminder.set(true);
+    this.superAdminService.updateReminderSettings({
+      reminder_time: time,
+      is_enabled: this.isReminderEnabled()
+    }).subscribe({
+      next: (res) => {
+        this.isSavingReminder.set(false);
+        this.nuvexNotify.success('Horario Actualizado', res.message || `El proceso se ejecutará diariamente a las ${time} (Hora Colombia).`);
+        this.loadReminderSettings();
+      },
+      error: (err) => {
+        this.isSavingReminder.set(false);
+        this.nuvexNotify.error('Error al guardar', err?.error?.message || 'No fue posible guardar la configuración.');
+      }
+    });
+  }
+
+  triggerManualExecution(): void {
+    const date = this.manualDate();
+    if (!date) {
+      this.nuvexNotify.warning('Fecha requerida', 'Por favor selecciona la fecha de las citas a procesar.');
+      return;
+    }
+
+    this.isExecutingManual.set(true);
+    this.manualOutput.set(null);
+
+    this.superAdminService.triggerManualReminders({
+      date,
+      force: this.manualForce()
+    }).subscribe({
+      next: (res) => {
+        this.isExecutingManual.set(false);
+        this.manualOutput.set(res.output || 'Proceso finalizado correctamente.');
+        this.nuvexNotify.success('Recordatorios Ejecutados', res.message || 'Ejecución manual completada con éxito.');
+        this.loadReminderSettings();
+      },
+      error: (err) => {
+        this.isExecutingManual.set(false);
+        this.manualOutput.set('Error: ' + (err?.error?.message || err.message));
+        this.nuvexNotify.error('Error al ejecutar', err?.error?.message || 'Ocurrió un error en la ejecución.');
+      }
+    });
   }
 }

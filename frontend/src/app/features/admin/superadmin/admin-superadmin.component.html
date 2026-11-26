@@ -51,6 +51,17 @@
         >
           Usuarios & Plataforma ({{ superUsers().length }})
         </button>
+        <button 
+          type="button" 
+          (click)="setActiveTab('reminders')" 
+          [ngClass]="activeTab() === 'reminders' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-medium'"
+          class="px-4 py-2 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Horario de Recordatorios
+        </button>
       </div>
     </div>
     
@@ -179,6 +190,302 @@
                 </tbody>
               </table>
             </div>
+          </div>
+        }
+
+        <!-- SECCIÓN: HORARIO Y AUTOMATIZACIÓN DE RECORDATORIOS -->
+        @if (activeTab() === 'reminders') {
+          <div class="flex flex-col gap-6 animate-in fade-in duration-150">
+            
+            <!-- Banner de Estado Global -->
+            <div class="p-6 rounded-[28px] bg-white border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4" style="border-left: 5px solid #0d9488;">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 border border-teal-100">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-base font-bold text-slate-900">Programador de Notificaciones de Citas</h3>
+                    @if (reminderSettings()?.is_enabled) {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Servicio Activo
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                        En Pausa
+                      </span>
+                    }
+                  </div>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    Hora programada actual: <strong class="text-teal-700 font-bold">{{ reminderSettings()?.reminder_time || '10:00' }} (Hora Colombia)</strong> &bull; Zona horaria: America/Bogota (UTC-5)
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-6 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
+                <div class="text-left md:text-right">
+                  <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block">Citas de Mañana</span>
+                  <span class="text-xl font-black text-slate-900">{{ reminderSettings()?.total_tomorrow_count || 0 }} confirmadas</span>
+                  <span class="text-xs text-amber-600 block font-semibold">({{ reminderSettings()?.pending_tomorrow_count || 0 }} pendientes de aviso)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cuadrícula 2 Columnas -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+              <!-- Columna 1: Horario Diario de Envío Automático -->
+              <div class="bg-white rounded-[28px] border border-slate-200/80 shadow-xs p-6 flex flex-col justify-between gap-5">
+                <div>
+                  <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                      <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Horario Diario de Envío Automático
+                    </h3>
+                  </div>
+
+                  <div class="space-y-4">
+                    <!-- Toggle Activo -->
+                    <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                      <div>
+                        <label class="text-xs font-bold text-slate-800 cursor-pointer">
+                          Habilitar ejecución automática
+                        </label>
+                        <p class="text-[11px] text-slate-500">Si se desactiva, el cron no disparará recordatorios en segundo plano.</p>
+                      </div>
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          [checked]="isReminderEnabled()" 
+                          (change)="isReminderEnabled.set(!isReminderEnabled())" 
+                          class="sr-only peer"
+                        >
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                      </label>
+                    </div>
+
+                    <!-- Input de Hora -->
+                    <div>
+                      <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                        Hora de Disparo (Formato 24h — HH:mm)
+                      </label>
+                      <input 
+                        type="time" 
+                        [ngModel]="reminderTime()" 
+                        (ngModelChange)="reminderTime.set($event)"
+                        class="w-full text-base font-black text-slate-800 bg-white border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-2xs" 
+                        required 
+                      />
+                    </div>
+
+                    <!-- Presets Rápidos -->
+                    <div>
+                      <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                        Horas frecuentes sugeridas:
+                      </span>
+                      <div class="flex flex-wrap gap-2">
+                        @for (preset of ['08:00', '09:00', '10:00', '11:00', '14:00', '16:00']; track preset) {
+                          <button 
+                            type="button" 
+                            (click)="setTimePreset(preset)"
+                            [ngClass]="reminderTime() === preset ? 'bg-teal-600 text-white border-teal-600 shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'"
+                            class="px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer"
+                          >
+                            {{ preset }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Explicación -->
+                    <div class="p-3.5 rounded-2xl bg-teal-50/70 border border-teal-100 text-[11px] text-teal-800 leading-relaxed">
+                      <strong>¿Cómo funciona?</strong> Cada día a las <strong>{{ reminderTime() }}</strong>, el contenedor del programador (scheduler) busca las citas confirmadas para el día siguiente y envía el recordatorio por WhatsApp con el enlace de confirmación en 1 toque.
+                    </div>
+                  </div>
+                </div>
+
+                <button 
+                  type="button" 
+                  (click)="saveReminderSettings()"
+                  [disabled]="isSavingReminder()"
+                  class="w-full py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  @if (isSavingReminder()) {
+                    <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                    Guardando horario...
+                  } @else {
+                    Guardar Horario de Recordatorios
+                  }
+                </button>
+              </div>
+
+              <!-- Columna 2: Disparo Manual Inmediato -->
+              <div class="bg-white rounded-[28px] border border-slate-200/80 shadow-xs p-6 flex flex-col justify-between gap-5">
+                <div>
+                  <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                      <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Disparo Manual Inmediato
+                    </h3>
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                      Bajo Demanda
+                    </span>
+                  </div>
+
+                  <div class="space-y-4">
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                      Permite forzar la ejecución del proceso en este momento para verificar los envíos de WhatsApp sin esperar a la hora automática del cron.
+                    </p>
+
+                    <!-- Input Fecha -->
+                    <div>
+                      <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                        Fecha de citas a procesar:
+                      </label>
+                      <input 
+                        type="date" 
+                        [ngModel]="manualDate()" 
+                        (ngModelChange)="manualDate.set($event)"
+                        class="w-full text-xs font-bold text-slate-800 bg-white border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-2xs" 
+                        required 
+                      />
+                      <span class="text-[11px] text-slate-400 mt-1 block">Por defecto está seleccionada la fecha de mañana.</span>
+                    </div>
+
+                    <!-- Checkbox Forzar -->
+                    <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                      <input 
+                        type="checkbox" 
+                        id="manualForceCheck" 
+                        [checked]="manualForce()" 
+                        (change)="manualForce.set(!manualForce())"
+                        class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4" 
+                      />
+                      <label for="manualForceCheck" class="text-xs text-slate-700 cursor-pointer font-medium">
+                        Forzar reenvío incluso a citas que ya recibieron recordatorio previo
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <button 
+                    type="button" 
+                    (click)="triggerManualExecution()"
+                    [disabled]="isExecutingManual()"
+                    class="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    @if (isExecutingManual()) {
+                      <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                      </svg>
+                      Procesando recordatorios...
+                    } @else {
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Ejecutar Recordatorios Ahora
+                    }
+                  </button>
+
+                  @if (manualOutput()) {
+                    <div class="mt-3 p-3 rounded-2xl bg-slate-900 text-cyan-300 font-mono text-[11px] leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
+                      {{ manualOutput() }}
+                    </div>
+                  }
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Tabla Inferior: Últimos Recordatorios Enviados -->
+            <div class="bg-white rounded-[28px] border border-slate-200/80 shadow-xs p-6 flex flex-col gap-4">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                  <h3 class="text-base font-bold text-slate-900">Historial de Recordatorios Despachados</h3>
+                  <p class="text-xs text-slate-500">Últimas clientas que recibieron el aviso automático de confirmación por WhatsApp</p>
+                </div>
+                <button 
+                  type="button" 
+                  (click)="loadReminderSettings()" 
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-semibold cursor-pointer flex items-center gap-1.5"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Actualizar
+                </button>
+              </div>
+
+              @if (!reminderSettings()?.recent_reminders?.length) {
+                <div class="py-10 text-center text-slate-400 text-xs">
+                  No hay registros de recordatorios despachados recientemente en el sistema.
+                </div>
+              } @else {
+                <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                      <tr>
+                        <th class="p-3.5">Cita</th>
+                        <th class="p-3.5">Clienta & Teléfono</th>
+                        <th class="p-3.5">Salón & Servicio</th>
+                        <th class="p-3.5">Fecha Cita</th>
+                        <th class="p-3.5">Notificado En</th>
+                        <th class="p-3.5 text-right">Confirmación</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                      @for (apt of reminderSettings()!.recent_reminders; track apt.id) {
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                          <td class="p-3.5 font-bold text-slate-900">
+                            #{{ apt.appointment_number }}
+                          </td>
+                          <td class="p-3.5">
+                            <div class="font-bold text-slate-800">{{ apt.client_name }}</div>
+                            <div class="text-[11px] text-slate-400 font-mono">{{ apt.client_phone || 'Sin WhatsApp' }}</div>
+                          </td>
+                          <td class="p-3.5">
+                            <div class="font-medium text-slate-700">{{ apt.service?.name || 'Servicio' }}</div>
+                            <div class="text-[11px] text-purple-600 font-semibold">{{ apt.tenant?.name || 'Salón' }}</div>
+                          </td>
+                          <td class="p-3.5 font-medium text-slate-700">
+                            {{ apt.appointment_date }} {{ apt.start_time.substring(0, 5) }}
+                          </td>
+                          <td class="p-3.5 text-slate-500">
+                            {{ apt.reminder_24h_sent_at }}
+                          </td>
+                          <td class="p-3.5 text-right whitespace-nowrap">
+                            @if (apt.attendance_confirmed_at) {
+                              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                ✓ Confirmada por Clienta
+                              </span>
+                            } @else {
+                              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                ⏳ Pendiente
+                              </span>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+
           </div>
         }
 

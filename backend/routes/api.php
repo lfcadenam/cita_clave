@@ -189,6 +189,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/users', [SuperAdminController::class, 'createUser']);
         Route::put('/users/{id}', [SuperAdminController::class, 'updateUser']);
         Route::delete('/users/{id}', [SuperAdminController::class, 'deleteUser']);
+
+        // Horario y Automatización de Recordatorios
+        Route::get('/reminder-settings', [SuperAdminController::class, 'getReminderSettings']);
+        Route::put('/reminder-settings', [SuperAdminController::class, 'updateReminderSettings']);
+        Route::post('/reminder-settings/trigger-manual', [SuperAdminController::class, 'triggerManualReminders']);
     });
 
 });

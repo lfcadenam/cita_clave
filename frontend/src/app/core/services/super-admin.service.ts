@@ -96,4 +96,49 @@ export class SuperAdminService {
       map(() => void 0)
     );
   }
+
+  /**
+   * Obtener configuración actual de recordatorios del programador.
+   */
+  getReminderSettings(): Observable<ReminderSettingsData> {
+    return this.http.get<{ success: boolean; data: ReminderSettingsData }>(`${this.apiUrl}/reminder-settings`).pipe(
+      map(res => res.data)
+    );
+  }
+
+  /**
+   * Actualizar horario y estado de recordatorios.
+   */
+  updateReminderSettings(payload: { reminder_time: string; is_enabled: boolean }): Observable<{ success: boolean; message: string; data: any }> {
+    return this.http.put<{ success: boolean; message: string; data: any }>(`${this.apiUrl}/reminder-settings`, payload);
+  }
+
+  /**
+   * Ejecutar recordatorios manualmente bajo demanda.
+   */
+  triggerManualReminders(payload: { date?: string; force?: boolean }): Observable<{ success: boolean; message: string; output: string }> {
+    return this.http.post<{ success: boolean; message: string; output: string }>(`${this.apiUrl}/reminder-settings/trigger-manual`, payload);
+  }
+}
+
+export interface RecentReminderItem {
+  id: number;
+  appointment_number: string;
+  client_name: string;
+  client_phone: string | null;
+  appointment_date: string;
+  start_time: string;
+  reminder_24h_sent_at: string;
+  attendance_confirmed_at: string | null;
+  tenant?: { id: number; name: string };
+  service?: { id: number; name: string };
+}
+
+export interface ReminderSettingsData {
+  reminder_time: string;
+  is_enabled: boolean;
+  timezone: string;
+  pending_tomorrow_count: number;
+  total_tomorrow_count: number;
+  recent_reminders: RecentReminderItem[];
 }
