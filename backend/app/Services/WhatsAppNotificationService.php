@@ -1731,15 +1731,48 @@ class WhatsAppNotificationService
                 ];
             }
 
-            // Detección de plantilla ya existente
+            // Detección de plantilla ya existente (Subcódigo 2388024: A template with this name already exists)
             $errorMsg = $json['error']['message'] ?? '';
             $subcode = $json['error']['error_subcode'] ?? null;
 
-            if (str_contains(strtolower($errorMsg), 'already exists') || (int) $subcode === 2388043) {
+            if (str_contains(strtolower($errorMsg), 'already exists') || in_array((int) $subcode, [2388024, 2388043], true)) {
+                // Intentar actualizar la plantilla existente en Meta vía POST /{template_id}
+                try {
+                    $existingList = $this->getMetaTemplates($tenant)['templates'] ?? [];
+                    $matched = collect($existingList)->first(fn ($t) => strtolower($t['name'] ?? '') === strtolower($name));
+                    if ($matched && !empty($matched['id'])) {
+                        $templateId = $matched['id'];
+                        $updateRes = Http::withToken($token)
+                            ->acceptJson()
+                            ->timeout(15)
+                            ->post("{$apiUrl}/{$templateId}", [
+                                'components' => [
+                                    $bodyComponent,
+                                ],
+                            ]);
+
+                        if ($updateRes->successful()) {
+                            Log::info("[WhatsApp Meta] Plantilla '{$name}' (ID: {$templateId}) actualizada con éxito en Meta Cloud API.");
+                            return [
+                                'success' => true,
+                                'already_exists' => true,
+                                'updated' => true,
+                                'message' => "La plantilla '{$name}' ya existía en Meta y se actualizó correctamente con el nuevo contenido.",
+                                'name' => $name,
+                                'template_id' => $templateId,
+                                'status' => 'PENDING',
+                                'data' => $updateRes->json(),
+                            ];
+                        }
+                    }
+                } catch (\Throwable $updateEx) {
+                    Log::warning("[WhatsApp Meta] No se pudo auto-actualizar plantilla existente '{$name}': " . $updateEx->getMessage());
+                }
+
                 return [
                     'success' => true,
                     'already_exists' => true,
-                    'message' => "La plantilla '{$name}' ya existe registrada en tu cuenta de Meta WhatsApp Manager.",
+                    'message' => "La plantilla '{$name}' ya está registrada en tu cuenta de Meta WhatsApp Manager y guardada en el sistema.",
                     'name' => $name,
                     'status' => 'APPROVED',
                     'data' => $json,
@@ -1929,6 +1962,7 @@ class WhatsAppNotificationService
             131058 => 'La plantilla "hello_world" sólo está permitida por Meta en números públicos de prueba (sandbox). Al estar usando un número real o Phone Number ID de producción, Meta bloquea "hello_world". Debes usar una plantilla propia aprobada en tu Meta WhatsApp Manager (por ejemplo: "reserva_confirmada", "recordatorio_cita_24h" o "cita_recibida") con su idioma correspondiente (ej: "es_CO" o "es").',
             132000, 132001 => 'La plantilla solicitada no existe o aún no está aprobada en el idioma indicado dentro de Meta WhatsApp Manager.',
             131009, 100 => match ((int) $subcode) {
+                2388024 => 'La plantilla ya existe registrada con este nombre e idioma en tu cuenta de Meta WhatsApp Manager. Los cambios se guardaron localmente en el sistema.',
                 2388299 => 'Meta no permite variables al inicio o al final del texto de la plantilla (Error #2388299: Leading or trailing parameters not allowed). Toda plantilla debe comenzar y terminar siempre con texto o palabras fijas.',
                 default => 'Parámetro inválido en la petición a Meta Graph API (#100). Causas principales: 1) Si estás creando una plantilla, verifica que no termine en una variable. 2) Si estás enviando un mensaje, el número destinatario no puede ser el mismo número comercial del salón (Meta prohíbe auto-mensajes), o la cantidad de variables enviadas no coincide con las registradas en Meta.',
             },
