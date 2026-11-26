@@ -27,17 +27,19 @@ if [ ! -f "docker-compose.yml" ]; then
     exit 1
 fi
 
-# 2. Descargar últimos cambios de Git
+# 2. Descargar últimos cambios de Git de forma limpia y garantizada
 echo -e "${CYAN}📥 Paso 1/5: Descargando últimos cambios desde Git (origin/main)...${NC}"
+git config core.fileMode false
 git fetch origin main
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 if [ "$CURRENT_BRANCH" != "main" ]; then
     echo -e "${YELLOW}⚠️ Advertencia: No estás en la rama 'main' (rama actual: ${CURRENT_BRANCH}). Cambiando a 'main'...${NC}"
-    git checkout main
+    git checkout -f main
 fi
 
-git pull origin main
+# Alinear de forma idéntica con el repositorio remoto evitando conflictos de merge
+git reset --hard origin/main
 echo -e "${GREEN}✓ Código actualizado exitosamente.${NC}\n"
 
 # 3. Asegurar existencia de red Docker externa
