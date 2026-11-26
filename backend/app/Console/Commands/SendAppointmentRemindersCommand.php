@@ -22,7 +22,7 @@ class SendAppointmentRemindersCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Envía correos recordatorios 24 horas antes a clientas con citas confirmadas para confirmar su asistencia';
+    protected $description = 'Envía recordatorios (WhatsApp y Email) a las 10:00 AM del día anterior a clientas con citas confirmadas para reconfirmar su asistencia';
 
     public function __construct(
         protected AppointmentMailNotificationService $mailService,
@@ -36,10 +36,11 @@ class SendAppointmentRemindersCommand extends Command
      */
     public function handle(): int
     {
-        $targetDateStr = $this->option('date') ?: Carbon::tomorrow()->toDateString();
+        $tz = config('app.timezone', 'America/Bogota');
+        $targetDateStr = $this->option('date') ?: Carbon::tomorrow($tz)->toDateString();
         $force = (bool) $this->option('force');
 
-        $this->info("Buscando citas confirmadas para la fecha: {$targetDateStr} (24h de anticipación)...");
+        $this->info("Buscando citas confirmadas para la fecha: {$targetDateStr} (recordatorio programado a las 10:00 AM del día anterior)...");
 
         $query = Appointment::withoutGlobalScopes()
             ->with(['tenant', 'service'])

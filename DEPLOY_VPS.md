@@ -118,7 +118,9 @@ Verifica el estado de los contenedores:
 ```bash
 docker compose ps
 ```
-Los 4 contenedores (`citaclave_db`, `citaclave_app`, `citaclave_queue`, `citaclave_web`) deben aparecer en estado `Up` o `healthy`.
+Los 5 contenedores (`citaclave_db`, `citaclave_app`, `citaclave_queue`, `citaclave_scheduler`, `citaclave_web`) deben aparecer en estado `Up` o `healthy`.
+
+El contenedor `citaclave_scheduler` ejecuta de forma continua el programador de tareas (`php artisan schedule:work`), garantizando que a las **10:00 AM hora de Colombia** de cada día se procesen y envíen automáticamente las notificaciones y confirmaciones de citas para el día siguiente.
 
 ---
 

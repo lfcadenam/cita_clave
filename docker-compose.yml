@@ -90,6 +90,38 @@ services:
       - citaclave_net
 
   # -------------------------------------------------------------
+  # Programador de Tareas Automáticas (Laravel Scheduler)
+  # -------------------------------------------------------------
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: citaclave_scheduler
+    restart: unless-stopped
+    command: php artisan schedule:work
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-citaclave}
+      DB_USERNAME: ${DB_USERNAME:-citaclave_user}
+      DB_PASSWORD: ${DB_PASSWORD:-SecretDb2026!}
+    volumes:
+      - backend_storage:/var/www/backend/storage
+    depends_on:
+      app:
+        condition: service_started
+      db:
+        condition: service_healthy
+    networks:
+      - citaclave_net
+
+  # -------------------------------------------------------------
   # Servidor Web Nginx & Frontend Angular 19
   # -------------------------------------------------------------
   web:
