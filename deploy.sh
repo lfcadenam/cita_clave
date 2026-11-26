@@ -77,4 +77,5 @@ echo -e "\n${EMERALD}${BOLD}====================================================
 echo -e "${GREEN}${BOLD}  ✨ ¡DESPLIEGUE FINALIZADO CON ÉXITO EN ${DURATION} SEGUNDOS! ✨       ${NC}"
 echo -e "${CYAN}  Portal Clientes:   ${BOLD}https://labellenailsbog.com${NC}"
 echo -e "${CYAN}  Panel de Citas:    ${BOLD}https://labellenailsbog.com/admin/calendario${NC}"
+echo -e "${CYAN}  Landing Comercial: ${BOLD}https://cita-clave.nuvex-tecnologia.com${NC}"
 echo -e "${EMERALD}${BOLD}======================================================================${NC}\n"

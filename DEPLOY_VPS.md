@@ -9,15 +9,14 @@ Esta guía describe el procedimiento paso a paso para desplegar y poner en march
 
 Antes de iniciar los servicios en el servidor, debes configurar los registros DNS en el proveedor donde compraste el dominio `labellenailsbog.com` (GoDaddy, Namecheap, DonDominio, Hostinger, etc.).
 
-### A. Registros DNS Necesarios (Zona DNS)
-
 | Tipo | Nombre / Host | Valor / Destino | TTL | Propósito |
 | :--- | :--- | :--- | :--- | :--- |
-| **A** | `@` (o `labellenailsbog.com`) | `[IP_PÚBLICA_DE_TU_VPS]` | 300 s (o Automático) | Dirige el dominio raíz al servidor. |
+| **A** | `@` (o `labellenailsbog.com`) | `[IP_PÚBLICA_DE_TU_VPS]` | 300 s (o Automático) | Dirige el dominio raíz del salón al servidor. |
 | **CNAME** (o **A**) | `www` | `@` (o `[IP_PÚBLICA_DE_TU_VPS]`) | 300 s (o Automático) | Permite acceso con `www.labellenailsbog.com`. |
+| **A** | `cita-clave` (en zona `nuvex-tecnologia.com`) | `[IP_PÚBLICA_DE_TU_VPS]` | 300 s (o Automático) | Landing comercial oficial `https://cita-clave.nuvex-tecnologia.com`. |
 
 > [!IMPORTANT]
-> Reemplaza `[IP_PÚBLICA_DE_TU_VPS]` por la dirección IPv4 pública asignada a tu servidor VPS (ejemplo: `198.51.100.25`).
+> Reemplaza `[IP_PÚBLICA_DE_TU_VPS]` por la dirección IPv4 pública asignada a tu servidor VPS (ejemplo: `198.51.100.25`). En Cloudflare o en tu gestor DNS de Nuvex, apunta el subdominio `cita-clave` a la misma IP pública del servidor VPS.
 
 ### B. Recomendación de Arquitectura SSL: Cloudflare (Recomendado)
 Para máxima velocidad, protección DDoS y certificado SSL automático sin mantenimiento local:
@@ -118,9 +117,10 @@ Verifica el estado de los contenedores:
 ```bash
 docker compose ps
 ```
-Los 5 contenedores (`citaclave_db`, `citaclave_app`, `citaclave_queue`, `citaclave_scheduler`, `citaclave_web`) deben aparecer en estado `Up` o `healthy`.
+Los 6 contenedores (`citaclave_db`, `citaclave_app`, `citaclave_queue`, `citaclave_scheduler`, `citaclave_web`, `citaclave_landing`) deben aparecer en estado `Up` o `healthy`.
 
-El contenedor `citaclave_scheduler` ejecuta de forma continua el programador de tareas (`php artisan schedule:work`), garantizando que a las **10:00 AM hora de Colombia** de cada día se procesen y envíen automáticamente las notificaciones y confirmaciones de citas para el día siguiente.
+* `citaclave_scheduler`: ejecuta de forma continua el programador de tareas (`php artisan schedule:work`), garantizando que a las **10:00 AM hora de Colombia** de cada día se procesen y envíen automáticamente las notificaciones y confirmaciones de citas para el día siguiente.
+* `citaclave_landing`: sirve la página de aterrizaje comercial de alta conversión de CitaClave bajo `https://cita-clave.nuvex-tecnologia.com`.
 
 ---
 
@@ -128,7 +128,11 @@ El contenedor `citaclave_scheduler` ejecuta de forma continua el programador de 
 
 Una vez levantado el sistema, tendrás disponibles los siguientes accesos:
 
-### 🌸 1. Portal Público de Clientes (Agenda Online)
+### 🚀 0. Landing Page Comercial CitaClave (SaaS Marketing)
+* **URL:** **`https://cita-clave.nuvex-tecnologia.com`**
+* Presentación oficial de la plataforma, calculadora interactiva de ROI, planes comerciales ($145.000 COP/mes) y captura de leads.
+
+### 🌸 1. Portal Público de Clientes (Agenda Online La Belle Nails)
 * **URL:** **`https://labellenailsbog.com`**
 * Catálogo interactivo de servicios, disponibilidad anti-huecos en tiempo real, apartado de turnos y carga de comprobantes Nequi.
 

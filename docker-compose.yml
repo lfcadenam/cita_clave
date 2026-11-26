@@ -147,6 +147,28 @@ services:
       - citaclave_net
       - elan_default
 
+  # -------------------------------------------------------------
+  # Landing Page Oficial CitaClave (SaaS Marketing)
+  # Host: https://cita-clave.nuvex-tecnologia.com
+  # -------------------------------------------------------------
+  landing:
+    build:
+      context: ./citaclave_landing
+      dockerfile: Dockerfile
+    container_name: citaclave_landing
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=${LANDING_DOMAIN:-cita-clave.nuvex-tecnologia.com}
+      - VIRTUAL_PORT=80
+      - VIRTUAL_NETWORK=${PROXY_NETWORK:-elan_default}
+      - LETSENCRYPT_HOST=${LANDING_DOMAIN:-cita-clave.nuvex-tecnologia.com}
+      - LETSENCRYPT_EMAIL=${ADMIN_EMAIL:-admin@nuvex-tecnologia.com}
+    ports:
+      - "${LANDING_HTTP_PORT:-8082}:80"
+    networks:
+      - citaclave_net
+      - elan_default
+
 volumes:
   citaclave_db_data:
     driver: local
