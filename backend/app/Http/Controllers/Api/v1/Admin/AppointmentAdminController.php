@@ -38,7 +38,7 @@ class AppointmentAdminController extends Controller
         $query = Appointment::query()
             ->with([
                 'service:id,name,duration_minutes,base_price,deposit_amount',
-                'customer:id,name,phone,email,is_legacy',
+                'customer' => fn ($q) => $q->select('id', 'tenant_id', 'name', 'phone', 'email', 'is_legacy')->withCount('appointments'),
             ]);
 
         // Filtro por fecha específica o rango

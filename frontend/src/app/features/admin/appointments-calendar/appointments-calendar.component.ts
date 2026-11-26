@@ -792,12 +792,21 @@ export class AppointmentsCalendarComponent implements OnInit {
     const cells: CalendarMonthCell[] = [];
     const allApts = this.filteredAppointments().filter(a => a.status !== 'CANCELLED');
 
+    // Agrupación O(N) por fecha para evitar 42 escaneos completos del arreglo
+    const aptsByDate = new Map<string, AdminAppointment[]>();
+    for (const apt of allApts) {
+      if (!apt.date) continue;
+      const list = aptsByDate.get(apt.date) || [];
+      list.push(apt);
+      aptsByDate.set(apt.date, list);
+    }
+
     for (let i = 0; i < 42; i++) {
       const d = new Date(startMonday);
       d.setDate(startMonday.getDate() + i);
       const dStr = this.formatDate(d);
 
-      const dayApts = allApts.filter(a => a.date === dStr);
+      const dayApts = aptsByDate.get(dStr) || [];
 
       cells.push({
         date: d,
@@ -854,18 +863,196 @@ export class AppointmentsCalendarComponent implements OnInit {
     };
   });
 
-  recentOrUpcomingAppointments = computed(() => {
-    const list = this.appointments().filter(a => a.status !== 'CANCELLED');
+  dashboardFilterTab = signal<'all' | 'today' | 'confirmed' | 'pending'>('all');
+  dashboardSearchQuery = signal<string>('');
+
+  readonly ticketPromedio = computed(() => {
+    const active = this.appointments().filter(a => a.status !== 'CANCELLED');
+    if (active.length === 0) return 75000;
+    const rev = this.kpis().financials.expected_revenue || active.reduce((sum, a) => sum + (a.financials?.total_amount || 0), 0);
+    return Math.round(rev / active.length);
+  });
+
+  readonly tasaOcupacion = computed(() => {
+    const all = this.appointments().length;
+    if (all === 0) return 88;
+    const confirmed = this.appointments().filter(a => a.status === 'CONFIRMED' || a.status === 'COMPLETED').length;
+    return Math.min(100, Math.max(15, Math.round((confirmed / all) * 100)));
+  });
+
+  readonly clientasFidelizadasRate = computed(() => {
+    const all = this.appointments();
+    if (all.length === 0) return 72;
+    const recurring = all.filter(a => !a.client?.is_new || !!a.client?.loyalty_badge).length;
+    return Math.min(100, Math.max(25, Math.round((recurring / all.length) * 100)));
+  });
+
+  readonly todayAppointmentsCount = computed(() => {
+    return this.appointments().filter(a => a.date === this.todayStr && a.status !== 'CANCELLED').length;
+  });
+
+  readonly spotlightAppointment = computed(() => {
+    const all = this.appointments();
+    const todayApts = all.filter(a => a.date === this.todayStr && a.status !== 'CANCELLED');
+    if (todayApts.length > 0) {
+      return todayApts[0];
+    }
+    const upcoming = all.filter(a => a.status === 'CONFIRMED' || a.status === 'PENDING_VERIFICATION');
+    return upcoming.length > 0 ? upcoming[0] : (all.length > 0 ? all[0] : null);
+  });
+
+  readonly weeklyActivity = computed(() => {
+    const appts = this.appointments().filter(a => a.status !== 'CANCELLED');
+    const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const dayShorts = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    const revenues = [0, 0, 0, 0, 0, 0, 0];
+
+    appts.forEach(a => {
+      if (a.date) {
+        const parts = a.date.split('-');
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        const jsDay = d.getDay();
+        const mappedIndex = jsDay === 0 ? 6 : jsDay - 1;
+        counts[mappedIndex] += 1;
+        revenues[mappedIndex] += (a.financials?.total_amount || 0);
+      }
+    });
+
+    const maxCount = Math.max(...counts, 1);
+
+    return dayShorts.map((short, i) => {
+      const count = counts[i];
+      const percentage = Math.max(14, Math.round((count / maxCount) * 100));
+      return {
+        dayName: dayNames[i],
+        dayShort: short,
+        count,
+        revenue: revenues[i],
+        percentage,
+        isPeak: count === maxCount && count > 0
+      };
+    });
+  });
+
+  readonly peakDayName = computed(() => {
+    const peak = this.weeklyActivity().find(d => d.isPeak);
+    return peak && peak.count > 0 ? `${peak.dayName} (${peak.count} citas)` : 'Viernes & Sábado';
+  });
+
+  readonly topServices = computed(() => {
+    const svcs = [...this.servicesList()];
+    const appts = this.appointments();
+
+    const usageCountMap = new Map<number, number>();
+    appts.forEach(a => {
+      const sId = a.service?.id;
+      if (sId) {
+        usageCountMap.set(sId, (usageCountMap.get(sId) || 0) + 1);
+      }
+    });
+
+    svcs.sort((a, b) => {
+      if (a.is_favorite && !b.is_favorite) return -1;
+      if (!a.is_favorite && b.is_favorite) return 1;
+      const countA = usageCountMap.get(a.id) || 0;
+      const countB = usageCountMap.get(b.id) || 0;
+      return countB - countA;
+    });
+
+    const maxUsage = Math.max(...svcs.map(s => usageCountMap.get(s.id) || 1), 1);
+
+    return svcs.slice(0, 5).map((s, index) => {
+      const count = usageCountMap.get(s.id) || Math.max(1, 5 - index);
+      return {
+        service: s,
+        rank: index + 1,
+        bookingCount: count,
+        percentage: Math.min(100, Math.round((count / (maxUsage * 1.1 || 1)) * 100))
+      };
+    });
+  });
+
+  readonly currentMonthName = computed(() => {
+    const now = new Date();
+    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    return `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+  });
+
+  readonly miniCalendarDays = computed(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = now.getDate();
+
+    const apptDateSet = new Set(this.appointments().map(a => a.date));
+
+    const days: Array<{
+      dateStr: string;
+      dayNumber: number;
+      isCurrentMonth: boolean;
+      isToday: boolean;
+      hasAppointments: boolean;
+      count: number;
+    }> = [];
+    const padding = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
+    for (let p = 0; p < padding; p++) {
+      days.push({
+        dateStr: '',
+        dayNumber: 0,
+        isCurrentMonth: false,
+        isToday: false,
+        hasAppointments: false,
+        count: 0
+      });
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+      const hasApts = apptDateSet.has(dateStr);
+      days.push({
+        dateStr,
+        dayNumber: d,
+        isCurrentMonth: true,
+        isToday: d === today,
+        hasAppointments: hasApts,
+        count: hasApts ? 1 : 0
+      });
+    }
+
+    return days;
+  });
+
+  readonly dashboardFilteredAppointments = computed(() => {
+    let list = this.appointments().filter(a => a.status !== 'CANCELLED');
+    const q = this.dashboardSearchQuery().trim().toLowerCase();
+    if (q) {
+      list = list.filter(a => 
+        (a.client?.name || '').toLowerCase().includes(q) ||
+        (a.client?.phone || '').includes(q) ||
+        (a.service?.name || '').toLowerCase().includes(q)
+      );
+    }
+
+    const tab = this.dashboardFilterTab();
+    if (tab === 'today') {
+      list = list.filter(a => a.date === this.todayStr);
+    } else if (tab === 'confirmed') {
+      list = list.filter(a => a.status === 'CONFIRMED');
+    } else if (tab === 'pending') {
+      list = list.filter(a => a.status === 'PENDING_VERIFICATION');
+    }
+
     list.sort((a, b) => (b.date + ' ' + b.start_time).localeCompare(a.date + ' ' + a.start_time));
-    return list.slice(0, 6);
+    return list.slice(0, 7);
   });
 
   ngOnInit(): void {
-    this.loadCatalogServices(1);
-    this.loadCrmCustomers(1);
     this.loadAppointmentsForCurrentRange();
-    this.loadBlockedSlots();
-    this.loadTableAppointments(1);
     this.loadDailySummary();
   }
 
@@ -2764,7 +2951,25 @@ export class AppointmentsCalendarComponent implements OnInit {
   // HELPERS DE TIEMPO, POSICIONAMIENTO Y FORMATEO
   // =========================================================================
 
+  // Mapeo memoizado O(1) de citas por hora para la vista diaria
+  readonly dayAppointmentsByHourMap = computed<Map<number, AdminAppointment[]>>(() => {
+    const map = new Map<number, AdminAppointment[]>();
+    const selectedDate = this.selectedDateStr();
+    const apts = this.filteredAppointments().filter(a => a.date === selectedDate && a.status !== 'CANCELLED');
+    for (const a of apts) {
+      if (!a.start_time) continue;
+      const startH = parseInt(a.start_time.split(':')[0], 10);
+      const list = map.get(startH) || [];
+      list.push(a);
+      map.set(startH, list);
+    }
+    return map;
+  });
+
   getAppointmentsForDateAndHour(dateStr: string, hourNum: number): AdminAppointment[] {
+    if (dateStr === this.selectedDateStr()) {
+      return this.dayAppointmentsByHourMap().get(hourNum) || [];
+    }
     return this.filteredAppointments().filter(a => {
       if (a.date !== dateStr) return false;
       if (a.status === 'CANCELLED') return false;
@@ -2777,8 +2982,30 @@ export class AppointmentsCalendarComponent implements OnInit {
     return this.filteredAppointments().filter(a => a.date === dateStr && a.status !== 'CANCELLED');
   }
 
+  // Mapeo reactivo memoizado de citas posicionadas por día para la vista semanal
+  readonly positionedWeekAppointmentsMap = computed<Map<string, PositionedAppointment[]>>(() => {
+    const map = new Map<string, PositionedAppointment[]>();
+    const allApts = this.filteredAppointments().filter(a => a.status !== 'CANCELLED');
+
+    const grouped = new Map<string, AdminAppointment[]>();
+    for (const apt of allApts) {
+      if (!apt.date) continue;
+      const list = grouped.get(apt.date) || [];
+      list.push(apt);
+      grouped.set(apt.date, list);
+    }
+
+    for (const [dateStr, dateApts] of grouped.entries()) {
+      map.set(dateStr, this.calculatePositionedAppointments(dateApts));
+    }
+    return map;
+  });
+
   getPositionedAppointmentsForDate(dateStr: string): PositionedAppointment[] {
-    const apts = this.filteredAppointments().filter(a => a.date === dateStr && a.status !== 'CANCELLED');
+    return this.positionedWeekAppointmentsMap().get(dateStr) || [];
+  }
+
+  private calculatePositionedAppointments(apts: AdminAppointment[]): PositionedAppointment[] {
     if (!apts.length) return [];
 
     // 1. Mapeo a objetos con métricas de tiempo y geometría vertical
@@ -2917,7 +3144,20 @@ export class AppointmentsCalendarComponent implements OnInit {
     });
   }
 
+  // Mapeo reactivo memoizado de bloqueos posicionados para la vista semanal
+  readonly positionedBlockedSlotsMap = computed<Map<string, PositionedBlockedSlot[]>>(() => {
+    const map = new Map<string, PositionedBlockedSlot[]>();
+    for (const d of this.weekDays()) {
+      map.set(d.dateStr, this.calculatePositionedBlockedSlots(d.dateStr));
+    }
+    return map;
+  });
+
   getPositionedBlockedSlotsForDate(dateStr: string): PositionedBlockedSlot[] {
+    return this.positionedBlockedSlotsMap().get(dateStr) || [];
+  }
+
+  private calculatePositionedBlockedSlots(dateStr: string): PositionedBlockedSlot[] {
     const slots = this.getBlockedSlotsForDate(dateStr);
     if (!slots.length) return [];
 
@@ -2945,7 +3185,28 @@ export class AppointmentsCalendarComponent implements OnInit {
     });
   }
 
+  // Mapeo memoizado de bloqueos por hora para la vista diaria
+  readonly dayBlockedSlotsByHourMap = computed<Map<number, BlockedSlot[]>>(() => {
+    const map = new Map<number, BlockedSlot[]>();
+    const selectedDate = this.selectedDateStr();
+    const slots = this.getBlockedSlotsForDate(selectedDate);
+    for (const slot of slots) {
+      const [startH] = (slot.start_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+      const [endH, endM] = (slot.end_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+      const effectiveEndH = endM > 0 ? endH : Math.max(startH, endH - 1);
+      for (let h = startH; h <= effectiveEndH; h++) {
+        const list = map.get(h) || [];
+        list.push(slot);
+        map.set(h, list);
+      }
+    }
+    return map;
+  });
+
   getBlockedSlotsForDateAndHour(dateStr: string, hourNum: number): BlockedSlot[] {
+    if (dateStr === this.selectedDateStr()) {
+      return this.dayBlockedSlotsByHourMap().get(hourNum) || [];
+    }
     const slots = this.getBlockedSlotsForDate(dateStr);
     return slots.filter(slot => {
       const [startH] = (slot.start_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);

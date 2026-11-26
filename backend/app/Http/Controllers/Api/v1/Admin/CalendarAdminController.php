@@ -121,7 +121,10 @@ class CalendarAdminController extends Controller
         $date = ! empty($validated['date']) ? Carbon::parse($validated['date']) : Carbon::today();
 
         $appointments = Appointment::query()
-            ->with(['service:id,name,duration_minutes,base_price', 'customer:id,name,phone,email,is_legacy'])
+            ->with([
+                'service:id,name,duration_minutes,base_price',
+                'customer' => fn ($q) => $q->select('id', 'tenant_id', 'name', 'phone', 'email', 'is_legacy')->withCount('appointments'),
+            ])
             ->whereDate('appointment_date', $date->toDateString())
             ->orderBy('start_time', 'asc')
             ->get();

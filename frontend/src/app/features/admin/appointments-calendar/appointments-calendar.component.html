@@ -440,62 +440,90 @@
       <!-- ========================================================================= -->
       @if (activeSection() === 'escritorio') {
         
-        <!-- ENCABEZADO DEL DASHBOARD (IDÉNTICO A LA CAPTURA) -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-1 pt-1">
+        <!-- ========================================================================= -->
+        <!-- 1. ENCABEZADO EJECUTIVO & SELECTOR DE PERÍODO                             -->
+        <!-- ========================================================================= -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-1 pt-1">
           <div>
-            <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight uppercase">
-              DASHBOARD
-            </h1>
-            <p class="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
+            <div class="flex items-center gap-2.5">
+              <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight uppercase">
+                DASHBOARD
+              </h1>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                <span class="w-2 h-2 rounded-full bg-[#00C975] animate-pulse"></span>
+                Salón en Operación
+              </span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500 font-medium mt-1">
               Bienvenida de nuevo, <span class="font-bold text-[#00C975]">{{ currentUser()?.name || 'Paola Andrea Aguilera Camacho' }}</span> · Panel de Control en tiempo real
             </p>
           </div>
 
-          <!-- Selector de Períodos en Cápsula (Semana | Mes | Trimestre | Semestre) -->
-          <div class="flex items-center p-1 rounded-2xl bg-slate-100 border border-slate-200/80 shadow-2xs self-stretch sm:self-auto overflow-x-auto">
-            <button 
-              type="button" 
-              (click)="setDashboardPeriod('semana')"
-              [ngClass]="selectedPeriod() === 'semana' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
-              class="px-3.5 py-1.5 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
-            >
-              Semana
-            </button>
-            <button 
-              type="button" 
-              (click)="setDashboardPeriod('mes')"
-              [ngClass]="selectedPeriod() === 'mes' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
-              class="px-3.5 py-1.5 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
-            >
-              Mes
-            </button>
-            <button 
-              type="button" 
-              (click)="setDashboardPeriod('trimestre')"
-              [ngClass]="selectedPeriod() === 'trimestre' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
-              class="px-3.5 py-1.5 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
-            >
-              Trimestre
-            </button>
-            <button 
-              type="button" 
-              (click)="setDashboardPeriod('semestre')"
-              [ngClass]="selectedPeriod() === 'semestre' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
-              class="px-3.5 py-1.5 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
-            >
-              Semestre
-            </button>
+          <!-- Píldoras de Rendimiento & Selector de Período -->
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="hidden sm:flex items-center gap-2">
+              <div class="px-3 py-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs flex items-center gap-2">
+                <span class="text-[10px] uppercase font-bold text-slate-400">Ticket Promedio</span>
+                <span class="text-xs font-black text-slate-800">{{ formatCurrency(ticketPromedio()) }}</span>
+              </div>
+              <div class="px-3 py-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs flex items-center gap-2">
+                <span class="text-[10px] uppercase font-bold text-slate-400">Ocupación</span>
+                <span class="text-xs font-black text-emerald-600">{{ tasaOcupacion() }}%</span>
+              </div>
+              <div class="px-3 py-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs flex items-center gap-2">
+                <span class="text-[10px] uppercase font-bold text-slate-400">Recurrentes</span>
+                <span class="text-xs font-black text-purple-700">{{ clientasFidelizadasRate() }}%</span>
+              </div>
+            </div>
+
+            <!-- Selector de Períodos en Cápsula (Semana | Mes | Trimestre | Semestre) -->
+            <div class="flex items-center p-1 rounded-2xl bg-slate-100 border border-slate-200/80 shadow-2xs self-stretch sm:self-auto overflow-x-auto">
+              <button 
+                type="button" 
+                (click)="setDashboardPeriod('semana')"
+                [ngClass]="selectedPeriod() === 'semana' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
+                class="px-3.5 py-1.5 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
+              >
+                Semana
+              </button>
+              <button 
+                type="button" 
+                (click)="setDashboardPeriod('mes')"
+                [ngClass]="selectedPeriod() === 'mes' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
+                class="px-3.5 py-1.5 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
+              >
+                Mes
+              </button>
+              <button 
+                type="button" 
+                (click)="setDashboardPeriod('trimestre')"
+                [ngClass]="selectedPeriod() === 'trimestre' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
+                class="px-3.5 py-1.5 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
+              >
+                Trimestre
+              </button>
+              <button 
+                type="button" 
+                (click)="setDashboardPeriod('semestre')"
+                [ngClass]="selectedPeriod() === 'semestre' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
+                class="px-3.5 py-1.5 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
+              >
+                Semestre
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- FILA DE TARJETAS KPI DEL DASHBOARD (Nuvex Modern Curve UI) -->
+        <!-- ========================================================================= -->
+        <!-- 2. FILA DE TARJETAS KPI (NUVEX MODERN CURVE UI)                            -->
+        <!-- ========================================================================= -->
         <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           
           <!-- KPI 1: Ingreso Proyectado / Estimado -->
-          <div class="bg-white rounded-[28px] border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-3 hover:border-emerald-300 transition-all">
+          <div class="bg-white rounded-[28px] border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-3 hover:border-emerald-300 transition-all group">
             <div class="flex items-center justify-between">
               <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Ingreso Estimado</span>
-              <div class="w-9 h-9 rounded-xl bg-emerald-50 text-[#00C975] flex items-center justify-center">
+              <div class="w-10 h-10 rounded-full bg-emerald-50 text-[#00C975] flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -505,17 +533,20 @@
               <span class="text-xl sm:text-2xl font-black text-slate-900 block tracking-tight">
                 {{ formatCurrency(kpis().financials.expected_revenue) }}
               </span>
-              <span class="text-[11px] font-bold text-emerald-600 block mt-1">
-                Abonos Cobrados: {{ formatCurrency(kpis().financials.collected_deposits) }}
-              </span>
+              <div class="flex items-center gap-1.5 mt-1">
+                <span class="text-[11px] font-bold text-emerald-600">
+                  Abonos: {{ formatCurrency(kpis().financials.collected_deposits) }}
+                </span>
+                <span class="text-[10px] text-slate-400 font-semibold">• {{ kpis().financials.expected_revenue > 0 ? (kpis().financials.collected_deposits / kpis().financials.expected_revenue * 100).toFixed(0) + '%' : '0%' }} cobrado</span>
+              </div>
             </div>
           </div>
 
           <!-- KPI 2: Saldo Pendiente por Cobrar -->
-          <div class="bg-white rounded-[28px] border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-3 hover:border-amber-300 transition-all">
+          <div class="bg-white rounded-[28px] border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-3 hover:border-amber-300 transition-all group">
             <div class="flex items-center justify-between">
               <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Saldo Pendiente</span>
-              <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -525,18 +556,18 @@
               <span class="text-xl sm:text-2xl font-black text-slate-900 block tracking-tight">
                 {{ formatCurrency(kpis().financials.pending_balance) }}
               </span>
-              <span class="text-[11px] text-slate-400 font-medium block mt-1">Por liquidar en salón</span>
+              <span class="text-[11px] text-slate-400 font-medium block mt-1">Por liquidar en salón al atender</span>
             </div>
           </div>
 
           <!-- KPI 3: Citas Agendadas / Confirmadas -->
           <div 
             (click)="setSection('calendario')"
-            class="bg-white rounded-[28px] border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-3 hover:border-emerald-400 cursor-pointer transition-all"
+            class="bg-white rounded-[28px] border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-3 hover:border-teal-400 cursor-pointer transition-all group"
           >
             <div class="flex items-center justify-between">
               <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Citas Confirmadas</span>
-              <div class="w-9 h-9 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+              <div class="w-10 h-10 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -547,18 +578,18 @@
                 <span class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{{ statusCounts().confirmed }}</span>
                 <span class="text-xs text-slate-400 font-semibold">de {{ statusCounts().all }} total</span>
               </div>
-              <span class="text-[11px] text-emerald-600 font-semibold block mt-1">Agenda en curso</span>
+              <span class="text-[11px] text-teal-700 font-semibold block mt-1">Agenda en curso con alta demanda</span>
             </div>
           </div>
 
           <!-- KPI 4: Validaciones Nequi Pendientes -->
           <div 
             (click)="setSection('citas')"
-            class="bg-white rounded-[28px] border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-3 hover:border-amber-400 cursor-pointer transition-all"
+            class="bg-white rounded-[28px] border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-3 hover:border-amber-400 cursor-pointer transition-all group"
           >
             <div class="flex items-center justify-between">
               <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Validar Nequi</span>
-              <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform" [ngClass]="statusCounts().pendingVerification > 0 ? 'bg-amber-100 text-amber-700 animate-bounce' : 'bg-amber-50 text-amber-600'">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
@@ -571,50 +602,305 @@
                 </span>
                 <span class="text-xs text-slate-400 font-semibold">por verificar</span>
               </div>
-              <span class="text-[11px] text-slate-500 font-medium block mt-1">Clic para revisar comprobantes</span>
+              <span class="text-[11px] text-slate-500 font-medium block mt-1">
+                {{ statusCounts().pendingVerification > 0 ? 'Comprobantes pendientes por revisar' : 'Todos los pagos al día' }}
+              </span>
             </div>
           </div>
 
         </div>
 
-        <!-- FILA DE WIDGETS EJECUTIVOS DEL ESCRITORIO -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          <!-- Columna 1 & 2: Próximas Citas en Agenda -->
-          <div class="lg:col-span-2 bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-5 sm:p-6 flex flex-col gap-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div>
-                <h2 class="text-base font-bold text-slate-900">Próximas Citas en Agenda</h2>
-                <p class="text-xs text-slate-500">Turnos programados más inmediatos del salón</p>
+        <!-- ========================================================================= -->
+        <!-- 3. FILA SPOTLIGHT & ANALYTICS NUVEX (GRID DE 3 TARJETAS VISUALES)         -->
+        <!-- ========================================================================= -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          <!-- SPOTLIGHT CARD: ESPECIALISTA & SALÓN EN VIVO (Firma Nuvex Modern Curve) -->
+          <div class="lg:col-span-4 bg-[#1E293B] text-white rounded-[32px] p-5 sm:p-6 shadow-xl flex flex-col justify-between border border-slate-700/60 relative overflow-hidden">
+            <div class="absolute -right-8 -bottom-8 w-44 h-44 bg-[#00C975]/10 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="flex flex-col gap-4 relative z-10">
+              <div class="flex items-center justify-between">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  En Turno Hoy
+                </span>
+                <span class="text-xs text-slate-400 font-medium">
+                  {{ todayAppointmentsCount() }} citas hoy
+                </span>
               </div>
-              <div class="flex items-center gap-2">
-                <button 
-                  type="button" 
-                  (click)="setSection('calendario')"
-                  class="text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer"
-                >
-                  Ver Calendario →
-                </button>
+
+              <!-- Avatar Central de la Especialista Principal -->
+              <div class="flex items-center gap-3.5 pt-1">
+                <div class="relative shrink-0">
+                  <div class="w-14 h-14 rounded-full bg-[#00C975] text-white font-black text-xl flex items-center justify-center shadow-md ring-4 ring-white/10 tracking-wider">
+                    {{ userInitials() }}
+                  </div>
+                  <span class="absolute bottom-0 right-0 w-4 h-4 bg-emerald-400 border-2 border-[#1E293B] rounded-full"></span>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="text-sm font-bold text-white truncate leading-tight">
+                    {{ currentUser()?.name || 'Paola Andrea Aguilera' }}
+                  </h3>
+                  <p class="text-[11px] text-emerald-300/90 font-medium truncate mt-0.5">
+                    {{ currentTenant()?.name || 'La Belle Nails' }} · Especialista Master
+                  </p>
+                  <div class="flex items-center gap-2 mt-1">
+                    <span class="text-[10px] px-2 py-0.5 rounded-md bg-white/10 text-slate-300 font-semibold">
+                      Ocupación: {{ tasaOcupacion() }}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cita Destacada / Inmediata -->
+              <div class="mt-2 p-3.5 rounded-2xl bg-white/5 border border-white/10 flex flex-col gap-2">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="font-bold text-slate-300 uppercase tracking-wide">Próximo Turno</span>
+                  <span class="text-[#00C975] font-black text-xs">
+                    {{ spotlightAppointment()?.start_time || '09:00' }} - {{ spotlightAppointment()?.end_time || '10:00' }}
+                  </span>
+                </div>
+
+                @if (spotlightAppointment(); as apt) {
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                      <span class="text-xs font-bold text-white block truncate">{{ apt.client.name }}</span>
+                      <span class="text-[11px] text-slate-400 block truncate">{{ apt.service.name }}</span>
+                    </div>
+                    <button 
+                      type="button"
+                      (click)="openWhatsAppChat(apt.client.phone, apt.client.name, apt.date, apt.start_time, apt.service.name)"
+                      class="p-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 transition-colors shrink-0 cursor-pointer"
+                      title="Escribir por WhatsApp"
+                    >
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                    </button>
+                  </div>
+                } @else {
+                  <span class="text-xs text-slate-400">Sin citas inmediatas pendientes.</span>
+                }
               </div>
             </div>
 
-            @if (recentOrUpcomingAppointments().length > 0) {
+            <!-- Botón de Acción Rápida -->
+            <div class="pt-4 border-t border-slate-700/60 flex items-center justify-between relative z-10">
+              <span class="text-[11px] text-slate-400 font-medium">¿Llegó una clienta?</span>
+              <button 
+                type="button" 
+                (click)="openNewAppointmentModal()"
+                class="px-3.5 py-1.5 rounded-xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+              >
+                + Nueva Cita
+              </button>
+            </div>
+          </div>
+
+          <!-- GRÁFICA DE ACTIVIDAD SEMANAL & DEMANDA (ANALYTICS BAR WIDGET) -->
+          <div class="lg:col-span-5 bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-5 sm:p-6 flex flex-col justify-between gap-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h2 class="text-sm font-bold text-slate-900">Actividad Semanal & Demanda</h2>
+                <p class="text-xs text-slate-400">Distribución de citas agendadas por día</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
+                Semana en curso
+              </span>
+            </div>
+
+            <!-- Gráfico de Barras Bicolores Nuvex -->
+            <div class="pt-2">
+              <div class="h-36 flex items-end justify-between gap-2 sm:gap-3 px-2">
+                @for (day of weeklyActivity(); track day.dayShort) {
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
+                    <span class="text-[10px] font-bold text-slate-500 opacity-80 group-hover:opacity-100 group-hover:text-emerald-600 transition-all">
+                      {{ day.count }}
+                    </span>
+
+                    <div class="w-full max-w-[28px] h-28 bg-slate-100 rounded-full flex flex-col justify-end p-0.5 overflow-hidden">
+                      <div 
+                        class="w-full rounded-full transition-all duration-700 ease-out"
+                        [ngClass]="day.isPeak ? 'bg-[#00C975] shadow-xs' : 'bg-slate-300 group-hover:bg-[#00C975]/80'"
+                        [style.height.%]="day.percentage"
+                      ></div>
+                    </div>
+
+                    <span class="text-[11px] font-bold" [ngClass]="day.isPeak ? 'text-emerald-700' : 'text-slate-400'">
+                      {{ day.dayShort }}
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#00C975]"></span>
+                <span class="text-slate-500 font-medium text-[11px]">Día con mayor afluencia:</span>
+              </div>
+              <span class="font-bold text-slate-800 text-[11px]">{{ peakDayName() }}</span>
+            </div>
+          </div>
+
+          <!-- MINI CALENDARIO MENSUAL & SALUD DEL RECAUDO -->
+          <div class="lg:col-span-3 bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-5 flex flex-col justify-between gap-4">
+            <div class="pb-2 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">{{ currentMonthName() }}</h3>
+                <p class="text-[11px] text-slate-400">Agenda mensual activa</p>
+              </div>
+              <button 
+                type="button" 
+                (click)="setSection('calendario')" 
+                class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
+              >
+                Ver todo →
+              </button>
+            </div>
+
+            <!-- Grilla Compacta del Mini-Calendario -->
+            <div>
+              <div class="grid grid-cols-7 gap-1 text-center mb-1 text-[10px] font-bold text-slate-400 uppercase">
+                <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+              </div>
+              <div class="grid grid-cols-7 gap-1 text-center">
+                @for (item of miniCalendarDays(); track $index) {
+                  @if (item.isCurrentMonth) {
+                    <div 
+                      class="h-6 w-full flex items-center justify-center rounded-lg text-[10px] font-bold relative transition-all"
+                      [ngClass]="item.isToday ? 'bg-[#00C975] text-white shadow-2xs' : (item.hasAppointments ? 'bg-emerald-50 text-emerald-800 font-black' : 'text-slate-600 hover:bg-slate-50')"
+                    >
+                      {{ item.dayNumber }}
+                      @if (item.hasAppointments && !item.isToday) {
+                        <span class="absolute bottom-0.5 w-1 h-1 rounded-full bg-[#00C975]"></span>
+                      }
+                    </div>
+                  } @else {
+                    <div class="h-6 w-full"></div>
+                  }
+                }
+              </div>
+            </div>
+
+            <!-- Salud del Recaudo -->
+            <div class="pt-3 border-t border-slate-100 flex flex-col gap-2">
+              <div class="flex items-center justify-between text-xs font-semibold">
+                <span class="text-slate-600 text-[11px]">Abonos Cobrados</span>
+                <span class="text-emerald-600 font-bold text-[11px]">
+                  {{ kpis().financials.expected_revenue > 0 ? (kpis().financials.collected_deposits / kpis().financials.expected_revenue * 100).toFixed(0) + '%' : '0%' }}
+                </span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div 
+                  class="h-full bg-[#00C975] rounded-full transition-all duration-500"
+                  [style.width.%]="kpis().financials.expected_revenue > 0 ? (kpis().financials.collected_deposits / kpis().financials.expected_revenue * 100) : 0"
+                ></div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 pt-1 text-center">
+                <div class="p-2 rounded-xl bg-purple-50/70 border border-purple-100">
+                  <span class="text-[9px] uppercase font-bold text-purple-600 block">Completadas</span>
+                  <span class="text-sm font-black text-purple-800 block">{{ statusCounts().completed }}</span>
+                </div>
+                <div class="p-2 rounded-xl bg-amber-50/70 border border-amber-100">
+                  <span class="text-[9px] uppercase font-bold text-amber-600 block">Por Validar</span>
+                  <span class="text-sm font-black text-amber-800 block">{{ statusCounts().pendingVerification }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 4. OPERATIVA DE CITAS (CON FILTROS) & TOP TRATAMIENTOS POPULARES          -->
+        <!-- ========================================================================= -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          <!-- COLUMNA IZQUIERDA (7 COLS): PRÓXIMAS CITAS EN AGENDA CON FILTROS RÁPIDOS -->
+          <div class="lg:col-span-7 bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-5 sm:p-6 flex flex-col gap-4">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div>
+                <h2 class="text-base font-bold text-slate-900">Próximas Citas en Agenda</h2>
+                <p class="text-xs text-slate-400">Turnos programados más inmediatos del salón</p>
+              </div>
+
+              <!-- Buscador Rápido en Píldora -->
+              <div class="relative w-full sm:w-56">
+                <input 
+                  type="text" 
+                  [(ngModel)]="dashboardSearchQuery"
+                  placeholder="Buscar por clienta..."
+                  class="w-full pl-8 pr-3 py-1.5 rounded-full text-xs bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00C975] focus:bg-white transition-all"
+                />
+                <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Pestañas de Filtro Rápido en Cápsula -->
+            <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-50 border border-slate-100 self-start overflow-x-auto">
+              <button 
+                type="button" 
+                (click)="dashboardFilterTab.set('all')"
+                [ngClass]="dashboardFilterTab() === 'all' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
+                class="px-3 py-1 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
+              >
+                Todas ({{ appointments().length }})
+              </button>
+              <button 
+                type="button" 
+                (click)="dashboardFilterTab.set('today')"
+                [ngClass]="dashboardFilterTab() === 'today' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
+                class="px-3 py-1 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
+              >
+                Hoy ({{ todayAppointmentsCount() }})
+              </button>
+              <button 
+                type="button" 
+                (click)="dashboardFilterTab.set('confirmed')"
+                [ngClass]="dashboardFilterTab() === 'confirmed' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
+                class="px-3 py-1 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
+              >
+                Confirmadas ({{ statusCounts().confirmed }})
+              </button>
+              <button 
+                type="button" 
+                (click)="dashboardFilterTab.set('pending')"
+                [ngClass]="dashboardFilterTab() === 'pending' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
+                class="px-3 py-1 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
+              >
+                Por Validar ({{ statusCounts().pendingVerification }})
+              </button>
+            </div>
+
+            <!-- Listado de Citas Enriquecidas -->
+            @if (dashboardFilteredAppointments().length > 0) {
               <div class="flex flex-col divide-y divide-slate-100">
-                @for (apt of recentOrUpcomingAppointments(); track apt.id) {
-                  <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/60 rounded-xl px-2 transition-colors">
+                @for (apt of dashboardFilteredAppointments(); track apt.id) {
+                  <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/70 rounded-2xl px-2.5 transition-all group">
                     <div class="flex items-center gap-3 min-w-0">
-                      <div class="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs flex items-center justify-center shrink-0">
-                        {{ apt.client.name.substring(0, 2).toUpperCase() }}
+                      <div class="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        {{ (apt.client.name || 'CL').substring(0, 2).toUpperCase() }}
                       </div>
                       <div class="min-w-0">
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                           <span class="font-bold text-xs text-slate-900 truncate">{{ apt.client.name }}</span>
                           <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" [ngClass]="getStatusBadgeClass(apt.status)">
                             {{ getStatusLabel(apt.status) }}
                           </span>
+                          @if (!apt.client.is_new) {
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
+                              Clienta VIP
+                            </span>
+                          }
                         </div>
                         <span class="text-[11px] text-slate-500 block truncate mt-0.5">
-                          {{ apt.service.name }} • {{ apt.date }} ({{ apt.start_time }} - {{ apt.end_time || 'Turno' }})
+                          {{ apt.service.name }} • <span class="font-semibold text-slate-700">{{ apt.date }}</span> ({{ apt.start_time }} - {{ apt.end_time || 'Turno' }})
                         </span>
                       </div>
                     </div>
@@ -648,115 +934,173 @@
                   </div>
                 }
               </div>
+
+              <div class="pt-2 flex items-center justify-between border-t border-slate-100">
+                <span class="text-xs text-slate-400">Mostrando turnos más inmediatos</span>
+                <button 
+                  type="button" 
+                  (click)="setSection('calendario')"
+                  class="text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer"
+                >
+                  Ver Calendario Completo →
+                </button>
+              </div>
             } @else {
-              <div class="py-12 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
+              <div class="py-10 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
                 <svg class="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span class="text-xs font-medium">No hay citas registradas para este período.</span>
+                <span class="text-xs font-medium">No hay citas registradas para este filtro o búsqueda.</span>
                 <button 
                   type="button" 
                   (click)="openNewAppointmentModal()" 
                   class="mt-1 px-4 py-2 rounded-xl bg-[#00C975] text-white text-xs font-bold shadow-xs cursor-pointer"
                 >
-                  + Agendar Primera Cita
+                  + Agendar Cita
                 </button>
               </div>
             }
+
           </div>
 
-          <!-- Columna 3: Accesos Rápidos & Resumen Operativo -->
-          <div class="flex flex-col gap-5">
-            
-            <!-- Resumen del Negocio -->
-            <div class="bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-5 flex flex-col gap-4">
-              <div class="pb-2 border-b border-slate-100">
-                <h3 class="text-sm font-bold text-slate-900">Salud del Negocio</h3>
-                <p class="text-xs text-slate-400">Rendimiento y recaudo</p>
-              </div>
-
-              <div class="flex flex-col gap-3">
+          <!-- COLUMNA DERECHA (5 COLS): TOP TRATAMIENTOS MÁS POPULARES -->
+          <div class="lg:col-span-5 bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-5 sm:p-6 flex flex-col justify-between gap-4">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div>
-                  <div class="flex items-center justify-between text-xs mb-1 font-semibold">
-                    <span class="text-slate-600">Abonos Cobrados</span>
-                    <span class="text-emerald-600 font-bold">
-                      {{ kpis().financials.expected_revenue > 0 ? (kpis().financials.collected_deposits / kpis().financials.expected_revenue * 100).toFixed(0) + '%' : '0%' }}
-                    </span>
-                  </div>
-                  <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                    <div 
-                      class="h-full bg-[#00C975] rounded-full transition-all duration-500"
-                      [style.width.%]="kpis().financials.expected_revenue > 0 ? (kpis().financials.collected_deposits / kpis().financials.expected_revenue * 100) : 0"
-                    ></div>
-                  </div>
+                  <h2 class="text-sm font-bold text-slate-900">Top Tratamientos Populares</h2>
+                  <p class="text-xs text-slate-400">Servicios favoritos y más demandados</p>
                 </div>
+                <button 
+                  type="button" 
+                  (click)="setSection('servicios')"
+                  class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
+                >
+                  Gestionar →
+                </button>
+              </div>
 
-                <div class="grid grid-cols-2 gap-2 pt-2">
-                  <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Completadas</span>
-                    <span class="text-base font-black text-purple-700 block mt-0.5">{{ statusCounts().completed }}</span>
+              <!-- Lista de Tratamientos Ranking -->
+              <div class="flex flex-col divide-y divide-slate-100 pt-1">
+                @for (item of topServices(); track item.service.id) {
+                  <div class="py-3 flex items-center justify-between gap-3 group">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <!-- Número de Ranking -->
+                      <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
+                        [ngClass]="item.rank === 1 ? 'bg-amber-100 text-amber-800' : (item.rank === 2 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-500')"
+                      >
+                        #{{ item.rank }}
+                      </span>
+
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                          <span class="text-xs font-bold text-slate-800 truncate">{{ item.service.name }}</span>
+                          @if (item.service.is_favorite) {
+                            <span title="Tratamiento Favorito" class="text-amber-400 text-xs shrink-0 select-none">★</span>
+                          }
+                        </div>
+                        <span class="text-[11px] text-slate-400 block truncate">
+                          {{ item.service.duration_minutes }} min · Base: {{ formatCurrency(item.service.base_price) }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="text-right shrink-0">
+                      <span class="text-xs font-black text-slate-900 block">{{ item.bookingCount }} citas</span>
+                      <div class="w-16 h-1.5 rounded-full bg-slate-100 mt-1 overflow-hidden">
+                        <div 
+                          class="h-full bg-[#00C975] rounded-full transition-all duration-500" 
+                          [style.width.%]="item.percentage"
+                        ></div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Por Validar</span>
-                    <span class="text-base font-black text-amber-600 block mt-0.5">{{ statusCounts().pendingVerification }}</span>
-                  </div>
-                </div>
+                }
               </div>
             </div>
 
-            <!-- Accesos Rápidos Directos -->
-            <div class="bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-5 flex flex-col gap-3">
-              <span class="text-xs font-bold text-slate-900 pb-1 border-b border-slate-100">Accesos Rápidos</span>
-
+            <!-- Resumen Inferior del Catálogo -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span class="text-slate-400 text-[11px]">Total catálogo: {{ servicesList().length }} servicios</span>
               <button 
-                type="button" 
-                (click)="setSection('calendario')"
-                class="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-emerald-50/70 border border-slate-100 transition-all text-xs font-semibold text-slate-700 cursor-pointer"
-              >
-                <div class="flex items-center gap-2.5">
-                  <div class="w-7 h-7 rounded-lg bg-emerald-100 text-[#00C975] flex items-center justify-center">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <span>Calendario Interactivo</span>
-                </div>
-                <span class="text-slate-400">→</span>
-              </button>
-
-              <button 
-                type="button" 
-                (click)="setSection('clientes')"
-                class="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-emerald-50/70 border border-slate-100 transition-all text-xs font-semibold text-slate-700 cursor-pointer"
-              >
-                <div class="flex items-center gap-2.5">
-                  <div class="w-7 h-7 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                  <span>Directorio de Clientes CRM</span>
-                </div>
-                <span class="text-slate-400">→</span>
-              </button>
-
-              <button 
-                type="button" 
+                type="button"
                 (click)="setSection('servicios')"
-                class="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-emerald-50/70 border border-slate-100 transition-all text-xs font-semibold text-slate-700 cursor-pointer"
+                class="text-xs font-bold text-purple-700 hover:text-purple-800 cursor-pointer"
               >
-                <div class="flex items-center gap-2.5">
-                  <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                  </div>
-                  <span>Catálogo de Tratamientos</span>
-                </div>
-                <span class="text-slate-400">→</span>
+                Editar Precios & Tiempos →
               </button>
             </div>
+          </div>
 
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 5. ACCESOS RÁPIDOS INFERIORES HORIZONTALES (4 MÓDULOS EN 1 FILA)          -->
+        <!-- ========================================================================= -->
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+          <!-- Acceso 1: Calendario -->
+          <div 
+            (click)="setSection('calendario')"
+            class="bg-white rounded-[24px] border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5 hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer group"
+          >
+            <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-[#00C975] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h4 class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors truncate">Calendario Citas</h4>
+              <p class="text-[10px] text-slate-400 truncate">Agenda interactiva</p>
+            </div>
+          </div>
+
+          <!-- Acceso 2: Clientes CRM -->
+          <div 
+            (click)="setSection('clientes')"
+            class="bg-white rounded-[24px] border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5 hover:border-teal-300 hover:shadow-md transition-all cursor-pointer group"
+          >
+            <div class="w-10 h-10 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h4 class="text-xs font-bold text-slate-900 group-hover:text-teal-700 transition-colors truncate">Directorio CRM</h4>
+              <p class="text-[10px] text-slate-400 truncate">Historial de clientas</p>
+            </div>
+          </div>
+
+          <!-- Acceso 3: Catálogo Tratamientos -->
+          <div 
+            (click)="setSection('servicios')"
+            class="bg-white rounded-[24px] border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5 hover:border-purple-300 hover:shadow-md transition-all cursor-pointer group"
+          >
+            <div class="w-10 h-10 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h4 class="text-xs font-bold text-slate-900 group-hover:text-purple-700 transition-colors truncate">Tratamientos</h4>
+              <p class="text-[10px] text-slate-400 truncate">Precios y favoritos</p>
+            </div>
+          </div>
+
+          <!-- Acceso 4: Difusión WhatsApp -->
+          <div 
+            (click)="setSection('difusion')"
+            class="bg-white rounded-[24px] border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5 hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer group"
+          >
+            <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-[#00C975] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h4 class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors truncate">Difusión WhatsApp</h4>
+              <p class="text-[10px] text-slate-400 truncate">Campañas masivas</p>
+            </div>
           </div>
 
         </div>

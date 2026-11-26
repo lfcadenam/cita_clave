@@ -59,23 +59,23 @@ export class AdminLayoutComponent implements OnInit {
         this.router.navigate(['/admin/superadmin']);
       }
     } else {
-      this.loadBadges();
+      // Diferir la carga de contadores de badges para cuando la CPU e interfaz estén en reposo
+      setTimeout(() => this.loadBadges(), 3500);
     }
   }
 
   loadBadges(): void {
-    this.customerService.getCustomers().subscribe({
+    // Usar paginación mínima (1 registro) para leer meta.total sin transferir cargas masivas de datos
+    this.customerService.getCustomersPaginated(1, 1).subscribe({
       next: (res) => {
-        const list = Array.isArray(res) ? res : (res as any)?.data || [];
-        this.nav.updateBadges({ customers: list.length });
+        this.nav.updateBadges({ customers: res?.meta?.total ?? 0 });
       },
       error: () => {}
     });
 
-    this.serviceAdminService.getServices().subscribe({
+    this.serviceAdminService.getServicesPaginated(1, 1).subscribe({
       next: (res) => {
-        const list = Array.isArray(res) ? res : (res as any)?.data || [];
-        this.nav.updateBadges({ services: list.length });
+        this.nav.updateBadges({ services: res?.meta?.total ?? 0 });
       },
       error: () => {}
     });
@@ -88,7 +88,7 @@ export class AdminLayoutComponent implements OnInit {
       error: () => {}
     });
 
-    this.appointmentService.getAppointments({ status: 'PENDING' }).subscribe({
+    this.appointmentService.getAppointments({ status: 'PENDING', per_page: 1 }).subscribe({
       next: (res) => {
         const count = res?.meta?.total ?? (res?.data?.length || 0);
         this.nav.updateBadges({ pendingAppointments: count });

@@ -79,7 +79,7 @@ class Customer extends Model
             return false;
         }
 
-        return $this->appointments()->count() <= 1;
+        return $this->appointments_count <= 1;
     }
 
     /**
@@ -91,11 +91,15 @@ class Customer extends Model
             return true;
         }
 
-        return $this->appointments()->count() >= 2;
+        return $this->appointments_count >= 2;
     }
 
     public function getAppointmentsCountAttribute(): int
     {
+        if (array_key_exists('appointments_count', $this->attributes)) {
+            return (int) $this->attributes['appointments_count'];
+        }
+
         $direct = $this->appointments()->count();
         if ($direct > 0) {
             return $direct;

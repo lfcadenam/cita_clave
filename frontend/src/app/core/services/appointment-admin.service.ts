@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AdminAppointment, AppointmentStatus } from '../models/admin-appointment.models';
 
@@ -18,6 +18,7 @@ export interface AppointmentFilterParams {
   per_page?: number;
   page?: number;
   order_dir?: 'asc' | 'desc';
+  bypass_cache?: boolean;
 }
 
 export interface CreateAppointmentPayload {
@@ -45,10 +46,26 @@ export class AppointmentAdminService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/admin/appointments`;
 
+  // Caché en memoria para navegación instantánea entre semanas/meses (TTL 60s)
+  private cache = new Map<string, { data: { data: AdminAppointment[]; meta?: any }; timestamp: number }>();
+  private readonly CACHE_TTL_MS = 60000;
+
+  clearCache(): void {
+    this.cache.clear();
+  }
+
   /**
-   * Listar citas con filtros avanzados.
+   * Listar citas con filtros avanzados y soporte de caché en memoria.
    */
   getAppointments(filters: AppointmentFilterParams = {}): Observable<{ data: AdminAppointment[]; meta?: any }> {
+    const { bypass_cache, ...cleanFilters } = filters;
+    const cacheKey = JSON.stringify(cleanFilters);
+    const cached = this.cache.get(cacheKey);
+
+    if (!bypass_cache && cached && (Date.now() - cached.timestamp < this.CACHE_TTL_MS)) {
+      return of(cached.data);
+    }
+
     let params = new HttpParams();
 
     if (filters.date) params = params.set('date', filters.date);
@@ -67,7 +84,10 @@ export class AppointmentAdminService {
       map(res => ({
         data: res.data || [],
         meta: res.meta
-      }))
+      })),
+      tap(result => {
+        this.cache.set(cacheKey, { data: result, timestamp: Date.now() });
+      })
     );
   }
 
@@ -81,55 +101,61 @@ export class AppointmentAdminService {
   }
 
   /**
-   * Agendar nueva cita interna con validación de conflictos.
+   * Agendar nueva cita interna con validación de conflictos e invalidación de caché.
    */
   createAppointment(payload: CreateAppointmentPayload): Observable<AdminAppointment> {
     return this.http.post<{ success: boolean; data: AdminAppointment }>(this.apiUrl, payload).pipe(
+      tap(() => this.clearCache()),
       map(res => res.data)
     );
   }
 
   /**
-   * Modificar datos de una cita existente.
+   * Modificar datos de una cita existente e invalidar caché.
    */
   updateAppointment(id: number, payload: Partial<CreateAppointmentPayload>): Observable<AdminAppointment> {
     return this.http.put<{ success: boolean; data: AdminAppointment }>(`${this.apiUrl}/${id}`, payload).pipe(
+      tap(() => this.clearCache()),
       map(res => res.data)
     );
   }
 
   /**
-   * Transición de estado de cita.
+   * Transición de estado de cita e invalidar caché.
    */
   updateStatus(id: number, status: AppointmentStatus, cancellationReason?: string): Observable<AdminAppointment> {
     return this.http.patch<{ success: boolean; data: AdminAppointment }>(`${this.apiUrl}/${id}/status`, {
       status,
       cancellation_reason: cancellationReason
     }).pipe(
+      tap(() => this.clearCache()),
       map(res => res.data)
     );
   }
 
   /**
-   * Validar y confirmar comprobante de transferencia Nequi.
+   * Validar y confirmar comprobante de transferencia Nequi e invalidar caché.
    */
   approveNequi(id: number, depositPaid?: number, notes?: string): Observable<AdminAppointment> {
     return this.http.post<{ success: boolean; data: AdminAppointment }>(`${this.apiUrl}/${id}/approve-nequi`, {
       deposit_paid: depositPaid,
       notes
     }).pipe(
+      tap(() => this.clearCache()),
       map(res => res.data)
     );
   }
 
   /**
-   * Rechazar comprobante de transferencia Nequi y notificar al cliente.
+   * Rechazar comprobante de transferencia Nequi e invalidar caché.
    */
   rejectNequi(id: number, reason?: string): Observable<AdminAppointment> {
     return this.http.post<{ success: boolean; data: AdminAppointment }>(`${this.apiUrl}/${id}/reject-nequi`, {
       reason
     }).pipe(
+      tap(() => this.clearCache()),
       map(res => res.data)
     );
   }
 }
+

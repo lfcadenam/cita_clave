@@ -1,52 +1,74 @@
 import { Routes } from '@angular/router';
-import { BookingComponent } from './features/booking/booking.component';
-import { AdminLoginComponent } from './features/admin/login/admin-login.component';
-import { AdminLayoutComponent } from './features/admin/layout/admin-layout.component';
-import { AppointmentsCalendarComponent } from './features/admin/appointments-calendar/appointments-calendar.component';
-import { AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
-import { AdminAppointmentsComponent } from './features/admin/appointments/admin-appointments.component';
-import { AdminCustomersComponent } from './features/admin/customers/admin-customers.component';
-import { AdminWaitlistComponent } from './features/admin/waitlist/admin-waitlist.component';
-import { AdminServicesComponent } from './features/admin/services/admin-services.component';
-import { AdminSchedulesComponent } from './features/admin/schedules/admin-schedules.component';
-import { AdminWhatsAppSettingsComponent } from './features/admin/whatsapp-settings/admin-whatsapp-settings.component';
-import { AdminWhatsAppTemplatesComponent } from './features/admin/whatsapp-templates/admin-whatsapp-templates.component';
-import { AdminWhatsAppBroadcastComponent } from './features/admin/whatsapp-broadcast/admin-whatsapp-broadcast.component';
-import { AdminSuperAdminComponent } from './features/admin/superadmin/admin-superadmin.component';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   // Flujo Público de Reservas para Clientes
   {
     path: '',
-    component: BookingComponent
+    loadComponent: () => import('./features/booking/booking.component').then(m => m.BookingComponent)
   },
   
   // Acceso Administrativo (Login sin Layout)
   {
     path: 'admin/login',
-    component: AdminLoginComponent
+    loadComponent: () => import('./features/admin/login/admin-login.component').then(m => m.AdminLoginComponent)
   },
 
-  // Shell Administrativo Nuvex Modern Curve UI con Submódulos Desacoplados
+  // Shell Administrativo Nuvex Modern Curve UI con Submódulos Desacoplados (Lazy Loaded)
   {
     path: 'admin',
-    component: AdminLayoutComponent,
+    loadComponent: () => import('./features/admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'calendario', pathMatch: 'full' },
-      { path: 'escritorio', component: AdminDashboardComponent },
-      { path: 'calendario', component: AppointmentsCalendarComponent },
-      { path: 'citas', component: AdminAppointmentsComponent },
-      { path: 'clientes', component: AdminCustomersComponent },
-      { path: 'espera', component: AdminWaitlistComponent },
-      { path: 'servicios', component: AdminServicesComponent },
-      { path: 'horarios', component: AdminSchedulesComponent },
-      { path: 'bloqueos', component: AdminSchedulesComponent },
-      { path: 'whatsapp', component: AdminWhatsAppSettingsComponent },
-      { path: 'plantillas', component: AdminWhatsAppTemplatesComponent },
-      { path: 'difusion', component: AdminWhatsAppBroadcastComponent },
-      { path: 'superadmin', component: AdminSuperAdminComponent }
+      { 
+        path: 'escritorio', 
+        loadComponent: () => import('./features/admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent) 
+      },
+      { 
+        path: 'calendario', 
+        loadComponent: () => import('./features/admin/appointments-calendar/appointments-calendar.component').then(m => m.AppointmentsCalendarComponent) 
+      },
+      { 
+        path: 'citas', 
+        loadComponent: () => import('./features/admin/appointments/admin-appointments.component').then(m => m.AdminAppointmentsComponent) 
+      },
+      { 
+        path: 'clientes', 
+        loadComponent: () => import('./features/admin/customers/admin-customers.component').then(m => m.AdminCustomersComponent) 
+      },
+      { 
+        path: 'espera', 
+        loadComponent: () => import('./features/admin/waitlist/admin-waitlist.component').then(m => m.AdminWaitlistComponent) 
+      },
+      { 
+        path: 'servicios', 
+        loadComponent: () => import('./features/admin/services/admin-services.component').then(m => m.AdminServicesComponent) 
+      },
+      { 
+        path: 'horarios', 
+        loadComponent: () => import('./features/admin/schedules/admin-schedules.component').then(m => m.AdminSchedulesComponent) 
+      },
+      { 
+        path: 'bloqueos', 
+        loadComponent: () => import('./features/admin/schedules/admin-schedules.component').then(m => m.AdminSchedulesComponent) 
+      },
+      { 
+        path: 'whatsapp', 
+        loadComponent: () => import('./features/admin/whatsapp-settings/admin-whatsapp-settings.component').then(m => m.AdminWhatsAppSettingsComponent) 
+      },
+      { 
+        path: 'plantillas', 
+        loadComponent: () => import('./features/admin/whatsapp-templates/admin-whatsapp-templates.component').then(m => m.AdminWhatsAppTemplatesComponent) 
+      },
+      { 
+        path: 'difusion', 
+        loadComponent: () => import('./features/admin/whatsapp-broadcast/admin-whatsapp-broadcast.component').then(m => m.AdminWhatsAppBroadcastComponent) 
+      },
+      { 
+        path: 'superadmin', 
+        loadComponent: () => import('./features/admin/superadmin/admin-superadmin.component').then(m => m.AdminSuperAdminComponent) 
+      }
     ]
   },
 
