@@ -12,7 +12,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  let headersConfig: Record<string, string> = {};
+  let headersConfig: Record<string, string> = {
+    'Accept': 'application/json',
+  };
 
   const token = authService.token();
   if (token) {

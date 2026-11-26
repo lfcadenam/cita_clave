@@ -181,6 +181,16 @@
               <div class="flex items-center gap-1.5">
                 <button 
                   type="button" 
+                  (click)="setCrmPage(1)" 
+                  [disabled]="crmPage() <= 1"
+                  title="Ir a la primera página"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  &laquo; Primera
+                </button>
+
+                <button 
+                  type="button" 
                   (click)="setCrmPage(crmPage() - 1)" 
                   [disabled]="crmPage() <= 1"
                   class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
@@ -206,6 +216,16 @@
                   class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
                   Siguiente &rarr;
+                </button>
+
+                <button 
+                  type="button" 
+                  (click)="setCrmPage(crmTotalPages())" 
+                  [disabled]="crmPage() >= crmTotalPages() || crmTotalPages() === 0"
+                  title="Ir a la última página"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  Última &raquo;
                 </button>
               </div>
             </div>

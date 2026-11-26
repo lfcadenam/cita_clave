@@ -173,29 +173,49 @@ export class AdminCustomersComponent implements OnInit {
 
     if (this.editingCustomer()) {
       this.customerService.updateCustomer(this.editingCustomer()!.id, payload).subscribe({
-        next: () => {
+        next: (updatedCust) => {
           this.isSavingCustomer.set(false);
+          const name = updatedCust?.name || this.customerForm.name || 'Clienta';
           this.closeCustomerModal();
+          this.nuvexNotify.success('Clienta actualizada', `Los datos de "${name}" se guardaron de forma correcta.`);
           this.loadCrmCustomers(this.crmPage());
         },
         error: (err) => {
           this.isSavingCustomer.set(false);
-          const msg = err.error?.message || 'Error al actualizar los datos de la clienta.';
+          let msg = err.error?.message;
+          if (!msg) {
+            if (err.status === 502 || err.status === 503 || err.status === 504 || (typeof err.error === 'string' && err.error.includes('<html'))) {
+              msg = 'El servidor se estaba reiniciando. Por favor presiona "Guardar" de nuevo.';
+            } else {
+              msg = 'Error al actualizar los datos de la clienta.';
+            }
+          }
           this.customerFormError.set(msg);
+          this.nuvexNotify.error('Error al guardar', msg);
           console.error('Error al actualizar clienta:', err);
         }
       });
     } else {
       this.customerService.createCustomer(payload).subscribe({
-        next: () => {
+        next: (newCust) => {
           this.isSavingCustomer.set(false);
+          const name = newCust?.name || this.customerForm.name || 'Clienta';
           this.closeCustomerModal();
+          this.nuvexNotify.success('Clienta registrada', `"${name}" se guardó de forma correcta.`);
           this.loadCrmCustomers(1);
         },
         error: (err) => {
           this.isSavingCustomer.set(false);
-          const msg = err.error?.message || 'Error al registrar la nueva clienta.';
+          let msg = err.error?.message;
+          if (!msg) {
+            if (err.status === 502 || err.status === 503 || err.status === 504 || (typeof err.error === 'string' && err.error.includes('<html'))) {
+              msg = 'El servidor se estaba reiniciando. Por favor presiona "Guardar" de nuevo.';
+            } else {
+              msg = 'Error al registrar la nueva clienta.';
+            }
+          }
           this.customerFormError.set(msg);
+          this.nuvexNotify.error('Error al registrar', msg);
           console.error('Error al registrar clienta:', err);
         }
       });
