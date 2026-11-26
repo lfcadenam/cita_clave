@@ -91,7 +91,7 @@ class WhatsAppNotificationService
         $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
 
         $message = "✨ *¡Solicitud de Cita Recibida!* Hola {$clientName},\n\n"
-            . "Hemos recibido tu solicitud de cita *#{$appointment->appointment_number}*:\n\n"
+            . "Hemos recibido tu solicitud de cita para *{$serviceName}* el día *{$dateFormatted} a las {$startTime}*:\n\n"
             . "💅 *Servicio:* {$serviceName}\n"
             . "📅 *Fecha:* {$dateFormatted}\n"
             . "⏰ *Hora:* {$startTime}\n"
@@ -109,7 +109,6 @@ class WhatsAppNotificationService
             templateKey: 'booking_created',
             templateParams: [
                 $clientName,
-                (string) $appointment->appointment_number,
                 $serviceName,
                 "{$dateFormatted} a las {$startTime}",
                 "\${$depositFormatted} COP",
@@ -254,7 +253,7 @@ class WhatsAppNotificationService
         $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
 
         $message = "🌸 *¡Abono Verificado y Cita Confirmada!* Hola {$clientName},\n\n"
-            . "¡Buenas noticias! Hemos validado con éxito tu abono de *\${$depositFormatted} COP* para tu cita *#{$appointment->appointment_number}*.\n\n"
+            . "¡Buenas noticias! Hemos validado con éxito tu abono de *\${$depositFormatted} COP* para tu cita de *{$serviceName}*.\n\n"
             . "💅 *Servicio:* {$serviceName}\n"
             . "📅 *Fecha:* {$dateFormatted}\n"
             . "⏰ *Hora:* {$startTime}\n"
@@ -271,7 +270,6 @@ class WhatsAppNotificationService
             templateKey: 'deposit_approved',
             templateParams: [
                 $clientName,
-                (string) $appointment->appointment_number,
                 $serviceName,
                 "{$dateFormatted} a las {$startTime}",
                 "\${$balanceFormatted} COP",
@@ -296,7 +294,7 @@ class WhatsAppNotificationService
         $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
 
         $message = "⚠️ *Novedad con tu Comprobante de Abono* Hola {$clientName},\n\n"
-            . "Revisamos tu solicitud de cita *#{$appointment->appointment_number}* ({$serviceName}), pero no pudimos validar el comprobante de transferencia.\n\n"
+            . "Revisamos tu solicitud de cita para *{$serviceName}*, pero no pudimos validar el comprobante de transferencia.\n\n"
             . ($reason ? "📝 *Motivo:* {$reason}\n\n" : "")
             . "👉 *Por favor sube nuevamente tu comprobante aquí para asegurar tu cupo:*\n"
             . "{$voucherUrl}\n\n"
@@ -309,7 +307,6 @@ class WhatsAppNotificationService
             templateKey: 'deposit_rejected',
             templateParams: [
                 $clientName,
-                (string) $appointment->appointment_number,
                 $serviceName,
                 $reason ?: 'Comprobante no legible o pendiente de validación',
                 $voucherUrl,
@@ -335,7 +332,7 @@ class WhatsAppNotificationService
         $bookingUrl = url("/");
 
         $message = "🚫 *Cita Cancelada* Hola {$clientName},\n\n"
-            . "Te informamos que tu cita *#{$appointment->appointment_number}* ({$serviceName}) programada para el *{$dateFormatted} a las {$startTime}* ha sido cancelada.\n\n"
+            . "Te informamos que tu cita para *{$serviceName}* programada para el *{$dateFormatted} a las {$startTime}* ha sido cancelada.\n\n"
             . ($reason ? "📝 *Motivo:* {$reason}\n\n" : "")
             . "Tu horario ha sido liberado. Si deseas agendar para otra ocasión, puedes hacerlo aquí:\n"
             . "{$bookingUrl}\n\n"
@@ -348,12 +345,12 @@ class WhatsAppNotificationService
             templateKey: 'appointment_cancelled',
             templateParams: [
                 $clientName,
-                (string) $appointment->appointment_number,
                 $serviceName,
                 "{$dateFormatted} a las {$startTime}",
                 $reason ?: 'Cancelación registrada',
                 $bookingUrl,
-            ]
+            ],
+            extraContext: ['reason' => $reason]
         );
     }
 
@@ -375,7 +372,7 @@ class WhatsAppNotificationService
         $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
 
         $message = "🗓️ *¡Cita Reagendada con Éxito!* Hola {$clientName},\n\n"
-            . "Hemos reprogramado tu cita *#{$appointment->appointment_number}*:\n\n"
+            . "Hemos reprogramado tu cita para *{$serviceName}*:\n\n"
             . "💅 *Servicio:* {$serviceName}\n"
             . "📅 *Nueva Fecha:* {$dateFormatted}\n"
             . "⏰ *Nuevo Horario:* {$startTime}\n"
@@ -392,12 +389,12 @@ class WhatsAppNotificationService
             templateKey: 'appointment_rescheduled',
             templateParams: [
                 $clientName,
-                (string) $appointment->appointment_number,
                 $serviceName,
                 "{$dateFormatted} a las {$startTime}",
                 "{$oldDate} a las {$oldTime}",
                 $voucherUrl,
-            ]
+            ],
+            extraContext: ['previous_date' => "{$oldDate} a las {$oldTime}"]
         );
     }
 
@@ -478,7 +475,7 @@ class WhatsAppNotificationService
         $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
 
         $message = "🌸 *¡Reserva Confirmada!* Hola {$clientName},\n\n"
-            . "Tu cita *#{$appointment->appointment_number}* ha sido confirmada exitosamente:\n\n"
+            . "Tu cita para *{$serviceName}* ha sido confirmada exitosamente:\n\n"
             . "💅 *Servicio:* {$serviceName}\n"
             . "📅 *Fecha:* {$dateFormatted}\n"
             . "⏰ *Hora:* {$startTime}\n"
@@ -494,7 +491,6 @@ class WhatsAppNotificationService
             templateKey: 'booking_confirmed',
             templateParams: [
                 $clientName,
-                (string) $appointment->appointment_number,
                 $serviceName,
                 "{$dateFormatted} a las {$startTime}",
                 $voucherUrl,
@@ -518,7 +514,7 @@ class WhatsAppNotificationService
         $sentClient = false;
         if (!blank($appointment->client_phone)) {
             $clientMsg = "✅ *¡Asistencia Confirmada!* Hola {$clientName},\n\n"
-                . "Hemos registrado tu confirmación de asistencia para la cita *#{$appointment->appointment_number}*:\n\n"
+                . "Hemos registrado tu confirmación de asistencia para tu cita de *{$serviceName}*:\n\n"
                 . "💅 *Servicio:* {$serviceName}\n"
                 . "📅 *Fecha:* {$dateFormatted}\n"
                 . "⏰ *Hora:* {$startTime}\n"
@@ -533,7 +529,6 @@ class WhatsAppNotificationService
                 templateKey: 'attendance_confirmed',
                 templateParams: [
                     $clientName,
-                    (string) $appointment->appointment_number,
                     $serviceName,
                     "{$dateFormatted} a las {$startTime}",
                     $voucherUrl,
@@ -552,7 +547,8 @@ class WhatsAppNotificationService
         string $phone,
         string $message,
         string $templateKey,
-        array $templateParams = []
+        array $templateParams = [],
+        array $extraContext = []
     ): bool {
         if (!$this->enabled) {
             Log::info("[WhatsApp Disabled] Mensaje no enviado a {$phone}: {$message}");
@@ -567,6 +563,14 @@ class WhatsAppNotificationService
                 $metaCreds = $this->resolveMetaCredentials($appointment);
                 $templateName = $metaCreds['templates'][$templateKey] ?? null;
 
+                // Resolver dinámicamente los parámetros para evitar error #100
+                $dynamicParams = $this->resolveDynamicTemplateParameters(
+                    appointment: $appointment,
+                    templateKey: $templateKey,
+                    fallbackParams: $templateParams,
+                    extraContext: $extraContext
+                );
+
                 // Estrategia 1: Si use_templates está activo y existe nombre de plantilla, intentar en es_CO y es
                 if ($metaCreds['use_templates'] && !empty($templateName)) {
                     $langsToTry = array_values(array_unique([$metaCreds['language'], 'es_CO', 'es', 'es_ES']));
@@ -574,7 +578,7 @@ class WhatsAppNotificationService
                         $tplRes = $this->sendTemplateViaMetaWithDetails(
                             phone: $sanitizedPhone,
                             templateName: $templateName,
-                            bodyParameters: $templateParams,
+                            bodyParameters: $dynamicParams,
                             languageCode: $langCode,
                             tenant: $appointment->tenant,
                             buttonParameters: [(string) ($appointment->appointment_number ?? '1')]
@@ -598,16 +602,21 @@ class WhatsAppNotificationService
 
                 $fallbackParams = [
                     $clientName,
-                    $apptNum,
                     $serviceName,
                     $dateFormatted,
                     $voucherUrl,
                 ];
 
+                $fallbackDynamic = $this->resolveDynamicTemplateParameters(
+                    appointment: $appointment,
+                    templateKey: 'confirmacion_cita',
+                    fallbackParams: $fallbackParams
+                );
+
                 $fallbackRes = $this->sendTemplateViaMetaWithDetails(
                     phone: $sanitizedPhone,
                     templateName: 'confirmacion_cita',
-                    bodyParameters: $fallbackParams,
+                    bodyParameters: $fallbackDynamic,
                     languageCode: 'es_CO',
                     tenant: $appointment->tenant,
                     buttonParameters: [$apptNum]
@@ -927,6 +936,17 @@ class WhatsAppNotificationService
         $sanitizedPhone = $this->sanitizePhoneNumber($phone);
 
         if (empty($phoneId) || empty($token)) {
+            if (config('whatsapp.driver') === 'log' || config('app.env') === 'testing') {
+                Log::info("[WhatsApp Log/Testing] Plantilla '{$templateName}' enviada a +{$sanitizedPhone}.", [
+                    'params' => $bodyParameters,
+                ]);
+                return [
+                    'success' => true,
+                    'message' => "Plantilla '{$templateName}' simulada exitosamente a +{$sanitizedPhone}.",
+                    'wamid' => 'SIMULATED_' . uniqid(),
+                ];
+            }
+
             $msg = 'Faltan credenciales de Meta Cloud API (WHATSAPP_PHONE_NUMBER_ID o WHATSAPP_ACCESS_TOKEN).';
             Log::warning("[WhatsApp Meta] {$msg}");
             return [
@@ -1146,6 +1166,693 @@ class WhatsAppNotificationService
     }
 
     /**
+     * Catálogo maestro de definiciones de plantillas oficiales del sistema.
+     * 100% alineado con Meta WhatsApp Cloud API y PLANTILLAS_WHATSAPP_META.md.
+     */
+    public function getDefaultTemplatesDefinitions(): array
+    {
+        return [
+            'confirmacion_cita' => [
+                'key' => 'confirmacion_cita',
+                'name' => 'confirmacion_cita',
+                'display_name' => 'Confirmación de Cita',
+                'description' => 'Notificación enviada cuando una cita queda agendada o confirmada en el sistema.',
+                'category' => 'UTILITY',
+                'language' => 'es_CO',
+                'body' => "Hola {{1}}, te confirmamos que tu cita para {{2}} ha sido agendada con éxito para el día {{3}}.\n\nPuedes consultar tu comprobante aquí: {{4}}\n\n¡Te esperamos puntualmente!",
+                'samples' => [
+                    'Cami',
+                    'Manicura Semipermanente',
+                    'Viernes 28 de Noviembre a las 3:00 PM',
+                    'https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD',
+                ],
+                'variable_keys' => ['apodo', 'servicio', 'fecha_hora', 'link_comprobante'],
+                'trigger' => 'Al reservar sin requerir abono o al confirmar manualmente una cita.',
+            ],
+            'cita_cancelada' => [
+                'key' => 'cita_cancelada',
+                'name' => 'cita_cancelada',
+                'display_name' => 'Cancelación de Cita',
+                'description' => 'Aviso oficial enviado a la clienta cuando una cita es cancelada por el salón o la clienta.',
+                'category' => 'UTILITY',
+                'language' => 'es_CO',
+                'body' => "Hola {{1}}, te informamos que tu cita para {{2}} programada para el día {{3}} ha sido cancelada.\n\nMotivo: {{4}}\n\nSi deseas programar un nuevo horario, puedes ingresar nuevamente aquí: {{5}}\n\n¡Esperamos atenderte pronto!",
+                'samples' => [
+                    'Cami',
+                    'Manicura Semipermanente',
+                    'Viernes 28 de Noviembre a las 3:00 PM',
+                    'Cancelación solicitada por la clienta',
+                    'https://labellenailsbog.com',
+                ],
+                'variable_keys' => ['apodo', 'servicio', 'fecha_hora', 'motivo', 'link_comprobante'],
+                'trigger' => 'Al cancelar una cita desde el portal de la clienta o desde el panel administrativo.',
+            ],
+            'cita_confirmada_abono' => [
+                'key' => 'cita_confirmada_abono',
+                'name' => 'cita_confirmada_abono',
+                'display_name' => 'Abono Verificado y Confirmado',
+                'description' => 'Confirmación enviada cuando el administrador valida y aprueba el comprobante de transferencia Nequi.',
+                'category' => 'UTILITY',
+                'language' => 'es_CO',
+                'body' => "Hola {{1}}, hemos validado exitosamente el abono de tu cita para {{2}} del día {{3}}.\n\nSaldo restante a pagar en el salón: {{4}}\nTu reserva está 100% confirmada. Puedes ver tu comprobante aquí: {{5}}\n\n¡Te esperamos puntualmente!",
+                'samples' => [
+                    'Cami',
+                    'Manicura Semipermanente',
+                    'Viernes 28 de Noviembre a las 3:00 PM',
+                    '$25.000 COP',
+                    'https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD',
+                ],
+                'variable_keys' => ['apodo', 'servicio', 'fecha_hora', 'saldo_restante', 'link_comprobante'],
+                'trigger' => 'Al presionar "Aprobar Nequi" o aprobar el abono en el panel.',
+            ],
+            'recordatorio_cita_24h' => [
+                'key' => 'recordatorio_cita_24h',
+                'name' => 'recordatorio_cita_24h',
+                'display_name' => 'Recordatorio 24 Horas Antes',
+                'description' => 'Recordatorio preventivo enviado 24h antes del turno con enlace de confirmación en 1 clic.',
+                'category' => 'UTILITY',
+                'language' => 'es_CO',
+                'body' => "Hola {{1}}, te recordamos que tienes una cita programada para {{2}} el día {{3}}.\n\nSaldo restante a pagar en el salón: {{4}}.\nPuedes ver los detalles y ubicación en tu comprobante: {{5}}\n\n¡Te esperamos puntualmente!",
+                'samples' => [
+                    'Cami',
+                    'Manicura Semipermanente',
+                    'Mañana Viernes a las 3:00 PM',
+                    '$25.000 COP',
+                    'https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD',
+                ],
+                'variable_keys' => ['apodo', 'servicio', 'fecha_hora', 'saldo_restante', 'link_comprobante'],
+                'trigger' => 'Envío automático por cron o comando diario a citas del día siguiente.',
+            ],
+            'cita_reagendada' => [
+                'key' => 'cita_reagendada',
+                'name' => 'cita_reagendada',
+                'display_name' => 'Cita Reagendada / Reprogramada',
+                'description' => 'Notificación cuando se cambia la fecha u hora de la cita manteniendo el abono.',
+                'category' => 'UTILITY',
+                'language' => 'es_CO',
+                'body' => "Hola {{1}}, tu cita para {{2}} ha sido reagendada con éxito para el día {{3}} (horario previo: {{4}}).\n\nTu abono se mantiene vigente. Puedes consultar tu comprobante actualizado aquí: {{5}}\n\n¡Te esperamos puntualmente!",
+                'samples' => [
+                    'Cami',
+                    'Manicura Semipermanente',
+                    'Sábado 29 de Noviembre a las 4:00 PM',
+                    'Viernes 28 de Noviembre a las 3:00 PM',
+                    'https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD',
+                ],
+                'variable_keys' => ['apodo', 'servicio', 'fecha_hora', 'horario_previo', 'link_comprobante'],
+                'trigger' => 'Al mover una cita de horario o fecha en el calendario o portal.',
+            ],
+            'novedad_comprobante_cita' => [
+                'key' => 'novedad_comprobante_cita',
+                'name' => 'novedad_comprobante_cita',
+                'display_name' => 'Novedad / Rechazo de Comprobante',
+                'description' => 'Aviso cuando el comprobante es ilegible o el monto transferido no corresponde.',
+                'category' => 'UTILITY',
+                'language' => 'es_CO',
+                'body' => "Hola {{1}}, tenemos una novedad con el comprobante de tu cita para {{2}}.\n\nMotivo: {{3}}\n\nPor favor sube nuevamente tu comprobante desde el enlace para no perder tu turno: {{4}}\n\nQuedamos atentos para confirmar tu reserva.",
+                'samples' => [
+                    'Cami',
+                    'Manicura Semipermanente',
+                    'El valor transferido no coincide con el anticipo requerido',
+                    'https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD',
+                ],
+                'variable_keys' => ['apodo', 'servicio', 'motivo', 'link_comprobante'],
+                'trigger' => 'Al rechazar comprobante de transferencia con motivo específico.',
+            ],
+            'cita_recibida' => [
+                'key' => 'cita_recibida',
+                'name' => 'cita_recibida',
+                'display_name' => 'Solicitud de Cita Recibida',
+                'description' => 'Acuse de recibo inicial solicitando el comprobante de pago Nequi para apartar cupo.',
+                'category' => 'UTILITY',
+                'language' => 'es_CO',
+                'body' => "Hola {{1}}, hemos recibido tu solicitud de cita para {{2}} el día {{3}}.\n\nAbono requerido para asegurar tu turno: {{4}}\nRecuerda adjuntar tu comprobante de transferencia en el siguiente enlace: {{5}}\n\n¡Gracias por tu reserva!",
+                'samples' => [
+                    'Cami',
+                    'Manicura Semipermanente',
+                    'Viernes 28 de Noviembre a las 3:00 PM',
+                    '$30.000 COP',
+                    'https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD',
+                ],
+                'variable_keys' => ['apodo', 'servicio', 'fecha_hora', 'abono', 'link_comprobante'],
+                'trigger' => 'Inmediatamente al agendar una cita que exige anticipo.',
+            ],
+            'alerta_nueva_cita_admin' => [
+                'key' => 'alerta_nueva_cita_admin',
+                'name' => 'alerta_nueva_cita_admin',
+                'display_name' => 'Alerta de Cita a Administradora',
+                'description' => 'Notificación interna enviada al WhatsApp del negocio alertando sobre la nueva reserva.',
+                'category' => 'UTILITY',
+                'language' => 'es_CO',
+                'body' => "Nueva cita registrada. Cliente: {{1}} (Tel: {{2}}). Servicio: {{3}} para el día {{4}}.\n\nRevisa los detalles en el panel de administración: {{5}}\n\nNotificación interna del sistema.",
+                'samples' => [
+                    'Camila Morales (Cami)',
+                    '3194086814',
+                    'Manicura Semipermanente',
+                    'Viernes 28 de Noviembre a las 3:00 PM',
+                    'https://labellenailsbog.com/admin/appointments',
+                ],
+                'variable_keys' => ['cliente', 'telefono_cliente', 'servicio', 'fecha_hora', 'link_admin'],
+                'trigger' => 'Al registrarse cualquier reserva en la plataforma.',
+            ],
+            'promocion_salon' => [
+                'key' => 'promocion_salon',
+                'name' => 'promocion_salon',
+                'display_name' => 'Promoción Especial del Salón',
+                'description' => 'Difusión masiva a clientas anunciando descuentos, promociones de temporada o beneficios.',
+                'category' => 'MARKETING',
+                'language' => 'es_CO',
+                'body' => "Hola {{1}}, en {{2}} tenemos una promoción especial para ti: {{3}}.\n\nReserva tu cita en el siguiente enlace: {{4}}\n\n¡Esperamos verte pronto!",
+                'samples' => [
+                    'Cami',
+                    'La Belle Nails',
+                    '20% de descuento en Manicura Semipermanente este fin de semana',
+                    'https://labellenailsbog.com',
+                ],
+                'variable_keys' => ['apodo', 'salon', 'mensaje_promo', 'link_portal'],
+                'trigger' => 'Envío manual desde Listas de Difusión y Campañas.',
+            ],
+            'reactivacion_clientas' => [
+                'key' => 'reactivacion_clientas',
+                'name' => 'reactivacion_clientas',
+                'display_name' => 'Reactivación de Clientas Inactivas',
+                'description' => 'Difusión a clientas con más de 30 días sin visitas invitándolas a consentirse y volver.',
+                'category' => 'MARKETING',
+                'language' => 'es_CO',
+                'body' => "Hola {{1}}, te extrañamos en {{2}}. Hace días que no te consentimos y queremos invitarte a renovar tu look.\n\nAgenda tu próxima cita aquí: {{3}}\n\n¡Te esperamos con una atención especial!",
+                'samples' => [
+                    'Cami',
+                    'La Belle Nails',
+                    'https://labellenailsbog.com',
+                ],
+                'variable_keys' => ['apodo', 'salon', 'link_portal'],
+                'trigger' => 'Envío manual desde Listas de Difusión a clientas inactivas.',
+            ],
+        ];
+    }
+
+    /**
+     * Diccionario semántico de variables dinámicas disponibles para personalización.
+     */
+    public function getAvailableVariables(): array
+    {
+        return [
+            ['key' => 'apodo', 'label' => 'Apodo de Clienta (o Nombre Corto)', 'sample' => 'Cami', 'token' => '{{apodo}}'],
+            ['key' => 'cliente', 'label' => 'Nombre / Apodo de Clienta', 'sample' => 'Cami', 'token' => '{{cliente}}'],
+            ['key' => 'salon', 'label' => 'Nombre del Salón / Negocio', 'sample' => 'La Belle Nails', 'token' => '{{salon}}'],
+            ['key' => 'mensaje_promo', 'label' => 'Texto de la Promoción', 'sample' => '20% de descuento en Manicura', 'token' => '{{mensaje_promo}}'],
+            ['key' => 'link_portal', 'label' => 'Enlace para Agendar Cita', 'sample' => 'https://labellenailsbog.com', 'token' => '{{link_portal}}'],
+            ['key' => 'servicio', 'label' => 'Servicio / Tratamiento', 'sample' => 'Manicura Semipermanente', 'token' => '{{servicio}}'],
+            ['key' => 'fecha_hora', 'label' => 'Fecha y Hora Cita', 'sample' => 'Viernes 28 de Noviembre a las 3:00 PM', 'token' => '{{fecha_hora}}'],
+            ['key' => 'abono', 'label' => 'Monto del Abono / Anticipo', 'sample' => '$30.000 COP', 'token' => '{{abono}}'],
+            ['key' => 'saldo_restante', 'label' => 'Saldo Restante en Salón', 'sample' => '$25.000 COP', 'token' => '{{saldo_restante}}'],
+            ['key' => 'precio_total', 'label' => 'Precio Total', 'sample' => '$55.000 COP', 'token' => '{{precio_total}}'],
+            ['key' => 'link_comprobante', 'label' => 'Enlace al Comprobante / Portal', 'sample' => 'https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD', 'token' => '{{link_comprobante}}'],
+            ['key' => 'motivo', 'label' => 'Motivo Cancelación / Novedad', 'sample' => 'Cancelación solicitada por la clienta', 'token' => '{{motivo}}'],
+            ['key' => 'horario_previo', 'label' => 'Horario Previo Reagendado', 'sample' => 'Viernes 28 de Noviembre a las 3:00 PM', 'token' => '{{horario_previo}}'],
+            ['key' => 'telefono_cliente', 'label' => 'Teléfono Clienta', 'sample' => '3194086814', 'token' => '{{telefono_cliente}}'],
+            ['key' => 'telefono_salon', 'label' => 'WhatsApp del Salón', 'sample' => '3103248385', 'token' => '{{telefono_salon}}'],
+            ['key' => 'link_admin', 'label' => 'Enlace al Panel de Administración', 'sample' => 'https://labellenailsbog.com/admin/appointments', 'token' => '{{link_admin}}'],
+        ];
+    }
+
+    /**
+     * Ruta del archivo de personalizaciones de plantillas por Tenant (aislado y seguro).
+     */
+    public function getCustomTemplatesFilePath(?Tenant $tenant = null): string
+    {
+        $tenantId = $tenant?->id ?? 'global';
+        return storage_path("app/tenants/{$tenantId}/whatsapp_templates.json");
+    }
+
+    /**
+     * Obtiene las personalizaciones locales de plantillas para el Tenant.
+     */
+    public function getTenantCustomTemplates(?Tenant $tenant = null): array
+    {
+        $file = $this->getCustomTemplatesFilePath($tenant);
+        if (!file_exists($file)) {
+            return [];
+        }
+
+        try {
+            $content = file_get_contents($file);
+            return json_decode($content, true) ?: [];
+        } catch (\Throwable $e) {
+            Log::warning("[WhatsApp] Error leyendo plantillas personalizadas: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Obtiene la definición efectiva de una plantilla (fusiona defaults con personalizaciones).
+     */
+    public function getEffectiveTemplateDefinition(string $templateKey, ?Tenant $tenant = null): ?array
+    {
+        $defaults = $this->getDefaultTemplatesDefinitions();
+        $def = $defaults[$templateKey] ?? null;
+        if (!$def) {
+            return null;
+        }
+
+        $customs = $this->getTenantCustomTemplates($tenant);
+        if (!empty($customs[$templateKey])) {
+            $override = $customs[$templateKey];
+            $def['body'] = $override['body'] ?? $def['body'];
+            $def['samples'] = $override['samples'] ?? $def['samples'];
+            $def['variable_keys'] = $override['variable_keys'] ?? $def['variable_keys'];
+            $def['is_customized'] = true;
+            $def['original_body'] = $defaults[$templateKey]['body'];
+        } else {
+            $def['is_customized'] = false;
+            $def['original_body'] = $def['body'];
+        }
+
+        $def['preview_text'] = $this->renderTemplatePreview($def['body'], $def['samples']);
+        return $def;
+    }
+
+    /**
+     * Guarda la personalización de una plantilla y opcionalmente la sincroniza en Meta.
+     */
+    public function saveTenantCustomTemplate(string $templateKey, array $data, ?Tenant $tenant = null): array
+    {
+        $defaults = $this->getDefaultTemplatesDefinitions();
+        if (!isset($defaults[$templateKey])) {
+            return [
+                'success' => false,
+                'message' => "La plantilla '{$templateKey}' no forma parte del catálogo oficial.",
+            ];
+        }
+
+        $body = trim($data['body'] ?? '');
+        if (empty($body)) {
+            return [
+                'success' => false,
+                'message' => 'El cuerpo del mensaje no puede estar vacío.',
+            ];
+        }
+
+        // Validación estricta Meta: no leading ni trailing variables (Error 2388299)
+        if (preg_match('/^\s*\{\{\d+\}\}/', $body)) {
+            return [
+                'success' => false,
+                'message' => 'Meta no permite variables al inicio de la plantilla. Debes comenzar con un saludo o texto fijo (ej: "Hola {{1}}").',
+            ];
+        }
+
+        if (preg_match('/\{\{\d+\}\}\s*$/', $body)) {
+            return [
+                'success' => false,
+                'message' => 'Meta no permite variables al final de la plantilla (Error #2388299). Debes incluir una frase o texto de cierre después de la última variable.',
+            ];
+        }
+
+        // Extraer placeholders
+        preg_match_all('/\{\{(\d+)\}\}/', $body, $matches);
+        $foundVars = $matches[1] ?? [];
+        $varCount = count($foundVars);
+
+        // Validar numeración secuencial 1, 2, 3...
+        for ($i = 1; $i <= $varCount; $i++) {
+            if (!in_array((string) $i, $foundVars, true)) {
+                return [
+                    'success' => false,
+                    'message' => "Las variables deben ser secuenciales iniciando en {{1}} (falta la variable {{' . $i . '}}).",
+                ];
+            }
+        }
+
+        // Completar samples
+        $samples = $data['samples'] ?? [];
+        if (count($samples) < $varCount) {
+            $defaultSamples = $defaults[$templateKey]['samples'] ?? [];
+            for ($i = count($samples); $i < $varCount; $i++) {
+                $samples[] = $defaultSamples[$i] ?? "Dato {$i}";
+            }
+        }
+        $samples = array_slice($samples, 0, $varCount);
+
+        // Guardar en JSON por Tenant
+        $file = $this->getCustomTemplatesFilePath($tenant);
+        $dir = dirname($file);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $allCustom = $this->getTenantCustomTemplates($tenant);
+        $allCustom[$templateKey] = [
+            'key' => $templateKey,
+            'body' => $body,
+            'samples' => $samples,
+            'variable_keys' => $data['variable_keys'] ?? $defaults[$templateKey]['variable_keys'] ?? [],
+            'updated_at' => now()->toIso8601String(),
+        ];
+
+        file_put_contents($file, json_encode($allCustom, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+        $metaResult = null;
+        if (!empty($data['sync_to_meta'])) {
+            $effectiveDef = $this->getEffectiveTemplateDefinition($templateKey, $tenant);
+            $metaResult = $this->createMetaTemplate($effectiveDef, $tenant);
+        }
+
+        return [
+            'success' => true,
+            'message' => "Plantilla '{$defaults[$templateKey]['display_name']}' guardada correctamente." . ($metaResult ? " " . ($metaResult['message'] ?? '') : ""),
+            'meta_result' => $metaResult,
+            'template' => $this->getEffectiveTemplateDefinition($templateKey, $tenant),
+        ];
+    }
+
+    /**
+     * Restablece una plantilla a su versión oficial original.
+     */
+    public function resetTenantCustomTemplate(string $templateKey, ?Tenant $tenant = null): array
+    {
+        $file = $this->getCustomTemplatesFilePath($tenant);
+        if (file_exists($file)) {
+            $allCustom = $this->getTenantCustomTemplates($tenant);
+            if (isset($allCustom[$templateKey])) {
+                unset($allCustom[$templateKey]);
+                file_put_contents($file, json_encode($allCustom, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            }
+        }
+
+        return [
+            'success' => true,
+            'message' => "Plantilla restablecida a su versión oficial por defecto.",
+            'template' => $this->getEffectiveTemplateDefinition($templateKey, $tenant),
+        ];
+    }
+
+    /**
+     * Mecanismo Inteligente de Adaptación Dinámica (Dynamic Variable Resolver).
+     * Resuelve los parámetros requeridos por la plantilla activa a partir de los datos reales de la cita,
+     * garantizando que la cantidad y formato coincidan exactamente con la definición en Meta (Evita Error #100).
+     */
+    public function resolveDynamicTemplateParameters(
+        Appointment $appointment,
+        string $templateKey,
+        array $fallbackParams = [],
+        array $extraContext = []
+    ): array {
+        $appointment->loadMissing(['service', 'customer', 'tenant']);
+
+        $apptNum = (string) ($appointment->appointment_number ?? $appointment->id);
+        $clientName = $appointment->getNotificationClientName();
+        $serviceName = $appointment->service?->name ?? 'Servicio';
+        $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
+        $timeFormatted = substr((string) $appointment->start_time, 0, 5);
+        $dateTime = "{$dateFormatted} a las {$timeFormatted}";
+        $voucherUrl = url("/reserva/confirmacion/{$apptNum}");
+        $deposit = number_format((float) ($appointment->deposit_amount ?? 0), 0, ',', '.');
+        $price = number_format((float) ($appointment->service?->price ?? 0), 0, ',', '.');
+        $remaining = number_format(max(0, (float) ($appointment->service?->price ?? 0) - (float) ($appointment->deposit_amount ?? 0)), 0, ',', '.');
+        $salonPhone = $appointment->tenant?->phone ?? $appointment->tenant?->whatsapp_number ?? '';
+        $clientPhone = $appointment->customer?->phone ?? $appointment->client_phone ?? '';
+        $reason = $extraContext['reason'] ?? $appointment->cancellation_reason ?? 'Cancelación de cita';
+        $prevDate = $extraContext['previous_date'] ?? '';
+
+        $dict = [
+            'apodo' => $clientName,
+            'cliente' => $clientName,
+            'codigo_cita' => $apptNum,
+            'servicio' => $serviceName,
+            'fecha_hora' => $dateTime,
+            'fecha' => $dateFormatted,
+            'hora' => $timeFormatted,
+            'abono' => "\${$deposit} COP",
+            'precio_total' => "\${$price} COP",
+            'saldo_restante' => "\${$remaining} COP",
+            'link_comprobante' => $voucherUrl,
+            'link_portal' => url('/'),
+            'motivo' => $reason,
+            'horario_previo' => $prevDate,
+            'telefono_cliente' => $clientPhone,
+            'telefono_salon' => $salonPhone,
+            'link_admin' => url('/admin/appointments'),
+        ];
+
+        $effectiveDef = $this->getEffectiveTemplateDefinition($templateKey, $appointment->tenant);
+        $body = $effectiveDef['body'] ?? '';
+        preg_match_all('/\{\{(\d+)\}\}/', $body, $matches);
+        $varCount = count($matches[1] ?? []);
+
+        if ($varCount === 0) {
+            return [];
+        }
+
+        $variableKeys = $effectiveDef['variable_keys'] ?? [];
+        $resolved = [];
+
+        for ($i = 0; $i < $varCount; $i++) {
+            $key = $variableKeys[$i] ?? null;
+            if ($key && isset($dict[$key])) {
+                $val = $dict[$key];
+            } elseif (isset($fallbackParams[$i])) {
+                $val = $fallbackParams[$i];
+            } else {
+                $val = '-';
+            }
+
+            // Sanitización estricta para Meta Cloud API (no saltos de línea ni tabuladores en parámetros)
+            $clean = preg_replace('/[\r\n\t]+/', ' ', (string) $val);
+            $clean = preg_replace('/\s{2,}/', ' ', trim($clean));
+            $resolved[] = mb_substr($clean ?: '-', 0, 1024);
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * Reemplaza variables {{1}}, {{2}}... por los valores de muestra para previsualización realista.
+     */
+    public function renderTemplatePreview(string $body, array $samples): string
+    {
+        $preview = $body;
+        foreach ($samples as $index => $value) {
+            $placeholder = '{{' . ($index + 1) . '}}';
+            $preview = str_replace($placeholder, (string) $value, $preview);
+        }
+        return $preview;
+    }
+
+    /**
+     * Crea una plantilla en Meta WhatsApp Cloud API mediante POST /{waba_id}/message_templates.
+     */
+    public function createMetaTemplate(array $templateDefinition, ?Tenant $tenant = null): array
+    {
+        $creds = $this->resolveMetaCredentials(null, $tenant);
+        $apiUrl = $creds['api_url'];
+        $wabaId = $creds['waba_id'];
+        $token = $creds['access_token'];
+
+        if (empty($wabaId) || empty($token)) {
+            return [
+                'success' => false,
+                'message' => 'Faltan credenciales de Meta (WABA ID o Access Token) para crear plantillas.',
+                'error_code' => 'MISSING_CREDENTIALS',
+            ];
+        }
+
+        $name = trim($templateDefinition['name'] ?? '');
+        $category = strtoupper(trim($templateDefinition['category'] ?? 'UTILITY'));
+        $language = trim($templateDefinition['language'] ?? 'es_CO');
+        $bodyText = trim($templateDefinition['body'] ?? '');
+        $samples = $templateDefinition['samples'] ?? [];
+
+        if (empty($name) || empty($bodyText)) {
+            return [
+                'success' => false,
+                'message' => 'Nombre y cuerpo de la plantilla son obligatorios.',
+                'error_code' => 'INVALID_PAYLOAD',
+            ];
+        }
+
+        // Meta exige example.body_text como array de arrays de strings
+        $bodyComponent = [
+            'type' => 'BODY',
+            'text' => $bodyText,
+        ];
+
+        if (! empty($samples)) {
+            $bodyComponent['example'] = [
+                'body_text' => [
+                    array_values(array_map('strval', $samples)),
+                ],
+            ];
+        }
+
+        $payload = [
+            'name' => $name,
+            'category' => $category,
+            'language' => $language,
+            'components' => [
+                $bodyComponent,
+            ],
+        ];
+
+        $endpoint = "{$apiUrl}/{$wabaId}/message_templates";
+
+        try {
+            $response = Http::withToken($token)
+                ->acceptJson()
+                ->timeout(15)
+                ->post($endpoint, $payload);
+
+            $json = $response->json() ?? [];
+
+            if ($response->successful()) {
+                $templateId = $json['id'] ?? null;
+                $status = $json['status'] ?? 'PENDING';
+                Log::info("[WhatsApp Meta] Plantilla '{$name}' ({$language}) creada exitosamente. ID Meta: {$templateId}, Status: {$status}.");
+
+                return [
+                    'success' => true,
+                    'message' => "Plantilla '{$name}' creada exitosamente en Meta Cloud API.",
+                    'template_id' => $templateId,
+                    'name' => $name,
+                    'status' => $status,
+                    'category' => $category,
+                    'language' => $language,
+                    'data' => $json,
+                ];
+            }
+
+            // Detección de plantilla ya existente
+            $errorMsg = $json['error']['message'] ?? '';
+            $subcode = $json['error']['error_subcode'] ?? null;
+
+            if (str_contains(strtolower($errorMsg), 'already exists') || (int) $subcode === 2388043) {
+                return [
+                    'success' => true,
+                    'already_exists' => true,
+                    'message' => "La plantilla '{$name}' ya existe registrada en tu cuenta de Meta WhatsApp Manager.",
+                    'name' => $name,
+                    'status' => 'APPROVED',
+                    'data' => $json,
+                ];
+            }
+
+            return $this->formatMetaError($response->status(), $json);
+        } catch (\Throwable $e) {
+            Log::error("[WhatsApp Meta] Excepción al crear plantilla '{$name}': " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Excepción de red al crear plantilla en Meta: ' . $e->getMessage(),
+                'error_code' => 'NETWORK_EXCEPTION',
+            ];
+        }
+    }
+
+    /**
+     * Crea una plantilla del catálogo oficial por su clave.
+     */
+    public function createOfficialTemplate(string $templateKey, ?Tenant $tenant = null): array
+    {
+        $definitions = $this->getDefaultTemplatesDefinitions();
+
+        if (! isset($definitions[$templateKey])) {
+            return [
+                'success' => false,
+                'message' => "La plantilla '{$templateKey}' no forma parte del catálogo oficial del sistema.",
+                'error_code' => 'TEMPLATE_NOT_FOUND',
+            ];
+        }
+
+        $def = $this->getEffectiveTemplateDefinition($templateKey, $tenant) ?? $definitions[$templateKey];
+        return $this->createMetaTemplate($def, $tenant);
+    }
+
+    /**
+     * Crea todas las plantillas oficiales del catálogo en Meta con 1 solo clic.
+     */
+    public function createAllOfficialTemplates(?Tenant $tenant = null): array
+    {
+        $definitions = $this->getDefaultTemplatesDefinitions();
+        $results = [];
+        $createdCount = 0;
+        $alreadyExistedCount = 0;
+        $failedCount = 0;
+
+        foreach ($definitions as $key => $definition) {
+            $effectiveDef = $this->getEffectiveTemplateDefinition($key, $tenant) ?? $definition;
+            $res = $this->createMetaTemplate($effectiveDef, $tenant);
+            $results[$key] = $res;
+
+            if ($res['success'] ?? false) {
+                if ($res['already_exists'] ?? false) {
+                    $alreadyExistedCount++;
+                } else {
+                    $createdCount++;
+                }
+            } else {
+                $failedCount++;
+            }
+        }
+
+        return [
+            'success' => $failedCount === 0,
+            'message' => "Proceso completado: {$createdCount} creadas, {$alreadyExistedCount} ya existentes, {$failedCount} fallidas.",
+            'summary' => [
+                'created' => $createdCount,
+                'already_exists' => $alreadyExistedCount,
+                'failed' => $failedCount,
+                'total' => count($definitions),
+            ],
+            'details' => $results,
+        ];
+    }
+
+    /**
+     * Obtiene el catálogo completo de plantillas oficiales cruzado con el estado real en Meta.
+     */
+    public function getOfficialTemplatesCatalog(?Tenant $tenant = null): array
+    {
+        $definitions = $this->getDefaultTemplatesDefinitions();
+        $metaTemplatesRes = $this->getMetaTemplates($tenant);
+        $wabaTemplates = $metaTemplatesRes['templates'] ?? [];
+
+        // Mapear por nombre en minúsculas
+        $wabaMap = [];
+        foreach ($wabaTemplates as $wt) {
+            $wtName = strtolower(trim($wt['name'] ?? ''));
+            $wabaMap[$wtName] = $wt;
+        }
+
+        $catalog = [];
+        foreach ($definitions as $key => $defaultDef) {
+            $effectiveDef = $this->getEffectiveTemplateDefinition($key, $tenant) ?? $defaultDef;
+            $nameLower = strtolower($effectiveDef['name']);
+            $metaData = $wabaMap[$nameLower] ?? null;
+
+            // Soporte de alias: confirmacion_cita también puede estar como reserva_confirmada
+            if (! $metaData && $key === 'confirmacion_cita' && isset($wabaMap['reserva_confirmada'])) {
+                $metaData = $wabaMap['reserva_confirmada'];
+            }
+
+            $previewText = $this->renderTemplatePreview($effectiveDef['body'], $effectiveDef['samples']);
+
+            $catalog[] = array_merge($effectiveDef, [
+                'exists_in_meta' => ! is_null($metaData),
+                'meta_status' => $metaData['status'] ?? 'NOT_REGISTERED',
+                'meta_id' => $metaData['id'] ?? null,
+                'meta_language' => $metaData['language'] ?? $effectiveDef['language'],
+                'meta_category' => $metaData['category'] ?? $effectiveDef['category'],
+                'preview_text' => $previewText,
+            ]);
+        }
+
+        return [
+            'success' => true,
+            'meta_connected' => ($metaTemplatesRes['success'] ?? false),
+            'meta_error_message' => ($metaTemplatesRes['success'] ?? false) ? null : ($metaTemplatesRes['message'] ?? null),
+            'available_variables' => $this->getAvailableVariables(),
+            'templates' => $catalog,
+        ];
+    }
+
+    /**
      * Registra / activa el número de teléfono en Meta Cloud API con un PIN de 6 dígitos.
      * Requerido por Meta para números reales (resuelve el error 133010: Account not registered).
      */
@@ -1209,7 +1916,10 @@ class WhatsAppNotificationService
             131047, 131026 => 'Han pasado más de 24 horas desde el último mensaje del destinatario. Para iniciar conversaciones fuera de la ventana de 24h, Meta exige usar una Plantilla aprobada (type: template).',
             131058 => 'La plantilla "hello_world" sólo está permitida por Meta en números públicos de prueba (sandbox). Al estar usando un número real o Phone Number ID de producción, Meta bloquea "hello_world". Debes usar una plantilla propia aprobada en tu Meta WhatsApp Manager (por ejemplo: "reserva_confirmada", "recordatorio_cita_24h" o "cita_recibida") con su idioma correspondiente (ej: "es_CO" o "es").',
             132000, 132001 => 'La plantilla solicitada no existe o aún no está aprobada en el idioma indicado dentro de Meta WhatsApp Manager.',
-            131009, 100 => 'Parámetro inválido en la petición a Meta Graph API (#100). Causas principales: 1) El número destinatario es el mismo número comercial de WhatsApp del salón (Meta no permite auto-mensajes). 2) La cantidad de variables enviadas no coincide con las definidas en la plantilla en WhatsApp Manager (ej. enviar 5 variables a una plantilla de 4 o sin variables).',
+            131009, 100 => match ((int) $subcode) {
+                2388299 => 'Meta no permite variables al inicio o al final del texto de la plantilla (Error #2388299: Leading or trailing parameters not allowed). Toda plantilla debe comenzar y terminar siempre con texto o palabras fijas.',
+                default => 'Parámetro inválido en la petición a Meta Graph API (#100). Causas principales: 1) Si estás creando una plantilla, verifica que no termine en una variable. 2) Si estás enviando un mensaje, el número destinatario no puede ser el mismo número comercial del salón (Meta prohíbe auto-mensajes), o la cantidad de variables enviadas no coincide con las registradas en Meta.',
+            },
             133010 => 'El número de teléfono está en tu cuenta de Meta pero no ha sido registrado/activado en Cloud API (Error #133010: Account not registered). Para resolverlo: 1) Si este número está actualmente activo en la app de WhatsApp de tu celular físico, debes eliminar la cuenta en la app móvil de WhatsApp (Meta prohíbe operar simultáneamente en app móvil y en Cloud API). 2) Registra y activa el número usando el botón "Activar Número con PIN" en este panel o ejecutando en terminal: php artisan whatsapp:register 123456.',
             default => null,
         };

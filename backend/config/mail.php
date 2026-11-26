@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'notifications_enabled' => (bool) env('MAIL_NOTIFICATIONS_ENABLED', true),
+    'notifications_enabled' => (bool) env('MAIL_NOTIFICATIONS_ENABLED', false),
 
     /*
     |--------------------------------------------------------------------------

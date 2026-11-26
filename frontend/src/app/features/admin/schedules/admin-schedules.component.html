@@ -1,0 +1,173 @@
+        <div class="bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-6 flex flex-col gap-5">
+          
+          <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">Jornadas de Atención y Bloqueos de Horario</h2>
+              <p class="text-xs text-slate-500">Define las horas de apertura del salón y programa franjas reservadas (almuerzos o vacaciones)</p>
+            </div>
+
+            <div class="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200">
+              <button 
+                type="button" 
+                (click)="schedulesTab.set('weekly')"
+                [ngClass]="schedulesTab() === 'weekly' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 font-medium'"
+                class="px-3.5 py-1.5 rounded-lg text-xs cursor-pointer"
+              >
+                Jornada Semanal (L-D)
+              </button>
+              <button 
+                type="button" 
+                (click)="schedulesTab.set('blocks')"
+                [ngClass]="schedulesTab() === 'blocks' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 font-medium'"
+                class="px-3.5 py-1.5 rounded-lg text-xs cursor-pointer"
+              >
+                Pausas & Bloqueos
+              </button>
+            </div>
+          </div>
+
+          @if (schedulesTab() === 'weekly') {
+            <div class="flex flex-col gap-4">
+              <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th class="p-3.5">Día</th>
+                      <th class="p-3.5">¿Laboral?</th>
+                      <th class="p-3.5">Hora de Apertura</th>
+                      <th class="p-3.5">Hora de Cierre</th>
+                      <th class="p-3.5">Intervalo de Cita</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (ws of weeklySchedules(); track ws.id) {
+                      <tr class="hover:bg-slate-50/60">
+                        <td class="p-3.5 font-bold text-slate-900">{{ ws.day_name }}</td>
+                        <td class="p-3.5">
+                          <label class="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" [(ngModel)]="ws.is_working_day" class="rounded text-teal-600 focus:ring-teal-500" />
+                            <span class="text-xs font-semibold" [ngClass]="ws.is_working_day ? 'text-emerald-600' : 'text-slate-400'">{{ ws.is_working_day ? 'Abierto' : 'Cerrado' }}</span>
+                          </label>
+                        </td>
+                        <td class="p-3.5">
+                          <input type="time" [(ngModel)]="ws.open_time" [disabled]="!ws.is_working_day" class="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold disabled:opacity-40" />
+                        </td>
+                        <td class="p-3.5">
+                          <input type="time" [(ngModel)]="ws.close_time" [disabled]="!ws.is_working_day" class="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold disabled:opacity-40" />
+                        </td>
+                        <td class="p-3.5">
+                          <select [(ngModel)]="ws.slot_interval_minutes" [disabled]="!ws.is_working_day" class="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs disabled:opacity-40">
+                            <option [value]="15">Cada 15 min</option>
+                            <option [value]="30">Cada 30 min</option>
+                            <option [value]="45">Cada 45 min</option>
+                            <option [value]="60">Cada 60 min</option>
+                          </select>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="flex justify-end">
+                <button 
+                  type="button" 
+                  [disabled]="isSavingSchedules()" 
+                  (click)="saveWeeklySchedules()" 
+                  class="px-5 py-2.5 rounded-2xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-md shadow-emerald-600/20 cursor-pointer disabled:opacity-50"
+                >
+                  {{ isSavingSchedules() ? 'Guardando...' : 'Guardar Jornadas Semanales' }}
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (schedulesTab() === 'blocks') {
+            <div class="flex flex-col gap-4">
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-500">Franjas de almuerzo o descansos que bloquean la agenda</span>
+                <button (click)="openCreateBlockModal()" class="px-3.5 py-1.5 rounded-xl bg-[#00C975] text-white text-xs font-bold hover:bg-[#00b067] cursor-pointer">
+                  + Nueva Pausa / Bloqueo
+                </button>
+              </div>
+
+              <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th class="p-3.5">Motivo / Título</th>
+                      <th class="p-3.5">Fecha</th>
+                      <th class="p-3.5">Horario</th>
+                      <th class="p-3.5">Tipo</th>
+                      <th class="p-3.5 text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (slot of blockedSlots(); track slot.id) {
+                      <tr class="hover:bg-slate-50/60">
+                        <td class="p-3.5 font-bold text-slate-900">{{ slot.title }}</td>
+                        <td class="p-3.5">{{ slot.blocked_date || 'Todos los días' }}</td>
+                        <td class="p-3.5 font-semibold">{{ slot.time_range }}</td>
+                        <td class="p-3.5">
+                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" [ngClass]="slot.is_recurring ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-700'">
+                            {{ slot.is_recurring ? 'Recurrente Diario' : 'Fecha Específica' }}
+                          </span>
+                        </td>
+                        <td class="p-3.5 text-right">
+                          <button (click)="deleteBlockedSlot(slot.id)" class="px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold cursor-pointer">
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                    @if (blockedSlots().length === 0) {
+                      <tr><td colspan="5" class="p-8 text-center text-slate-400">No hay pausas ni bloqueos registrados.</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+        </div>
+
+  @if (showBlockModal()) {
+    <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3">
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md p-6 flex flex-col gap-4">
+        <h3 class="font-bold text-base text-slate-900">Añadir Pausa o Bloqueo</h3>
+
+        <div>
+          <label class="block text-xs font-semibold mb-1">Título de la Pausa</label>
+          <input type="text" [(ngModel)]="blockForm.title" placeholder="Ej: Almuerzo del Equipo" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200" />
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="blockRec" [(ngModel)]="blockForm.is_recurring" class="rounded text-teal-600" />
+          <label for="blockRec" class="text-xs font-semibold">Recurrente todos los días (ej: almuerzo)</label>
+        </div>
+
+        @if (!blockForm.is_recurring) {
+          <div>
+            <label class="block text-xs font-semibold mb-1">Fecha Específica</label>
+            <input type="date" [(ngModel)]="blockForm.blocked_date" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200" />
+          </div>
+        }
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Hora Inicio</label>
+            <input type="time" [(ngModel)]="blockForm.start_time" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 font-bold" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Hora Fin</label>
+            <input type="time" [(ngModel)]="blockForm.end_time" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 font-bold" />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button (click)="showBlockModal.set(false)" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer">Cancelar</button>
+          <button (click)="saveBlockedSlot()" class="px-4 py-2 rounded-xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-md cursor-pointer">Guardar Bloqueo</button>
+        </div>
+      </div>
+    </div>
+  }

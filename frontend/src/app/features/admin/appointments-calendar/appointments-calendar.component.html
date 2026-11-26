@@ -1,18 +1,19 @@
-<div class="nuvex-admin-layout min-h-screen bg-[#F8FAFC] text-slate-800 p-3 sm:p-5 lg:p-6 font-sans antialiased">
+<div [ngClass]="isEmbeddedInLayout() ? 'w-full' : 'nuvex-admin-layout min-h-screen bg-[#F8FAFC] text-slate-800 p-3 sm:p-5 lg:p-6 font-sans antialiased'">
   
-  <div class="max-w-[1800px] mx-auto flex flex-col lg:flex-row gap-6 items-start">
+  <div [ngClass]="isEmbeddedInLayout() ? 'w-full' : 'max-w-[1800px] mx-auto flex flex-col lg:flex-row gap-6 items-start'">
 
-    <!-- ========================================================================= -->
-    <!-- 1. LEFT SIDEBAR: MENÚ LATERAL IZQUIERDO (Nuvex Modern Curve UI)           -->
-    <!-- ========================================================================= -->
+    @if (!isEmbeddedInLayout()) {
+      <!-- ========================================================================= -->
+      <!-- 1. LEFT SIDEBAR: MENÚ LATERAL IZQUIERDO (Nuvex Modern Curve UI)           -->
+      <!-- ========================================================================= -->
 
-    <!-- Backdrop Móvil -->
-    @if (sidebarOpen()) {
-      <div 
-        (click)="closeSidebar()" 
-        class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 lg:hidden animate-in fade-in duration-150"
-      ></div>
-    }
+      <!-- Backdrop Móvil -->
+      @if (sidebarOpen()) {
+        <div 
+          (click)="closeSidebar()" 
+          class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 lg:hidden animate-in fade-in duration-150"
+        ></div>
+      }
 
     <!-- Sidebar Container (Nuvex Modern Curve - Dark Slate con Iconos Monoline Exactos) -->
     <aside 
@@ -240,6 +241,42 @@
               </svg>
               <span class="truncate">Conexión WhatsApp</span>
             </button>
+
+            <!-- Plantillas WhatsApp (Nuevo Menú Dedicado) -->
+            <button 
+              type="button" 
+              (click)="setSection('plantillas')"
+              [ngClass]="activeSection() === 'plantillas' ? 'bg-white/15 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10 font-medium'"
+              class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all cursor-pointer text-left"
+            >
+              <div class="flex items-center gap-3 truncate">
+                <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="truncate">Plantillas WhatsApp</span>
+              </div>
+              <span class="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-[10px] font-bold border border-teal-400/30">
+                Meta
+              </span>
+            </button>
+
+            <!-- Listas de Difusión (Campañas Masivas) -->
+            <button 
+              type="button" 
+              (click)="setSection('difusion')"
+              [ngClass]="activeSection() === 'difusion' ? 'bg-white/15 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10 font-medium'"
+              class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all cursor-pointer text-left"
+            >
+              <div class="flex items-center gap-3 truncate">
+                <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                </svg>
+                <span class="truncate">Listas de Difusión</span>
+              </div>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-400/30">
+                Nuevo
+              </span>
+            </button>
           </div>
 
           <!-- ================= GRUPO: SUPERADMINISTRADOR ================= -->
@@ -291,109 +328,112 @@
       </div>
 
     </aside>
+    }
 
     <!-- ========================================================================= -->
     <!-- 2. CONTENIDO PRINCIPAL A LA DERECHA (PURE LIGHT MODE)                     -->
     <!-- ========================================================================= -->
-    <main class="flex-1 min-w-0 w-full flex flex-col gap-5">
+    <main [ngClass]="isEmbeddedInLayout() ? 'w-full flex flex-col gap-5' : 'flex-1 min-w-0 w-full flex flex-col gap-5'">
       
-      <!-- ========================================================================= -->
-      <!-- BARRA SUPERIOR ELEVADA (TOPBAR PÍLDORA CITACLAVE)                         -->
-      <!-- ========================================================================= -->
-      <header class="w-full bg-white rounded-[28px] lg:rounded-[32px] border border-slate-200/80 shadow-xs px-5 sm:px-6 py-3 flex items-center justify-between gap-4 relative z-30">
-        
-        <!-- Izquierda: Botón Menú Móvil + Logo Oficial CitaClave -->
-        <div class="flex items-center gap-3.5">
-          <!-- Botón Hamburguesa en Móvil -->
-          <button 
-            type="button"
-            (click)="toggleSidebar()" 
-            class="lg:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
-            title="Abrir menú de navegación"
-          >
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
-          <!-- Logo CitaClave Oficial (Solo el logo, sin texto duplicado) -->
-          <div class="flex items-center select-none">
-            <img 
-              src="/assets/brand/citaclave-logo.png" 
-              alt="CitaClave" 
-              class="h-8 sm:h-9 w-auto object-contain" 
-            />
-          </div>
-        </div>
-
-        <!-- Derecha: Botón Rápido + Cita y Avatar con Menú Desplegable -->
-        <div class="flex items-center gap-3">
+      @if (!isEmbeddedInLayout()) {
+        <!-- ========================================================================= -->
+        <!-- BARRA SUPERIOR ELEVADA (TOPBAR PÍLDORA CITACLAVE)                         -->
+        <!-- ========================================================================= -->
+        <header class="w-full bg-white rounded-[28px] lg:rounded-[32px] border border-slate-200/80 shadow-xs px-5 sm:px-6 py-3 flex items-center justify-between gap-4 relative z-30">
           
-          <button 
-            type="button"
-            (click)="openNewAppointmentModal()" 
-            class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
-          >
-            <span>+ Cita</span>
-          </button>
-
-          <!-- Avatar de Usuario con Menú Desplegable -->
-          <div class="relative">
+          <!-- Izquierda: Botón Menú Móvil + Logo Oficial CitaClave -->
+          <div class="flex items-center gap-3.5">
+            <!-- Botón Hamburguesa en Móvil -->
             <button 
               type="button"
-              (click)="toggleUserMenu()"
-              class="w-10 h-10 rounded-full bg-[#0B132B] text-white font-bold text-xs flex items-center justify-center ring-2 ring-[#00C975] shadow-xs cursor-pointer hover:scale-105 active:scale-95 transition-all select-none"
-              [title]="currentUser()?.name || 'Usuario'"
+              (click)="toggleSidebar()" 
+              class="lg:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+              title="Abrir menú de navegación"
             >
-              {{ userInitials() }}
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
             </button>
 
-            <!-- Dropdown Menú de Usuario -->
-            @if (userMenuOpen()) {
-              <!-- Backdrop invisible para cerrar al hacer clic afuera -->
-              <div 
-                (click)="closeUserMenu()" 
-                class="fixed inset-0 z-40 bg-transparent"
-              ></div>
-
-              <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200/90 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
-                <div class="px-4 py-2 border-b border-slate-100">
-                  <span class="block text-xs font-bold text-slate-900 truncate">{{ currentUser()?.name || 'Paola Andrea Aguilera Camacho' }}</span>
-                  <span class="block text-[10px] text-slate-400 font-medium truncate">{{ currentUser()?.email || 'admin@citaclave.com' }}</span>
-                </div>
-
-                <div class="pt-1">
-                  <button 
-                    type="button" 
-                    (click)="openProfileModal()"
-                    class="w-full px-4 py-2.5 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
-                  >
-                    <svg class="w-4 h-4 text-[#00C975]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span>Mi Perfil de Usuario</span>
-                  </button>
-
-                  <div class="h-px bg-slate-100 my-1"></div>
-
-                  <button 
-                    type="button" 
-                    (click)="closeUserMenu(); logout()"
-                    class="w-full px-4 py-2.5 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition-colors cursor-pointer"
-                  >
-                    <svg class="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    <span>Salir</span>
-                  </button>
-                </div>
-              </div>
-            }
+            <!-- Logo CitaClave Oficial (Solo el logo, sin texto duplicado) -->
+            <div class="flex items-center select-none">
+              <img 
+                src="/assets/brand/citaclave-logo.png" 
+                alt="CitaClave" 
+                class="h-8 sm:h-9 w-auto object-contain" 
+              />
+            </div>
           </div>
 
-        </div>
+          <!-- Derecha: Botón Rápido + Cita y Avatar con Menú Desplegable -->
+          <div class="flex items-center gap-3">
+            
+            <button 
+              type="button"
+              (click)="openNewAppointmentModal()" 
+              class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+            >
+              <span>+ Cita</span>
+            </button>
 
-      </header>
+            <!-- Avatar de Usuario con Menú Desplegable -->
+            <div class="relative">
+              <button 
+                type="button"
+                (click)="toggleUserMenu()"
+                class="w-10 h-10 rounded-full bg-[#0B132B] text-white font-bold text-xs flex items-center justify-center ring-2 ring-[#00C975] shadow-xs cursor-pointer hover:scale-105 active:scale-95 transition-all select-none"
+                [title]="currentUser()?.name || 'Usuario'"
+              >
+                {{ userInitials() }}
+              </button>
+
+              <!-- Dropdown Menú de Usuario -->
+              @if (userMenuOpen()) {
+                <!-- Backdrop invisible para cerrar al hacer clic afuera -->
+                <div 
+                  (click)="closeUserMenu()" 
+                  class="fixed inset-0 z-40 bg-transparent"
+                ></div>
+
+                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200/90 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+                  <div class="px-4 py-2 border-b border-slate-100">
+                    <span class="block text-xs font-bold text-slate-900 truncate">{{ currentUser()?.name || 'Paola Andrea Aguilera Camacho' }}</span>
+                    <span class="block text-[10px] text-slate-400 font-medium truncate">{{ currentUser()?.email || 'admin@citaclave.com' }}</span>
+                  </div>
+
+                  <div class="pt-1">
+                    <button 
+                      type="button" 
+                      (click)="openProfileModal()"
+                      class="w-full px-4 py-2.5 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                    >
+                      <svg class="w-4 h-4 text-[#00C975]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <span>Mi Perfil de Usuario</span>
+                    </button>
+
+                    <div class="h-px bg-slate-100 my-1"></div>
+
+                    <button 
+                      type="button" 
+                      (click)="closeUserMenu(); logout()"
+                      class="w-full px-4 py-2.5 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                    >
+                      <svg class="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      <span>Salir</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+          </div>
+
+        </header>
+      }
 
       <!-- ========================================================================= -->
       <!-- SECCIÓN: ESCRITORIO (DASHBOARD EJECUTIVO NUVEX)                           -->
@@ -807,7 +847,7 @@
                 >
                   <option [ngValue]="null">Todos los tratamientos</option>
                   @for (svc of servicesList(); track svc.id) {
-                    <option [ngValue]="svc.id">{{ svc.name }}</option>
+                    <option [ngValue]="svc.id">{{ svc.is_favorite ? '★ ' : '' }}{{ svc.name }}</option>
                   }
                 </select>
               </div>
@@ -2494,6 +2534,1131 @@
 
           </div>
 
+          <!-- Acceso Directo al Nuevo Menú de Plantillas Oficiales -->
+          <div class="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-[28px] border border-teal-200/80 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-base font-extrabold text-slate-900 m-0">
+                  Plantillas Oficiales de WhatsApp (Meta Cloud API)
+                </h4>
+                <p class="text-xs text-slate-600 mt-0.5 mb-0 leading-relaxed">
+                  Las 8 plantillas oficiales del salón ahora cuentan con su propio menú dedicado con vista previa interactiva y registro en 1 clic.
+                </p>
+              </div>
+            </div>
+
+            <button 
+              type="button" 
+              (click)="setSection('plantillas')"
+              class="px-5 py-2.5 rounded-full text-xs font-bold text-white bg-teal-700 hover:bg-teal-800 shadow-sm transition-all cursor-pointer shrink-0 flex items-center gap-2"
+            >
+              <span>Abrir Módulo de Plantillas</span>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+        </div>
+      }
+
+      <!-- ========================================================================= -->
+      <!-- SECCIÓN: PLANTILLAS OFICIALES WHATSAPP META (NUEVO MENÚ DEDICADO)         -->
+      <!-- ========================================================================= -->
+      @if (activeSection() === 'plantillas') {
+        <div class="flex flex-col gap-6">
+
+          <!-- 1. BARRA SUPERIOR DE CABECERA Y ACCIONES RÁPIDAS -->
+          <div class="bg-white rounded-[28px] border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-teal-50 text-teal-800 border border-teal-200">
+                  <span class="w-2 h-2 rounded-full bg-teal-600"></span>
+                  Meta WhatsApp Cloud API
+                </span>
+                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                  Idioma es_CO • Categoría Utility
+                </span>
+              </div>
+              <h2 class="text-xl font-black text-slate-900 tracking-tight m-0">
+                Plantillas Oficiales de WhatsApp
+              </h2>
+              <p class="text-xs text-slate-500 font-medium mt-1 mb-0 max-w-2xl leading-relaxed">
+                Catálogo de plantillas oficiales para confirmaciones, cancelaciones, abonos y recordatorios. Previsualiza cómo las verá la clienta y regístralas en Meta en 1 clic.
+              </p>
+            </div>
+
+            <!-- Botones Globales de Sincronización y Creación Masiva -->
+            <div class="flex items-center flex-wrap gap-2.5 shrink-0">
+              <button 
+                type="button" 
+                (click)="loadTemplatesCatalog()" 
+                [disabled]="isLoadingTemplatesCatalog()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 hover:bg-slate-100 shadow-2xs cursor-pointer transition-all disabled:opacity-50"
+              >
+                @if (isLoadingTemplatesCatalog()) {
+                  <svg class="w-4 h-4 animate-spin text-teal-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                  </svg>
+                  <span>Sincronizando...</span>
+                } @else {
+                  <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Sincronizar Estados</span>
+                }
+              </button>
+
+              <button 
+                type="button" 
+                (click)="createAllMetaTemplates()" 
+                [disabled]="isCreatingMetaTemplate() !== null"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold text-white bg-[#0d9488] hover:bg-[#0f766e] shadow-sm shadow-teal-700/20 cursor-pointer transition-all disabled:opacity-50"
+              >
+                @if (isCreatingMetaTemplate() === 'ALL') {
+                  <svg class="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                  </svg>
+                  <span>Creando Todas en Meta...</span>
+                } @else {
+                  <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Crear Todas en Meta (1 Clic)</span>
+                }
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. TARJETAS KPI DE RESUMEN DE PLANTILLAS -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Total Plantillas -->
+            <div class="bg-white rounded-[28px] border border-slate-200/80 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex items-center justify-between group">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Plantillas</span>
+                <div class="text-3xl font-black text-slate-900 tracking-tight mt-1">{{ templatesSummary().total }}</div>
+                <span class="text-[11px] font-medium text-slate-500 mt-0.5 block">Catálogo oficial</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 border border-slate-200/60 group-hover:scale-105 transition-transform">
+                <svg class="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Aprobadas en Meta -->
+            <div class="bg-white rounded-[28px] border border-emerald-200/90 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex items-center justify-between group bg-gradient-to-br from-white to-emerald-50/30">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Aprobadas Meta</span>
+                <div class="text-3xl font-black text-emerald-800 tracking-tight mt-1">{{ templatesSummary().approved }}</div>
+                <span class="text-[11px] font-semibold text-emerald-600 mt-0.5 block">Listas para envío</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/80 group-hover:scale-105 transition-transform">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- En Revisión -->
+            <div class="bg-white rounded-[28px] border border-amber-200/90 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex items-center justify-between group bg-gradient-to-br from-white to-amber-50/30">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-amber-700">En Revisión</span>
+                <div class="text-3xl font-black text-amber-800 tracking-tight mt-1">{{ templatesSummary().pending }}</div>
+                <span class="text-[11px] font-semibold text-amber-600 mt-0.5 block">Auditoría de Meta</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200/80 group-hover:scale-105 transition-transform">
+                <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Pendientes de Registro -->
+            <div class="bg-white rounded-[28px] border border-slate-200/80 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex items-center justify-between group">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Sin Registrar</span>
+                <div class="text-3xl font-black text-slate-700 tracking-tight mt-1">{{ templatesSummary().notCreated }}</div>
+                <span class="text-[11px] font-semibold text-slate-400 mt-0.5 block">Pendientes de 1-clic</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 border border-slate-200/60 group-hover:scale-105 transition-transform">
+                <svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. FEEDBACK Y MENSAJES DE ACCIÓN -->
+          @if (templateActionFeedback()) {
+            <div 
+              [ngClass]="templateActionFeedback()!.success ? 'bg-[#f0fdf4] border-[#bbf7d0] text-[#14532d]' : 'bg-[#fef2f2] border-[#fecaca] text-[#7f1d1d]'"
+              class="rounded-2xl border p-4 text-xs flex items-center justify-between gap-3 animate-in fade-in duration-200 shadow-2xs"
+            >
+              <div class="flex items-center gap-2.5">
+                @if (templateActionFeedback()!.success) {
+                  <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                } @else {
+                  <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                }
+                <span class="font-semibold">{{ templateActionFeedback()!.message }}</span>
+              </div>
+              <button 
+                type="button" 
+                (click)="templateActionFeedback.set(null)"
+                class="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+          }
+
+          <!-- 4. BARRA DE FILTROS Y PESTAÑAS -->
+          <div class="flex items-center justify-between flex-wrap gap-3 pb-1">
+            <div class="inline-flex p-1 bg-slate-100 rounded-full border border-slate-200 shadow-2xs">
+              <button 
+                type="button" 
+                (click)="templatesFilter.set('ALL')"
+                [ngClass]="templatesFilter() === 'ALL' ? 'bg-white text-slate-900 font-black shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold'"
+                class="px-4 py-1.5 rounded-full text-xs transition-all cursor-pointer"
+              >
+                Todas ({{ templatesSummary().total }})
+              </button>
+              <button 
+                type="button" 
+                (click)="templatesFilter.set('APPROVED')"
+                [ngClass]="templatesFilter() === 'APPROVED' ? 'bg-white text-emerald-800 font-black shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold'"
+                class="px-4 py-1.5 rounded-full text-xs transition-all cursor-pointer"
+              >
+                Aprobadas en Meta ({{ templatesSummary().approved }})
+              </button>
+              <button 
+                type="button" 
+                (click)="templatesFilter.set('PENDING')"
+                [ngClass]="templatesFilter() === 'PENDING' ? 'bg-white text-slate-900 font-black shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold'"
+                class="px-4 py-1.5 rounded-full text-xs transition-all cursor-pointer"
+              >
+                Pendientes de Registro ({{ templatesSummary().notCreated + templatesSummary().pending }})
+              </button>
+            </div>
+          </div>
+
+          <!-- 5. GRID DE TARJETAS DE PLANTILLAS -->
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+            @for (template of filteredOfficialTemplates(); track template.key) {
+              <div class="bg-white border border-slate-200/80 rounded-[32px] p-6 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_36px_-10px_rgba(15,23,42,0.1)] hover:border-teal-500/40 transition-all duration-300 flex flex-col justify-between gap-5 relative group">
+                
+                <div class="flex flex-col gap-4">
+                  <!-- Fila Superior: Icono de Categoría & Badge de Estado Meta -->
+                  <div class="flex items-center justify-between gap-3">
+                    
+                    <!-- Icono Temático por tipo de plantilla -->
+                    @if (template.key === 'confirmacion_cita') {
+                      <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l2 2 4-4" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'cita_confirmada_abono') {
+                      <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'cita_cancelada') {
+                      <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l4 4m0-4l-4 4" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'cita_reagendada') {
+                      <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'recordatorio_cita_24h') {
+                      <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'novedad_comprobante_cita') {
+                      <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 border border-orange-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'cita_recibida') {
+                      <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                      </div>
+                    } @else {
+                      <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                      </div>
+                    }
+
+                    <!-- Capsule de Estado Meta -->
+                    @if (template.meta_status === 'APPROVED') {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-black tracking-wide bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        APROBADA
+                      </span>
+                    } @else if (template.meta_status === 'PENDING') {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-black tracking-wide bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        EN REVISIÓN
+                      </span>
+                    } @else if (template.meta_status === 'REJECTED') {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-black tracking-wide bg-rose-50 text-rose-800 border border-rose-200 shadow-2xs shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                        RECHAZADA
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-bold tracking-wide bg-slate-100 text-slate-600 border border-slate-200/90 shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                        NO CREADA
+                      </span>
+                    }
+                  </div>
+
+                  <!-- Título y Llave Técnica -->
+                  <div>
+                    <div class="flex items-center justify-between gap-2">
+                      <h4 class="text-[15px] font-black text-slate-900 m-0 leading-snug group-hover:text-teal-950 transition-colors">
+                        {{ template.display_name }}
+                      </h4>
+                      @if (template.is_customized) {
+                        <span class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-200/90 px-2 py-0.5 rounded-full shrink-0">
+                          <span class="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+                          Personalizada
+                        </span>
+                      }
+                    </div>
+                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <code class="text-[11px] font-mono font-semibold text-slate-600 bg-slate-100/90 px-2 py-0.5 rounded-md border border-slate-200/70 inline-block">
+                        {{ template.name }}
+                      </code>
+                      <span class="text-[10px] font-extrabold text-slate-400 tracking-wider uppercase bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/50">
+                        {{ template.category }} • {{ template.language }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Descripción -->
+                  <p class="text-xs text-slate-500 leading-relaxed m-0 font-normal min-h-[34px]">
+                    {{ template.description }}
+                  </p>
+
+                  <!-- Vista Rápida del Mensaje (Mini Globo WhatsApp) -->
+                  <div class="bg-[#f8fafc] rounded-2xl p-3.5 border border-slate-200/70 flex flex-col gap-2 relative">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        Vista rápida del mensaje
+                      </span>
+                      <span class="text-[10px] font-bold text-teal-800 bg-teal-50 border border-teal-200/80 px-2 py-0.5 rounded-full">
+                        {{ template.samples.length }} variables
+                      </span>
+                    </div>
+                    <p class="text-xs text-slate-700 italic leading-relaxed m-0 line-clamp-2">
+                      "{{ template.preview_text }}"
+                    </p>
+                  </div>
+
+                  <!-- Detalle de Disparo Automático -->
+                  <div class="text-[11.5px] text-slate-600 bg-slate-50/80 rounded-xl px-3 py-2 border border-slate-200/60 flex items-start gap-2 leading-relaxed">
+                    <svg class="w-4 h-4 text-teal-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <div class="truncate">
+                      <strong class="text-slate-800 font-bold">Disparo:</strong> {{ template.trigger }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex items-center gap-2 pt-3.5 border-t border-slate-100/90 mt-1">
+                  <!-- Botón Vista Previa -->
+                  <button 
+                    type="button" 
+                    (click)="openTemplatePreview(template)"
+                    class="py-2.5 px-3 rounded-full text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs hover:border-slate-300 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]"
+                    title="Previsualizar mensaje completo"
+                  >
+                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span>Ver</span>
+                  </button>
+
+                  <!-- Botón Editar Plantilla -->
+                  <button 
+                    type="button" 
+                    (click)="openTemplateEdit(template)"
+                    class="py-2.5 px-3 rounded-full text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs hover:border-slate-300 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]"
+                    title="Editar texto y variables de la plantilla"
+                  >
+                    <svg class="w-3.5 h-3.5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>Editar</span>
+                  </button>
+
+                  <!-- Botón Crear en Meta (1 Clic) -->
+                  @if (template.meta_status === 'APPROVED') {
+                    <div 
+                      class="flex-1 py-2.5 px-3 rounded-full text-xs font-black text-emerald-800 bg-emerald-50 border border-emerald-200/90 flex items-center justify-center gap-1.5 select-none shadow-2xs"
+                    >
+                      <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Lista en Meta</span>
+                    </div>
+                  } @else {
+                    <button 
+                      type="button" 
+                      (click)="createSingleMetaTemplate(template)"
+                      [disabled]="isCreatingMetaTemplate() !== null"
+                      class="flex-1 py-2.5 px-3 rounded-full text-xs font-black text-white bg-slate-900 hover:bg-[#00C975] hover:text-slate-950 shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 active:scale-[0.98]"
+                    >
+                      @if (isCreatingMetaTemplate() === template.key) {
+                        <svg class="w-3.5 h-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                        <span>Creando...</span>
+                      } @else {
+                        <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Crear en Meta</span>
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+        </div>
+      }
+
+      <!-- ========================================================================= -->
+      <!-- SECCIÓN: LISTAS DE DIFUSIÓN Y CAMPAÑAS WHATSAPP                           -->
+      <!-- ========================================================================= -->
+      @if (activeSection() === 'difusion') {
+        <div class="flex flex-col gap-6">
+
+          <!-- 1. HEADER DE LA SECCIÓN -->
+          <div class="bg-white rounded-[28px] border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                  Marketing & CRM Inteligente
+                </span>
+                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                  WhatsApp Cloud API
+                </span>
+              </div>
+              <h2 class="text-xl font-black text-slate-900 tracking-tight m-0">
+                Listas de Difusión y Campañas Masivas
+              </h2>
+              <p class="text-xs text-slate-500 font-medium mt-1 mb-0 max-w-2xl leading-relaxed">
+                Envía promociones y recordatorios a tus clientas segmentadas. Los mensajes se personalizan automáticamente con el apodo o primer nombre de cada clienta.
+              </p>
+            </div>
+
+            <!-- Botones de Acción Superior -->
+            <div class="flex items-center flex-wrap gap-2.5 shrink-0">
+              <button 
+                type="button" 
+                (click)="loadBroadcastAudience()" 
+                [disabled]="isLoadingBroadcastAudience()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 hover:bg-slate-100 shadow-2xs cursor-pointer transition-all disabled:opacity-50"
+              >
+                @if (isLoadingBroadcastAudience()) {
+                  <svg class="w-4 h-4 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                  </svg>
+                  <span>Actualizando Audiencia...</span>
+                } @else {
+                  <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Refrescar Segmentos</span>
+                }
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. KPI CARDS: SEGMENTOS DE AUDIENCIA SELECCIONABLES -->
+          <div>
+            <div class="flex items-center justify-between mb-3 px-1">
+              <div>
+                <h3 class="text-sm font-black text-slate-900 tracking-tight">1. Selecciona el Segmento de Audiencia</h3>
+                <p class="text-[11px] text-slate-500">Filtra automáticamente a tus clientas según su comportamiento y recurrencia</p>
+              </div>
+              <span class="text-xs font-bold text-slate-400">Paso 1 de 3</span>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <!-- Todas las Clientas -->
+              <div 
+                (click)="onSelectBroadcastSegment('all')"
+                [ngClass]="broadcastSegment() === 'all' 
+                  ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500 shadow-md' 
+                  : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs'"
+                class="rounded-[28px] border p-5 transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Todas las Clientas</span>
+                  <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-hover:scale-105 transition-transform">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="text-3xl font-black text-slate-900 tracking-tight">
+                  {{ broadcastAudienceCounts().all }}
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100/80 text-[11px]">
+                  <span class="text-slate-500 font-medium">Base completa con teléfono</span>
+                  @if (broadcastSegment() === 'all') {
+                    <span class="font-bold text-emerald-700">✓ Activo</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Frecuentes / VIP -->
+              <div 
+                (click)="onSelectBroadcastSegment('recurring')"
+                [ngClass]="broadcastSegment() === 'recurring' 
+                  ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500 shadow-md' 
+                  : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs'"
+                class="rounded-[28px] border p-5 transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Clientas VIP</span>
+                  <div class="w-8 h-8 rounded-full bg-emerald-100/70 flex items-center justify-center text-emerald-700 group-hover:scale-105 transition-transform">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="text-3xl font-black text-emerald-800 tracking-tight">
+                  {{ broadcastAudienceCounts().recurring }}
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100/80 text-[11px]">
+                  <span class="text-slate-500 font-medium">≥ 2 citas en historial</span>
+                  @if (broadcastSegment() === 'recurring') {
+                    <span class="font-bold text-emerald-700">✓ Activo</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Inactivas (+30 días) -->
+              <div 
+                (click)="onSelectBroadcastSegment('inactive_30')"
+                [ngClass]="broadcastSegment() === 'inactive_30' 
+                  ? 'border-amber-500 bg-amber-50/40 ring-2 ring-amber-500 shadow-md' 
+                  : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs'"
+                class="rounded-[28px] border p-5 transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-amber-700">Inactivas (+30 Días)</span>
+                  <div class="w-8 h-8 rounded-full bg-amber-100/70 flex items-center justify-center text-amber-700 group-hover:scale-105 transition-transform">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="text-3xl font-black text-amber-800 tracking-tight">
+                  {{ broadcastAudienceCounts().inactive_30 }}
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100/80 text-[11px]">
+                  <span class="text-slate-500 font-medium">Reactivación de clientas</span>
+                  @if (broadcastSegment() === 'inactive_30') {
+                    <span class="font-bold text-amber-700">✓ Activo</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Nuevas Clientas -->
+              <div 
+                (click)="onSelectBroadcastSegment('new')"
+                [ngClass]="broadcastSegment() === 'new' 
+                  ? 'border-indigo-500 bg-indigo-50/40 ring-2 ring-indigo-500 shadow-md' 
+                  : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs'"
+                class="rounded-[28px] border p-5 transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-700">Nuevas Clientas</span>
+                  <div class="w-8 h-8 rounded-full bg-indigo-100/70 flex items-center justify-center text-indigo-700 group-hover:scale-105 transition-transform">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="text-3xl font-black text-indigo-800 tracking-tight">
+                  {{ broadcastAudienceCounts().new }}
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100/80 text-[11px]">
+                  <span class="text-slate-500 font-medium">Registradas recientemente</span>
+                  @if (broadcastSegment() === 'new') {
+                    <span class="font-bold text-indigo-700">✓ Activo</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. WORKSPACE PRINCIPAL: CONFIGURADOR + PREVISUALIZADOR EN VIVO -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- PANEL IZQUIERDO: CONFIGURADOR DE LA CAMPAÑA (COL 7) -->
+            <div class="lg:col-span-7 bg-white rounded-[32px] border border-slate-200/80 p-6 shadow-xs flex flex-col gap-5">
+              
+              <div class="pb-3 border-b border-slate-100">
+                <span class="text-xs font-bold text-slate-400">Paso 2 de 3</span>
+                <h3 class="text-base font-black text-slate-900 tracking-tight mt-0.5">Configuración del Mensaje</h3>
+                <p class="text-xs text-slate-500 font-medium">Selecciona la plantilla oficial de Meta o escribe un mensaje con variables.</p>
+              </div>
+
+              <!-- Nombre Interno de la Campaña -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                  Nombre de la Campaña (Para tu control interno)
+                </label>
+                <input 
+                  type="text"
+                  [ngModel]="broadcastName()"
+                  (ngModelChange)="broadcastName.set($event)"
+                  placeholder="Ej: Promo Fin de Semana Manicura"
+                  class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                />
+              </div>
+
+              <!-- Selector de Plantilla Meta -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                  Plantilla de WhatsApp
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <!-- Plantilla 1: promocion_salon -->
+                  <div 
+                    (click)="onSelectBroadcastTemplate('promocion_salon')"
+                    [ngClass]="broadcastTemplateKey() === 'promocion_salon' 
+                      ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 ring-2 ring-emerald-500/80' 
+                      : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'"
+                    class="p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-1"
+                  >
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-extrabold">Promoción Salón</span>
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-100 text-teal-800">Meta</span>
+                    </div>
+                    <span class="text-[10.5px] text-slate-500 font-medium line-clamp-2">Descuentos y novedades</span>
+                  </div>
+
+                  <!-- Plantilla 2: reactivacion_clientas -->
+                  <div 
+                    (click)="onSelectBroadcastTemplate('reactivacion_clientas')"
+                    [ngClass]="broadcastTemplateKey() === 'reactivacion_clientas' 
+                      ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 ring-2 ring-emerald-500/80' 
+                      : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'"
+                    class="p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-1"
+                  >
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-extrabold">Reactivación</span>
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-100 text-teal-800">Meta</span>
+                    </div>
+                    <span class="text-[10.5px] text-slate-500 font-medium line-clamp-2">"Te extrañamos en..."</span>
+                  </div>
+
+                  <!-- Plantilla 3: Personalizada / Fallback -->
+                  <div 
+                    (click)="onSelectBroadcastTemplate('custom')"
+                    [ngClass]="broadcastTemplateKey() === 'custom' 
+                      ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 ring-2 ring-emerald-500/80' 
+                      : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'"
+                    class="p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-1"
+                  >
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-extrabold">Personalizada</span>
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-700">Libre</span>
+                    </div>
+                    <span class="text-[10.5px] text-slate-500 font-medium line-clamp-2">Texto abierto y variables</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Campos dinámicos según plantilla -->
+              @if (broadcastTemplateKey() === 'promocion_salon') {
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                    Oferta o Descuento a Comunicar <span class="text-rose-500">*</span>
+                  </label>
+                  <textarea 
+                    rows="2"
+                    [ngModel]="broadcastPromoText()"
+                    (ngModelChange)="broadcastPromoText.set($event)"
+                    placeholder="Ej: 20% de descuento en todos los servicios de Manicura y Pestañas este fin de semana"
+                    class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all custom-scrollbar resize-none"
+                  ></textarea>
+                  <span class="text-[10.5px] text-slate-400 mt-1 block">Esta frase se insertará dinámicamente en el cuerpo del mensaje de Meta.</span>
+                </div>
+              }
+
+              @if (broadcastTemplateKey() === 'custom') {
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-bold text-slate-700">
+                      Cuerpo del Mensaje Personalizado
+                    </label>
+                    <span class="text-[10px] text-slate-400">Tokens: {{ '{{apodo}}' }}, {{ '{{salon}}' }}, {{ '{{link_portal}}' }}</span>
+                  </div>
+                  <textarea 
+                    rows="4"
+                    [ngModel]="broadcastCustomBody()"
+                    (ngModelChange)="broadcastCustomBody.set($event)"
+                    class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all custom-scrollbar"
+                  ></textarea>
+                </div>
+              }
+
+              <!-- Enlace de Reserva / Portal Web -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                  Enlace del Portal de Reservas
+                </label>
+                <input 
+                  type="url"
+                  [ngModel]="broadcastTargetUrl()"
+                  (ngModelChange)="broadcastTargetUrl.set($event)"
+                  placeholder="https://tusalon.com o https://labellenailsbog.com"
+                  class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                />
+              </div>
+
+              <!-- SECCIÓN: ENVÍO DE PRUEBA AL ADMIN -->
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col gap-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <span class="text-xs font-bold text-slate-800">Enviar Prueba a tu Teléfono Primero</span>
+                  </div>
+                  <span class="text-[10px] font-semibold text-slate-500">Recomendado</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <input 
+                    type="tel"
+                    [ngModel]="broadcastTestPhone()"
+                    (ngModelChange)="broadcastTestPhone.set($event)"
+                    placeholder="Ej: +57 300 123 4567"
+                    class="flex-1 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <button 
+                    type="button"
+                    (click)="sendTestBroadcastMessage()"
+                    [disabled]="isSendingTestBroadcast()"
+                    class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold cursor-pointer transition-all disabled:opacity-50 shrink-0 flex items-center gap-1.5"
+                  >
+                    @if (isSendingTestBroadcast()) {
+                      <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      </svg>
+                      <span>Enviando...</span>
+                    } @else {
+                      <span>Enviar Test</span>
+                    }
+                  </button>
+                </div>
+
+                @if (testBroadcastFeedback()) {
+                  <div 
+                    [ngClass]="testBroadcastFeedback()!.success ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'"
+                    class="p-2.5 rounded-xl border text-xs font-medium flex items-center justify-between"
+                  >
+                    <span>{{ testBroadcastFeedback()!.message }}</span>
+                    <button type="button" (click)="testBroadcastFeedback.set(null)" class="text-slate-400 hover:text-slate-600 font-bold ml-2">✕</button>
+                  </div>
+                }
+              </div>
+
+              <!-- BOTÓN DE LANZAMIENTO MASIVO -->
+              <div class="pt-2">
+                <button 
+                  type="button"
+                  (click)="launchBroadcastCampaign()"
+                  [disabled]="isLaunchingBroadcast() || broadcastAudienceCounts()[broadcastSegment()] === 0"
+                  class="w-full py-3.5 rounded-2xl bg-[#00C975] hover:bg-[#00b067] text-white text-sm font-extrabold shadow-md shadow-emerald-600/20 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  @if (isLaunchingBroadcast()) {
+                    <svg class="w-5 h-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    <span>Disparando Difusión por WhatsApp...</span>
+                  } @else {
+                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    <span>Lanzar Campaña a {{ broadcastAudienceCounts()[broadcastSegment()] }} Clientas</span>
+                  }
+                </button>
+              </div>
+
+              <!-- Feedback del Lanzamiento -->
+              @if (broadcastLaunchFeedback()) {
+                <div 
+                  [ngClass]="broadcastLaunchFeedback()!.success ? 'bg-emerald-50 text-emerald-900 border-emerald-200' : 'bg-rose-50 text-rose-900 border-rose-200'"
+                  class="p-4 rounded-2xl border text-xs font-medium flex items-start justify-between gap-3"
+                >
+                  <div class="flex items-start gap-2.5">
+                    <span class="w-2 h-2 rounded-full mt-1 shrink-0" [ngClass]="broadcastLaunchFeedback()!.success ? 'bg-emerald-600' : 'bg-rose-600'"></span>
+                    <div>
+                      <p class="font-bold text-xs m-0">{{ broadcastLaunchFeedback()!.message }}</p>
+                      @if (broadcastLaunchFeedback()!.campaign) {
+                        <p class="text-[11px] text-slate-600 mt-1 mb-0">
+                          Enviados con éxito: {{ broadcastLaunchFeedback()!.campaign!.sent_count }} | Fallidos: {{ broadcastLaunchFeedback()!.campaign!.failed_count }}
+                        </p>
+                      }
+                    </div>
+                  </div>
+                  <button type="button" (click)="broadcastLaunchFeedback.set(null)" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+                </div>
+              }
+
+            </div>
+
+            <!-- PANEL DERECHO: SIMULADOR DE WHATSAPP EN VIVO (COL 5) -->
+            <div class="lg:col-span-5 flex flex-col gap-4">
+              
+              <!-- Simulador de Teléfono WhatsApp -->
+              <div class="bg-slate-900 rounded-[32px] p-3 shadow-xl border border-slate-800">
+                
+                <!-- Encabezado de WhatsApp -->
+                <div class="bg-[#075e54] text-white px-4 py-3 rounded-2xl flex items-center justify-between mb-3 shadow-xs">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-full bg-emerald-700 border border-emerald-400/30 flex items-center justify-center font-black text-xs shrink-0">
+                      {{ (salonTitle() || 'LN').substring(0, 2).toUpperCase() }}
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-xs truncate">{{ salonTitle() || 'La Belle Nails' }}</span>
+                        <svg class="w-3.5 h-3.5 text-teal-300 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                      </div>
+                      <span class="text-[10px] text-teal-200 block truncate">Cuenta Comercial Oficial</span>
+                    </div>
+                  </div>
+                  <span class="text-[10px] text-emerald-200 font-bold bg-emerald-800/80 px-2 py-0.5 rounded-full">
+                    Previsualización
+                  </span>
+                </div>
+
+                <!-- Fondo de Chat de WhatsApp -->
+                <div class="bg-[#e5ddd5] p-4 rounded-2xl min-h-[300px] flex flex-col justify-end relative overflow-hidden">
+                  
+                  <!-- Watermark decorativo discreto -->
+                  <div class="text-center my-2">
+                    <span class="text-[10px] font-semibold text-slate-500 bg-white/70 px-3 py-1 rounded-full shadow-2xs">
+                      Hoy • Plantilla con Apodo Dinámico
+                    </span>
+                  </div>
+
+                  <!-- Burbuja de Mensaje WhatsApp -->
+                  <div class="max-w-[88%] bg-[#dcf8c6] text-slate-800 p-3.5 rounded-2xl rounded-tr-none shadow-sm text-xs leading-relaxed ml-auto font-normal whitespace-pre-line border border-emerald-200/50">
+                    {{ broadcastLivePreview() }}
+                    
+                    <div class="flex items-center justify-end gap-1 mt-2 text-[9.5px] text-slate-500">
+                      <span>11:42 a. m.</span>
+                      <svg class="w-3.5 h-3.5 text-teal-600" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l7-7zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0z"/>
+                      </svg>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Barra inferior simulada -->
+                <div class="px-3 pt-3 flex items-center justify-between text-[11px] text-slate-400">
+                  <span>Sustitución en vivo: <strong>{{ '{' + '{apodo}' + '}' }} &rarr; Cami</strong></span>
+                  <span class="text-teal-400 font-bold">Sin Códigos de Cita</span>
+                </div>
+              </div>
+
+              <!-- Muestra de Clientas del Segmento Seleccionado -->
+              <div class="bg-white rounded-[28px] border border-slate-200/80 p-5 shadow-xs">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                  <div>
+                    <h4 class="text-xs font-black text-slate-900 tracking-tight m-0">Muestra de Clientas</h4>
+                    <p class="text-[10.5px] text-slate-500 m-0">Primeras destinatarias en la cola de envío</p>
+                  </div>
+                  <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    {{ broadcastAudienceSample().length }} ejemplos
+                  </span>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                  @for (sample of broadcastAudienceSample(); track sample.id) {
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[10px] shrink-0">
+                          {{ (sample.nickname || sample.name).substring(0, 1).toUpperCase() }}
+                        </div>
+                        <div class="min-w-0">
+                          <span class="font-bold text-slate-900 block truncate">
+                            {{ sample.name }}
+                            @if (sample.nickname) {
+                              <span class="text-emerald-700 font-semibold text-[10.5px]">({{ sample.nickname }})</span>
+                            }
+                          </span>
+                          <span class="text-[10px] text-slate-400 block">{{ sample.phone }}</span>
+                        </div>
+                      </div>
+
+                      <span class="text-[10px] text-slate-500 font-medium shrink-0">
+                        {{ sample.total_appointments }} {{ sample.total_appointments === 1 ? 'cita' : 'citas' }}
+                      </span>
+                    </div>
+                  }
+
+                  @if (broadcastAudienceSample().length === 0) {
+                    <div class="py-4 text-center text-slate-400 text-xs">
+                      No hay clientas con número de teléfono en este segmento.
+                    </div>
+                  }
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- 4. HISTORIAL DE CAMPAÑAS ENVIADAS -->
+          <div class="bg-white rounded-[32px] border border-slate-200/80 p-6 shadow-xs flex flex-col gap-4">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 class="text-base font-black text-slate-900 tracking-tight m-0">Historial de Campañas de Difusión</h3>
+                <p class="text-xs text-slate-500 font-medium mt-0.5 mb-0">Registro y trazabilidad de mensajes masivos enviados vía WhatsApp Cloud API</p>
+              </div>
+
+              <button 
+                type="button" 
+                (click)="loadBroadcastCampaigns()"
+                [disabled]="isLoadingBroadcastCampaigns()"
+                class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-all disabled:opacity-50"
+              >
+                Refrescar Historial
+              </button>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b border-slate-100 text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                    <th class="py-3 px-3">Campaña</th>
+                    <th class="py-3 px-3">Segmento</th>
+                    <th class="py-3 px-3">Plantilla</th>
+                    <th class="py-3 px-3">Fecha de Envío</th>
+                    <th class="py-3 px-3 text-center">Destinatarios</th>
+                    <th class="py-3 px-3 text-center">Estado</th>
+                    <th class="py-3 px-3 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                  @for (c of broadcastCampaignsList(); track c.id) {
+                    <tr class="hover:bg-slate-50/70 transition-colors">
+                      <td class="py-3 px-3 font-bold text-slate-900">
+                        {{ c.name }}
+                      </td>
+                      <td class="py-3 px-3">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-slate-100 text-slate-700">
+                          {{ c.segment === 'all' ? 'Todas' : (c.segment === 'recurring' ? 'VIP' : (c.segment === 'inactive_30' ? 'Inactivas +30d' : c.segment)) }}
+                        </span>
+                      </td>
+                      <td class="py-3 px-3 text-slate-500">
+                        {{ c.template_key || 'Personalizada' }}
+                      </td>
+                      <td class="py-3 px-3 text-slate-500 text-[11px]">
+                        {{ c.created_at | date:'d MMM y, h:mm a' }}
+                      </td>
+                      <td class="py-3 px-3 text-center">
+                        <div class="inline-flex items-center gap-1.5 font-bold">
+                          <span class="text-emerald-700">{{ c.sent_count }} ok</span>
+                          @if (c.failed_count > 0) {
+                            <span class="text-rose-600">/ {{ c.failed_count }} err</span>
+                          }
+                          <span class="text-slate-400 text-[10px]">({{ c.total_recipients }})</span>
+                        </div>
+                      </td>
+                      <td class="py-3 px-3 text-center">
+                        @if (c.status === 'completed') {
+                          <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Completada
+                          </span>
+                        } @else if (c.status === 'processing') {
+                          <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            Enviando...
+                          </span>
+                        } @else {
+                          <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-slate-100 text-slate-600">
+                            {{ c.status }}
+                          </span>
+                        }
+                      </td>
+                      <td class="py-3 px-3 text-right">
+                        <button 
+                          type="button" 
+                          (click)="viewCampaignDetail(c)"
+                          class="px-3 py-1 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-50 border border-emerald-200 transition-colors cursor-pointer"
+                        >
+                          Ver Detalle
+                        </button>
+                      </td>
+                    </tr>
+                  }
+
+                  @if (broadcastCampaignsList().length === 0) {
+                    <tr>
+                      <td colspan="7" class="py-8 text-center text-slate-400">
+                        No has realizado ninguna campaña de difusión todavía. ¡Crea la primera arriba!
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+          <!-- MODAL: DETALLE DE DESTINATARIOS DE CAMPAÑA -->
+          @if (selectedCampaignDetail()) {
+            <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+              <div class="bg-white rounded-[32px] border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+                
+                <!-- Header Modal -->
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Detalle de Difusión</span>
+                    <h3 class="text-base font-extrabold text-slate-900 m-0">{{ selectedCampaignDetail()!.name }}</h3>
+                  </div>
+                  <button type="button" (click)="closeCampaignDetail()" class="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer">
+                    ✕
+                  </button>
+                </div>
+
+                <!-- Contenido con Scroll -->
+                <div class="p-6 overflow-y-auto custom-scrollbar flex flex-col gap-4">
+                  <div class="grid grid-cols-3 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-center text-xs">
+                    <div>
+                      <span class="text-slate-400 block text-[10.5px]">Total</span>
+                      <strong class="text-slate-900 font-bold text-base">{{ selectedCampaignDetail()!.total_recipients }}</strong>
+                    </div>
+                    <div>
+                      <span class="text-emerald-700 block text-[10.5px]">Enviados</span>
+                      <strong class="text-emerald-700 font-bold text-base">{{ selectedCampaignDetail()!.sent_count }}</strong>
+                    </div>
+                    <div>
+                      <span class="text-rose-600 block text-[10.5px]">Fallidos</span>
+                      <strong class="text-rose-600 font-bold text-base">{{ selectedCampaignDetail()!.failed_count }}</strong>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-700 mb-2">Mensaje Emitido</h4>
+                    <div class="p-3.5 rounded-2xl bg-[#e5ddd5] text-slate-800 text-xs whitespace-pre-line font-normal">
+                      {{ selectedCampaignDetail()!.message_body }}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-700 mb-2">Destinatarios</h4>
+                    <div class="max-h-60 overflow-y-auto custom-scrollbar border border-slate-100 rounded-2xl divide-y divide-slate-100">
+                      @for (rec of selectedCampaignDetail()!.recipients || []; track rec.id) {
+                        <div class="p-2.5 flex items-center justify-between text-xs">
+                          <div>
+                            <span class="font-bold text-slate-900">{{ rec.client_name }}</span>
+                            @if (rec.client_nickname) {
+                              <span class="text-emerald-700 text-[10.5px] font-semibold">({{ rec.client_nickname }})</span>
+                            }
+                            <span class="text-[10px] text-slate-400 block">{{ rec.phone }}</span>
+                          </div>
+
+                          <div>
+                            @if (rec.status === 'sent') {
+                              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700">
+                                Enviado
+                              </span>
+                            } @else if (rec.status === 'failed') {
+                              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700" [title]="rec.error_message || ''">
+                                Falló
+                              </span>
+                            } @else {
+                              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
+                                Pendiente
+                              </span>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      @if (!selectedCampaignDetail()!.recipients || selectedCampaignDetail()!.recipients!.length === 0) {
+                        <div class="p-4 text-center text-slate-400 text-xs">
+                          Sin lista de destinatarios registrados.
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Footer Modal -->
+                <div class="px-6 py-3 border-t border-slate-100 flex justify-end">
+                  <button 
+                    type="button" 
+                    (click)="closeCampaignDetail()"
+                    class="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 cursor-pointer"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          }
+
         </div>
       }
 
@@ -2944,6 +4109,11 @@
                       <div class="min-w-0">
                         <div class="flex items-center gap-2">
                           <span class="font-bold text-xs text-slate-900 truncate">{{ svc.name }}</span>
+                          @if (svc.is_favorite) {
+                            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/80 shrink-0 inline-flex items-center gap-0.5">
+                              ★ Favorito
+                            </span>
+                          }
                           @if (svc.category) {
                             <span class="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
                               {{ svc.category }}
@@ -3032,6 +4202,13 @@
                         }
                       </optgroup>
                     }
+                    @if (availableSlots()!.groups.evening && availableSlots()!.groups.evening!.slots.length > 0) {
+                      <optgroup [label]="availableSlots()!.groups.evening!.label">
+                        @for (s of availableSlots()!.groups.evening!.slots; track s.start_time) {
+                          <option [value]="s.start_time + '|' + s.end_time">{{ s.label }}</option>
+                        }
+                      </optgroup>
+                    }
                   }
                 </select>
               </div>
@@ -3041,8 +4218,10 @@
                   <label class="block text-xs font-semibold text-slate-700 mb-1">Hora Inicio <span class="text-rose-500">*</span></label>
                   <input 
                     type="time" 
+                    step="900"
                     [ngModel]="startTime()"
                     (ngModelChange)="onStartTimeManuallyChanged($event)"
+                    (blur)="onStartTimeBlur()"
                     class="w-full px-3.5 py-2 rounded-xl text-xs bg-white border border-slate-200 font-bold focus:outline-none focus:ring-2 focus:ring-[#00C975]"
                   />
                 </div>
@@ -3050,8 +4229,10 @@
                   <label class="block text-xs font-semibold text-slate-700 mb-1">Hora Fin Calculada <span class="text-rose-500">*</span></label>
                   <input 
                     type="time" 
+                    step="900"
                     [ngModel]="endTime()"
-                    (ngModelChange)="endTime.set($event)"
+                    (ngModelChange)="onEndTimeManuallyChanged($event)"
+                    (blur)="onEndTimeBlur()"
                     class="w-full px-3.5 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 font-bold focus:outline-none focus:ring-2 focus:ring-[#00C975]"
                   />
                 </div>
@@ -3396,7 +4577,7 @@
                 class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C975]"
               >
                 @for (svc of servicesList(); track svc.id) {
-                  <option [value]="svc.id">{{ svc.name }} ({{ svc.duration_minutes }} min - {{ formatCurrency(svc.base_price) }})</option>
+                  <option [value]="svc.id">{{ svc.is_favorite ? '★ ' : '' }}{{ svc.name }} ({{ svc.duration_minutes }} min - {{ formatCurrency(svc.base_price) }})</option>
                 }
               </select>
             </div>
@@ -3418,8 +4599,10 @@
                 <label class="block font-semibold text-slate-700 mb-1">Hora Inicio</label>
                 <input 
                   type="time" 
+                  step="900"
                   [ngModel]="editStartTime()" 
                   (ngModelChange)="onEditStartTimeChange($event)" 
+                  (blur)="onEditStartTimeBlur()"
                   name="editStartTime" 
                   required
                   class="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C975]"
@@ -3429,8 +4612,10 @@
                 <label class="block font-semibold text-slate-700 mb-1">Hora Fin</label>
                 <input 
                   type="time" 
+                  step="900"
                   [ngModel]="editEndTime()" 
-                  (ngModelChange)="editEndTime.set($event)" 
+                  (ngModelChange)="onEditEndTimeChange($event)" 
+                  (blur)="onEditEndTimeBlur()"
                   name="editEndTime" 
                   required
                   class="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C975]"
@@ -4211,6 +5396,304 @@
           >
             Cerrar
           </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: VISTA PREVIA SIMULADA DE PLANTILLA WHATSAPP                        -->
+  <!-- ========================================================================= -->
+  @if (selectedTemplateForPreview()) {
+    <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-[32px] shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200/80 animate-in fade-in zoom-in-95 duration-150 flex flex-col">
+        
+        <!-- Encabezado del Modal -->
+        <div class="p-5 bg-slate-900 text-white flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center">
+              <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold m-0 text-white">
+                {{ selectedTemplateForPreview()!.display_name }}
+              </h3>
+              <p class="text-[11px] text-slate-300 font-mono m-0 mt-0.5">
+                {{ selectedTemplateForPreview()!.name }} ({{ selectedTemplateForPreview()!.language }})
+              </p>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
+            (click)="closeTemplatePreview()"
+            class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Cuerpo del Modal: Simulación Visual de Chat de WhatsApp -->
+        <div class="p-6 bg-[#efeae2] flex flex-col gap-4">
+          <!-- Burbuja de WhatsApp -->
+          <div class="flex justify-start">
+            <div class="bg-white rounded-2xl rounded-tl-xs p-4 shadow-sm border border-slate-200/60 max-w-[94%] relative">
+              <!-- Texto del Mensaje formateado -->
+              <div class="text-[12.5px] text-slate-800 leading-relaxed whitespace-pre-wrap font-sans">
+                {{ selectedTemplateForPreview()!.preview_text }}
+              </div>
+
+              <!-- Metadatos de la Burbuja (Hora y doble check azul) -->
+              <div class="flex items-center justify-end gap-1 mt-2 text-[10px] text-slate-400 font-medium">
+                <span>14:35</span>
+                <svg class="w-3.5 h-3.5 text-teal-600" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18 7l-8.5 8.5-4-4-1.5 1.5 5.5 5.5 10-10z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desglose de Parámetros de Muestra -->
+        <div class="p-5 bg-white border-t border-slate-100 flex flex-col gap-3">
+          <span class="text-[11px] font-black uppercase tracking-wider text-slate-700">
+            Variables de muestra configuradas en Meta:
+          </span>
+          <div class="flex flex-col gap-1.5 text-xs max-h-48 overflow-y-auto">
+            @for (sample of selectedTemplateForPreview()!.samples; track $index) {
+              <div class="flex items-center gap-2 font-mono text-[11px] bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+                <span class="font-bold text-teal-800 shrink-0">{{ '{{' + ($index + 1) + '}}' }}:</span>
+                <span class="text-slate-800 truncate">{{ sample }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Pie del Modal con Acciones -->
+        <div class="p-5 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between gap-2.5">
+          <div class="text-[11px] text-slate-500 font-semibold">
+            Categoría: <strong class="text-slate-700">{{ selectedTemplateForPreview()!.category }}</strong>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button 
+              type="button" 
+              (click)="closeTemplatePreview()"
+              class="px-5 py-2.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-200 border border-slate-300 transition-all cursor-pointer"
+            >
+              Cerrar
+            </button>
+
+            @if (selectedTemplateForPreview()!.meta_status !== 'APPROVED') {
+              <button 
+                type="button" 
+                (click)="createSingleMetaTemplate(selectedTemplateForPreview()!); closeTemplatePreview()"
+                [disabled]="isCreatingMetaTemplate() !== null"
+                class="px-5 py-2.5 rounded-full text-xs font-bold text-white bg-[#0d9488] hover:bg-[#0f766e] shadow-md shadow-teal-700/20 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Registrar en Meta (1 Clic)</span>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: EDITOR DE PLANTILLA WHATSAPP CON VARIABLE RESOLVER                 -->
+  <!-- ========================================================================= -->
+  @if (selectedTemplateForEdit()) {
+    <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div class="bg-white rounded-[32px] shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200/80 animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92vh]">
+        
+        <!-- Encabezado del Modal -->
+        <div class="p-5 bg-slate-900 text-white flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center">
+              <svg class="w-5 h-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-extrabold m-0 text-white">
+                  Editar: {{ selectedTemplateForEdit()!.display_name }}
+                </h3>
+                @if (selectedTemplateForEdit()!.is_customized) {
+                  <span class="text-[9.5px] font-black uppercase tracking-wider text-purple-300 bg-purple-900/80 border border-purple-400/40 px-2 py-0.5 rounded-full">
+                    Personalizada
+                  </span>
+                }
+              </div>
+              <p class="text-[11px] text-slate-300 font-mono m-0 mt-0.5">
+                {{ selectedTemplateForEdit()!.name }} ({{ selectedTemplateForEdit()!.language }})
+              </p>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
+            (click)="closeTemplateEdit()"
+            class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Cuerpo del Modal (Scrollable) -->
+        <div class="p-5 sm:p-6 overflow-y-auto flex flex-col gap-5">
+
+          <!-- 1. Alerta de Validación en Vivo si hay error -->
+          @if (templateEditValidationError()) {
+            <div class="rounded-2xl border border-rose-200 bg-rose-50 text-rose-800 p-3.5 text-xs flex items-start gap-2.5 shadow-2xs">
+              <svg class="w-4 h-4 text-rose-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div class="leading-relaxed">
+                <strong class="font-bold">Regla de Validación Meta:</strong> {{ templateEditValidationError() }}
+              </div>
+            </div>
+          }
+
+          <!-- 2. Variables Dinámicas Disponibles (Chips con 1 Clic) -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                Variables Dinámicas Disponibles (Haz clic para insertar)
+              </span>
+              <span class="text-[10.5px] text-slate-400 font-medium">Se inyectan según la cita</span>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 p-3 bg-slate-50 rounded-2xl border border-slate-200/70">
+              @for (v of availableVariables(); track v.key) {
+                <button 
+                  type="button" 
+                  (click)="insertVariableIntoBody(v)"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-700 hover:bg-teal-50/30 shadow-2xs cursor-pointer transition-all active:scale-95 text-slate-700"
+                  title="Insertar {{ v.label }} (Ejemplo: {{ v.sample }})"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                  <span>+ {{ v.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- 3. Área de Edición del Texto -->
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label for="templateEditInput" class="text-[11px] font-black uppercase tracking-wider text-slate-700">
+                Cuerpo del Mensaje (Body)
+              </label>
+              <span class="text-[10.5px] font-mono text-slate-400">
+                {{ editTemplateBody().length }} / 1024 caracteres
+              </span>
+            </div>
+
+            <textarea 
+              id="templateEditInput"
+              rows="6"
+              [ngModel]="editTemplateBody()"
+              (ngModelChange)="editTemplateBody.set($event); validateEditTemplateBody()"
+              class="w-full text-xs font-mono p-3.5 rounded-2xl border border-slate-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none leading-relaxed text-slate-800 bg-white shadow-2xs resize-y"
+              placeholder="Escribe el texto de la plantilla. Recuerda no terminar en variable..."
+            ></textarea>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
+              <span>* Las variables se numeran automáticamente: {{ '{{1}}' }}, {{ '{{2}}' }}, etc.</span>
+              <span class="text-teal-600 font-semibold">Adaptación dinámica activa</span>
+            </div>
+          </div>
+
+          <!-- 4. Vista Previa en Vivo (Simulación Chat WhatsApp) -->
+          <div class="flex flex-col gap-2">
+            <span class="text-[11px] font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              Vista Previa en Vivo (Cómo lo leerá la clienta):
+            </span>
+
+            <div class="p-4 bg-[#efeae2] rounded-2xl border border-slate-200/80 flex justify-start">
+              <div class="bg-white rounded-2xl rounded-tl-xs p-3.5 shadow-sm border border-slate-200/60 max-w-[94%] relative">
+                <div class="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans">
+                  {{ editTemplateLivePreview() || 'Escribe el contenido del mensaje arriba...' }}
+                </div>
+                <div class="flex items-center justify-end gap-1 mt-2 text-[10px] text-slate-400 font-medium">
+                  <span>14:35</span>
+                  <svg class="w-3.5 h-3.5 text-teal-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18 7l-8.5 8.5-4-4-1.5 1.5 5.5 5.5 10-10z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Pie del Modal con Acciones -->
+        <div class="p-4 sm:p-5 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between gap-2.5 flex-wrap shrink-0">
+          <div>
+            @if (selectedTemplateForEdit()!.is_customized) {
+              <button 
+                type="button" 
+                (click)="resetTemplateToOriginal(selectedTemplateForEdit()!)"
+                [disabled]="isSavingTemplate()"
+                class="px-4 py-2 rounded-full text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all cursor-pointer disabled:opacity-50"
+              >
+                Restablecer Original
+              </button>
+            }
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button 
+              type="button" 
+              (click)="closeTemplateEdit()"
+              [disabled]="isSavingTemplate()"
+              class="px-4 py-2.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-200 border border-slate-300 transition-all cursor-pointer"
+            >
+              Cancelar
+            </button>
+
+            <!-- Guardar Localmente para el Salón -->
+            <button 
+              type="button" 
+              (click)="saveTemplateEdit(false)"
+              [disabled]="isSavingTemplate()"
+              class="px-5 py-2.5 rounded-full text-xs font-black text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+            >
+              @if (isSavingTemplate()) {
+                <span>Guardando...</span>
+              } @else {
+                <span>Guardar Personalización</span>
+              }
+            </button>
+
+            <!-- Guardar y Sincronizar en Meta -->
+            <button 
+              type="button" 
+              (click)="saveTemplateEdit(true)"
+              [disabled]="isSavingTemplate()"
+              class="px-5 py-2.5 rounded-full text-xs font-black text-white bg-[#0d9488] hover:bg-[#0f766e] shadow-sm shadow-teal-700/20 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Guardar y Enviar a Meta (1 Clic)</span>
+            </button>
+          </div>
         </div>
 
       </div>

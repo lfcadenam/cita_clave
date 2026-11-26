@@ -24,10 +24,12 @@ export interface SuperUser {
   id: number;
   name: string;
   email: string;
-  role: 'SUPER_ADMIN' | 'ADMIN' | 'RECEPTIONIST' | 'SPECIALIST';
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'CLIENT' | string;
+  phone?: string | null;
   is_active: boolean;
   tenant_id: number | null;
-  tenant_name: string;
-  tenant_slug: string;
-  created_at: string;
+  tenant_name?: string;
+  tenant_slug?: string;
+  tenant?: { id: number; name: string; slug: string } | null;
+  created_at?: string;
 }

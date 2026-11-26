@@ -29,18 +29,17 @@
 * **Idioma:** `Spanish (COL)`
 * **Texto del Cuerpo (Body):**
 ```text
-Hola {{1}}, te confirmamos que tu cita #{{2}} para {{3}} ha sido agendada con éxito para el día {{4}}.
+Hola {{1}}, te confirmamos que tu cita para {{2}} ha sido agendada con éxito para el día {{3}}.
 
-Puedes consultar tu comprobante aquí: {{5}}
+Puedes consultar tu comprobante aquí: {{4}}
 
 ¡Te esperamos puntualmente!
 ```
 * **Muestras de variables:**
-  * `{{1}}`: `Camila`
-  * `{{2}}`: `1045`
-  * `{{3}}`: `Manicura Semipermanente`
-  * `{{4}}`: `Viernes 24 de Octubre a las 3:00 PM`
-  * `{{5}}`: `https://labellenailsbog.com/comprobante/1045`
+  * `{{1}}`: `Cami`
+  * `{{2}}`: `Manicura Semipermanente`
+  * `{{3}}`: `Viernes 28 de Noviembre a las 3:00 PM`
+  * `{{4}}`: `https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD`
 
 ---
 
@@ -59,116 +58,126 @@ Puedes ver los detalles y ubicación en tu comprobante: {{5}}
 ¡Te esperamos puntualmente!
 ```
 * **Muestras de variables:**
-  * `{{1}}`: `Camila`
+  * `{{1}}`: `Cami`
   * `{{2}}`: `Manicura Semipermanente`
   * `{{3}}`: `Mañana Viernes a las 3:00 PM`
   * `{{4}}`: `$25.000 COP`
-  * `{{5}}`: `https://labellenailsbog.com/comprobante/1045`
+  * `{{5}}`: `https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD`
 
 ---
 
 ### 3. `cita_reagendada`
 * **Propósito:** Notificar a la clienta cuando se actualiza el día o la hora de su turno.
 * **Nombre de la plantilla:** `cita_reagendada`
-* **Categoría:** `Utilidad`
-* **Idioma:** `Spanish (COL)`
+* **Categoría:** `Utilidad` (*Utility*)
+* **Idioma:** `Spanish (COL)` (`es_CO`)
 * **Texto del Cuerpo (Body):**
 ```text
-Hola {{1}}, tu cita #{{2}} para {{3}} ha sido reagendada con éxito para el día {{4}}.
+Hola {{1}}, tu cita para {{2}} ha sido reagendada con éxito para el día {{3}} (horario previo: {{4}}).
 
-Puedes consultar tu comprobante actualizado aquí: {{5}}
+Tu abono se mantiene vigente. Puedes consultar tu comprobante actualizado aquí: {{5}}
 
 ¡Te esperamos puntualmente!
 ```
 * **Muestras de variables:**
-  * `{{1}}`: `Camila`
-  * `{{2}}`: `1045`
-  * `{{3}}`: `Manicura Semipermanente`
-  * `{{4}}`: `Sábado 25 de Octubre a las 4:00 PM`
-  * `{{5}}`: `https://labellenailsbog.com/comprobante/1045`
+  * `{{1}}`: `Cami`
+  * `{{2}}`: `Manicura Semipermanente`
+  * `{{3}}`: `Sábado 29 de Noviembre a las 4:00 PM`
+  * `{{4}}`: `Viernes 28 de Noviembre a las 3:00 PM`
+  * `{{5}}`: `https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD`
 
 ---
 
 ### 4. `cita_cancelada`
 * **Propósito:** Aviso oficial cuando una cita es cancelada por el cliente o el salón.
 * **Nombre de la plantilla:** `cita_cancelada`
-* **Categoría:** `Utilidad`
-* **Idioma:** `Spanish (COL)`
+* **Categoría:** `Utilidad` (*Utility*)
+* **Idioma:** `Spanish (COL)` (`es_CO`)
 * **Texto del Cuerpo (Body):**
 ```text
-Hola {{1}}, te informamos que tu cita #{{2}} para {{3}} programada para el día {{4}} ha sido cancelada.
+Hola {{1}}, te informamos que tu cita para {{2}} programada para el día {{3}} ha sido cancelada.
 
-Si deseas programar un nuevo horario, puedes ingresar nuevamente a nuestra plataforma de agendamiento.
+Motivo: {{4}}
+
+Si deseas programar un nuevo horario, puedes ingresar nuevamente aquí: {{5}}
+
+¡Esperamos atenderte pronto!
 ```
 * **Muestras de variables:**
-  * `{{1}}`: `Camila`
-  * `{{2}}`: `1045`
-  * `{{3}}`: `Manicura Semipermanente`
-  * `{{4}}`: `Viernes 24 de Octubre a las 3:00 PM`
+  * `{{1}}`: `Cami`
+  * `{{2}}`: `Manicura Semipermanente`
+  * `{{3}}`: `Viernes 28 de Noviembre a las 3:00 PM`
+  * `{{4}}`: `Cancelación solicitada por la clienta`
+  * `{{5}}`: `https://labellenailsbog.com`
 
 ---
 
 ### 5. `cita_confirmada_abono`
 * **Propósito:** Confirmar a la clienta que su comprobante de pago/abono Nequi o transferencia fue aprobado.
 * **Nombre de la plantilla:** `cita_confirmada_abono`
-* **Categoría:** `Utilidad`
-* **Idioma:** `Spanish (COL)`
+* **Categoría:** `Utilidad` (*Utility*)
+* **Idioma:** `Spanish (COL)` (`es_CO`)
 * **Texto del Cuerpo (Body):**
 ```text
-Hola {{1}}, hemos validado exitosamente el abono de tu cita #{{2}} para {{3}} del día {{4}}.
+Hola {{1}}, hemos validado exitosamente el abono de tu cita para {{2}} del día {{3}}.
 
+Saldo restante a pagar en el salón: {{4}}
 Tu reserva está 100% confirmada. Puedes ver tu comprobante aquí: {{5}}
 
-¡Nos vemos pronto!
+¡Te esperamos puntualmente!
 ```
 * **Muestras de variables:**
-  * `{{1}}`: `Camila`
-  * `{{2}}`: `1045`
-  * `{{3}}`: `Manicura Semipermanente`
-  * `{{4}}`: `Viernes 24 de Octubre a las 3:00 PM`
-  * `{{5}}`: `https://labellenailsbog.com/comprobante/1045`
+  * `{{1}}`: `Cami`
+  * `{{2}}`: `Manicura Semipermanente`
+  * `{{3}}`: `Viernes 28 de Noviembre a las 3:00 PM`
+  * `{{4}}`: `$25.000 COP`
+  * `{{5}}`: `https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD`
 
 ---
 
 ### 6. `novedad_comprobante_cita`
 * **Propósito:** Informar a la clienta cuando su comprobante de pago es ilegible, incompleto o rechazado.
 * **Nombre de la plantilla:** `novedad_comprobante_cita`
-* **Categoría:** `Utilidad`
-* **Idioma:** `Spanish (COL)`
+* **Categoría:** `Utilidad` (*Utility*)
+* **Idioma:** `Spanish (COL)` (`es_CO`)
 * **Texto del Cuerpo (Body):**
 ```text
-Hola {{1}}, tenemos una novedad con el comprobante de tu cita #{{2}} para {{3}}.
+Hola {{1}}, tenemos una novedad con el comprobante de tu cita para {{2}}.
 
-Motivo: {{4}}
+Motivo: {{3}}
 
-Por favor sube nuevamente tu comprobante desde el enlace para no perder tu turno: {{5}}
+Por favor sube nuevamente tu comprobante desde el enlace para no perder tu turno: {{4}}
+
+Quedamos atentos para confirmar tu reserva.
 ```
 * **Muestras de variables:**
-  * `{{1}}`: `Camila`
-  * `{{2}}`: `1045`
-  * `{{3}}`: `Manicura Semipermanente`
-  * `{{4}}`: `El valor transferido no coincide con el anticipo requerido`
-  * `{{5}}`: `https://labellenailsbog.com/comprobante/1045`
+  * `{{1}}`: `Cami`
+  * `{{2}}`: `Manicura Semipermanente`
+  * `{{3}}`: `El valor transferido no coincide con el anticipo requerido`
+  * `{{4}}`: `https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD`
 
 ---
 
 ### 7. `cita_recibida`
 * **Propósito:** Acuse de recibo inmediato al registrar la cita (cuando requiere abono previo para apartar el turno).
 * **Nombre de la plantilla:** `cita_recibida`
-* **Categoría:** `Utilidad`
-* **Idioma:** `Spanish (COL)`
+* **Categoría:** `Utilidad` (*Utility*)
+* **Idioma:** `Spanish (COL)` (`es_CO`)
 * **Texto del Cuerpo (Body):**
 ```text
-Hola {{1}}, hemos recibido tu solicitud de cita #{{2}} para {{3}} el día {{4}}.
+Hola {{1}}, hemos recibido tu solicitud de cita para {{2}} el día {{3}}.
 
-Para asegurar tu turno, recuerda adjuntar tu comprobante de abono en el siguiente enlace: {{5}}
+Abono requerido para asegurar tu turno: {{4}}
+Recuerda adjuntar tu comprobante de transferencia en el siguiente enlace: {{5}}
+
+¡Gracias por tu reserva!
 ```
 * **Muestras de variables:**
-  * `{{1}}`: `Camila`
-  * `{{2}}`: `1045`
-  * `{{3}}`: `Manicura Semipermanente`
-  * `{{4}}`: `Viernes 24 de Octubre a las 3:00 PM`
-  * `{{5}}`: `https://labellenailsbog.com/comprobante/1045`
+  * `{{1}}`: `Cami`
+  * `{{2}}`: `Manicura Semipermanente`
+  * `{{3}}`: `Viernes 28 de Noviembre a las 3:00 PM`
+  * `{{4}}`: `$30.000 COP`
+  * `{{5}}`: `https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD`
 
 ---
 
@@ -182,6 +191,8 @@ Para asegurar tu turno, recuerda adjuntar tu comprobante de abono en el siguient
 Nueva cita registrada. Cliente: {{1}} (Tel: {{2}}). Servicio: {{3}} para el día {{4}}.
 
 Revisa los detalles en el panel de administración: {{5}}
+
+Notificación interna del sistema.
 ```
 * **Muestras de variables:**
   * `{{1}}`: `Camila Morales`

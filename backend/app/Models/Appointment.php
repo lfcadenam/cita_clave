@@ -89,6 +89,12 @@ class Appointment extends Model
         parent::boot();
 
         static::creating(function ($appointment) {
+            if (empty($appointment->tenant_id) && !empty($appointment->service_id)) {
+                $service = Service::find($appointment->service_id);
+                if ($service && $service->tenant_id) {
+                    $appointment->tenant_id = $service->tenant_id;
+                }
+            }
             if (empty($appointment->appointment_number)) {
                 $appointment->appointment_number = 'PA-' . now()->format('ymd') . '-' . strtoupper(Str::random(4));
             }
@@ -318,10 +324,29 @@ class Appointment extends Model
      */
     public function getNotificationClientName(): string
     {
-        if ($this->customer && ! empty($this->customer->nickname)) {
-            return trim($this->customer->nickname);
+        $customer = $this->customer;
+        if (! $customer && ! empty($this->customer_id)) {
+            $customer = $this->customer()->first();
+        }
+        if (! $customer && ! empty($this->client_phone)) {
+            $cleanPhone = preg_replace('/\D/', '', (string) $this->client_phone);
+            if (! empty($cleanPhone)) {
+                $customer = Customer::where('phone', 'LIKE', "%{$cleanPhone}%")->first();
+            }
+        }
+
+        if ($customer && ! empty($customer->nickname)) {
+            return trim($customer->nickname);
         }
 
         return explode(' ', trim((string) ($this->client_name ?: 'Clienta')))[0];
+    }
+
+    /**
+     * Alias explícito para obtener el apodo de la clienta para plantillas de WhatsApp.
+     */
+    public function getNotificationNickname(): string
+    {
+        return $this->getNotificationClientName();
     }
 }

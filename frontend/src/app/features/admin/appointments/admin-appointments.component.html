@@ -1,0 +1,434 @@
+        <div class="bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-6 flex flex-col gap-5">
+          
+          <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">Gestión de Citas y Reservas</h2>
+              <p class="text-xs text-slate-500">Listado tabular completo con aprobación de transferencias y contacto por WhatsApp</p>
+            </div>
+            <button (click)="openNewAppointmentModal()" class="px-4 py-2 rounded-2xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-md shadow-emerald-600/20 cursor-pointer">
+              + Nueva Cita
+            </button>
+          </div>
+
+          <!-- Buscador y Filtros de Estado -->
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <input 
+              type="text" 
+              [ngModel]="tableCitasSearch()"
+              (ngModelChange)="onTableSearchChange($event)"
+              placeholder="Buscar por clienta, teléfono o # cita..."
+              class="px-4 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 w-full sm:w-80 text-slate-900"
+            />
+
+            <div class="flex items-center gap-1.5 overflow-x-auto">
+              <button (click)="setTableStatusFilter('all')" [ngClass]="tableCitasStatusFilter() === 'all' ? 'bg-[#00C975] text-white font-bold' : 'bg-slate-100 text-slate-600'" class="px-3 py-1 rounded-xl text-xs cursor-pointer">Todas</button>
+              <button (click)="setTableStatusFilter('CONFIRMED')" [ngClass]="tableCitasStatusFilter() === 'CONFIRMED' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-100 text-slate-600'" class="px-3 py-1 rounded-xl text-xs cursor-pointer">Confirmadas</button>
+              <button (click)="setTableStatusFilter('PENDING_VERIFICATION')" [ngClass]="tableCitasStatusFilter() === 'PENDING_VERIFICATION' ? 'bg-amber-500 text-white font-bold' : 'bg-slate-100 text-slate-600'" class="px-3 py-1 rounded-xl text-xs cursor-pointer">Por Validar Nequi</button>
+              <button (click)="setTableStatusFilter('COMPLETED')" [ngClass]="tableCitasStatusFilter() === 'COMPLETED' ? 'bg-purple-600 text-white font-bold' : 'bg-slate-100 text-slate-600'" class="px-3 py-1 rounded-xl text-xs cursor-pointer">Completadas</button>
+              <button (click)="setTableStatusFilter('CANCELLED')" [ngClass]="tableCitasStatusFilter() === 'CANCELLED' ? 'bg-rose-600 text-white font-bold' : 'bg-slate-100 text-slate-600'" class="px-3 py-1 rounded-xl text-xs cursor-pointer">Canceladas</button>
+            </div>
+          </div>
+
+          <!-- Tabla -->
+          <div class="overflow-x-auto border border-slate-200 rounded-2xl relative">
+            @if (isLoadingTableCitas()) {
+              <div class="absolute inset-0 bg-white/70 backdrop-blur-xs z-10 flex items-center justify-center">
+                <div class="flex items-center gap-2 text-slate-600 text-xs font-semibold">
+                  <svg class="w-5 h-5 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                  </svg>
+                  <span>Cargando citas...</span>
+                </div>
+              </div>
+            }
+
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="p-3.5">Cita #</th>
+                  <th class="p-3.5">Clienta</th>
+                  <th class="p-3.5">Tratamiento</th>
+                  <th class="p-3.5">Fecha & Hora</th>
+                  <th class="p-3.5">Monto / Abono</th>
+                  <th class="p-3.5">Estado</th>
+                  <th class="p-3.5 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700">
+                @for (apt of tableAppointments(); track apt.id) {
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <td class="p-3.5 font-bold text-slate-900">{{ apt.appointment_number }}</td>
+                    <td class="p-3.5">
+                      <span class="font-bold text-slate-900 block">{{ apt.client.name }}</span>
+                      <span class="text-[11px] text-slate-500">{{ apt.client.phone }}</span>
+                    </td>
+                    <td class="p-3.5">
+                      <span class="font-semibold block">{{ apt.service.name }}</span>
+                      <span class="text-[10px] text-slate-400">{{ apt.service.duration_minutes }} minutos</span>
+                    </td>
+                    <td class="p-3.5">
+                      <span class="font-semibold block">{{ apt.date_formatted || apt.date }}</span>
+                      <span class="text-[11px] text-slate-500">{{ apt.time_range || (apt.start_time + ' – ' + apt.end_time) }}</span>
+                    </td>
+                    <td class="p-3.5">
+                      <span class="font-bold text-slate-900 block">{{ formatCurrency(apt.financials.total_amount) }}</span>
+                      <span class="text-[10px] text-emerald-600 block">Abono: {{ formatCurrency(apt.financials.deposit_paid) }}</span>
+                    </td>
+                    <td class="p-3.5">
+                      <span [ngClass]="getStatusBadgeClass(apt.status)" class="px-2.5 py-1 rounded-full text-[10px] font-bold inline-block">
+                        {{ apt.status_label || getStatusLabel(apt.status) }}
+                      </span>
+                    </td>
+                    <td class="p-3.5 text-right space-x-1.5 whitespace-nowrap">
+                      @if (apt.status === 'PENDING_VERIFICATION') {
+                        <button (click)="approveNequi(apt)" title="Validar Comprobante Nequi" class="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer">
+                          Aprobar Nequi
+                        </button>
+                      }
+                      <button (click)="openWhatsAppChat(apt.client.phone, apt.client.name, apt.date, apt.start_time, apt.service.name)" title="Contactar por WhatsApp" class="px-2.5 py-1 rounded-xl bg-green-500 hover:bg-green-600 text-white text-[11px] font-bold cursor-pointer">
+                        WhatsApp
+                      </button>
+                      <button (click)="selectedAppointment.set(apt)" title="Ver Detalle" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold cursor-pointer">
+                        Ver
+                      </button>
+                    </td>
+                  </tr>
+                }
+                @if (tableAppointments().length === 0 && !isLoadingTableCitas()) {
+                  <tr>
+                    <td colspan="7" class="p-8 text-center text-slate-400">
+                      No se encontraron citas con los filtros seleccionados.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginación Backend de Citas -->
+          @if (tableCitasTotalPages() > 1 || tableCitasTotalItems() > 0) {
+            <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
+              <div class="flex items-center gap-3">
+                <span class="text-xs text-slate-500 font-medium">
+                  Mostrando <strong class="text-slate-800">{{ tableCitasTotalItems() === 0 ? 0 : (tableCitasPage() - 1) * tableCitasPerPage() + 1 }}</strong> - <strong class="text-slate-800">{{ getMin(tableCitasPage() * tableCitasPerPage(), tableCitasTotalItems()) }}</strong> de <strong class="text-slate-800">{{ tableCitasTotalItems() }}</strong> citas
+                </span>
+
+                <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span>Filas:</span>
+                  <select 
+                    [ngModel]="tableCitasPerPage()" 
+                    (ngModelChange)="setTableCitasPerPage($event)"
+                    class="px-2 py-1 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    <option [ngValue]="10">10</option>
+                    <option [ngValue]="25">25</option>
+                    <option [ngValue]="50">50</option>
+                    <option [ngValue]="100">100</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <button 
+                  type="button" 
+                  (click)="setTableCitasPage(tableCitasPage() - 1)" 
+                  [disabled]="tableCitasPage() <= 1"
+                  class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  Anterior
+                </button>
+
+                @for (p of getPageNumbers(tableCitasPage(), tableCitasTotalPages()); track p) {
+                  <button 
+                    type="button" 
+                    (click)="setTableCitasPage(p)"
+                    [ngClass]="tableCitasPage() === p ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'"
+                    class="w-7 h-7 rounded-xl text-xs flex items-center justify-center transition-all cursor-pointer"
+                  >
+                    {{ p }}
+                  </button>
+                }
+
+                <button 
+                  type="button" 
+                  (click)="setTableCitasPage(tableCitasPage() + 1)" 
+                  [disabled]="tableCitasPage() >= tableCitasTotalPages()"
+                  class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          }
+
+        </div>
+
+  @if (selectedAppointment()) {
+    <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-lg p-6 flex flex-col gap-4 max-h-[92vh] overflow-y-auto custom-scrollbar">
+        
+        <!-- ENCABEZADO -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold text-teal-600 uppercase tracking-wider">Cita #{{ selectedAppointment()!.appointment_number }}</span>
+              @if (isEditingAppointment()) {
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Modo Edición</span>
+              }
+            </div>
+            <h3 class="font-bold text-base text-slate-900">{{ isEditingAppointment() ? 'Modificar Datos de la Cita' : selectedAppointment()!.client.name }}</h3>
+          </div>
+
+          <div class="flex items-center gap-2">
+            @if (!isEditingAppointment()) {
+              <button 
+                type="button" 
+                (click)="startEditingSelectedAppointment()" 
+                class="px-2.5 py-1 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border border-amber-200/80"
+                title="Modificar cita"
+              >
+                <svg class="w-3.5 h-3.5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span>Modificar</span>
+              </button>
+            }
+            <button (click)="closeDetailModal()" class="p-1 text-slate-400 hover:text-slate-600 cursor-pointer">✕</button>
+          </div>
+        </div>
+
+        <!-- ================= MODO LECTURA / DETALLE ================= -->
+        @if (!isEditingAppointment()) {
+          <div class="flex flex-col gap-2.5 text-xs">
+            <div class="flex justify-between items-center"><span class="text-slate-500">Tratamiento:</span><strong class="text-slate-900">{{ selectedAppointment()!.service.name }}</strong></div>
+            <div class="flex justify-between items-center"><span class="text-slate-500">Fecha y Horario:</span><strong>{{ selectedAppointment()!.date }} ({{ selectedAppointment()!.start_time }} – {{ selectedAppointment()!.end_time }})</strong></div>
+            <div class="flex justify-between items-center"><span class="text-slate-500">Celular WhatsApp:</span><strong>{{ selectedAppointment()!.client.phone }}</strong></div>
+            <div class="flex justify-between items-center"><span class="text-slate-500">Total a Pagar:</span><strong class="text-slate-900">{{ formatCurrency(selectedAppointment()!.financials.total_amount) }}</strong></div>
+            <div class="flex justify-between items-center"><span class="text-slate-500">Abono Recibido:</span><strong class="text-emerald-600">{{ formatCurrency(selectedAppointment()!.financials.deposit_paid) }}</strong></div>
+            <div class="flex justify-between items-center"><span class="text-slate-500">Saldo Pendiente:</span><strong class="text-amber-600">{{ formatCurrency(selectedAppointment()!.financials.balance_due) }}</strong></div>
+            <div class="flex justify-between items-center"><span class="text-slate-500">Estado:</span><span class="px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700">{{ selectedAppointment()!.status }}</span></div>
+            @if (selectedAppointment()!.notes.admin_notes) {
+              <div class="flex justify-between items-start pt-1 border-t border-slate-100"><span class="text-slate-500">Notas:</span><span class="text-slate-700 italic max-w-[65%] text-right">{{ selectedAppointment()!.notes.admin_notes }}</span></div>
+            }
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <button (click)="openWhatsAppChat(selectedAppointment()!.client.phone, selectedAppointment()!.client.name, selectedAppointment()!.date, selectedAppointment()!.start_time, selectedAppointment()!.service.name)" class="px-3.5 py-2 rounded-xl bg-green-500 hover:bg-green-600 text-white font-bold text-xs cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                <span>Chat WhatsApp</span>
+              </button>
+              <button (click)="startEditingSelectedAppointment()" class="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span>Modificar Cita</span>
+              </button>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              @if (selectedAppointment()!.status === 'PENDING_VERIFICATION') {
+                <button (click)="approveNequi(selectedAppointment()!); closeDetailModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs cursor-pointer">
+                  Aprobar Nequi
+                </button>
+              }
+              <button (click)="updateAppointmentStatus(selectedAppointment()!.id, 'COMPLETED'); closeDetailModal()" class="px-3 py-2 rounded-xl bg-purple-600 text-white font-semibold text-xs cursor-pointer">
+                Completar
+              </button>
+              <button (click)="updateAppointmentStatus(selectedAppointment()!.id, 'CANCELLED'); closeDetailModal()" class="px-3 py-2 rounded-xl bg-rose-50 text-rose-600 font-semibold text-xs hover:bg-rose-100 cursor-pointer">
+                Cancelar Cita
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- ================= MODO EDICIÓN INLINE ================= -->
+        @if (isEditingAppointment()) {
+          @if (editAppointmentError()) {
+            <div class="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-start gap-2">
+              <svg class="w-4 h-4 text-rose-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>{{ editAppointmentError() }}</span>
+            </div>
+          }
+
+          <form (ngSubmit)="saveEditedAppointment()" class="flex flex-col gap-3.5 text-xs">
+            <!-- 1. Datos de la Clienta -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Nombre de la Clienta</label>
+                <input 
+                  type="text" 
+                  [ngModel]="editClientName()" 
+                  (ngModelChange)="editClientName.set($event)" 
+                  name="editClientName" 
+                  required
+                  class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C975]"
+                />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Celular WhatsApp</label>
+                <input 
+                  type="tel" 
+                  [ngModel]="editClientPhone()" 
+                  (ngModelChange)="editClientPhone.set($event)" 
+                  name="editClientPhone" 
+                  required
+                  class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C975]"
+                />
+              </div>
+            </div>
+
+            <!-- 2. Servicio Principal -->
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Tratamiento / Servicio</label>
+              <select 
+                [ngModel]="editServiceId()" 
+                (ngModelChange)="onEditServiceChange($event)" 
+                name="editServiceId"
+                class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C975]"
+              >
+                @for (svc of servicesList(); track svc.id) {
+                  <option [value]="svc.id">{{ svc.name }} ({{ svc.duration_minutes }} min - {{ formatCurrency(svc.base_price) }})</option>
+                }
+              </select>
+            </div>
+
+            <!-- 3. Fecha y Horarios -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Fecha</label>
+                <input 
+                  type="date" 
+                  [ngModel]="editAppointmentDate()" 
+                  (ngModelChange)="editAppointmentDate.set($event)" 
+                  name="editAppointmentDate" 
+                  required
+                  class="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C975]"
+                />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Hora Inicio</label>
+                <input 
+                  type="time" 
+                  [ngModel]="editStartTime()" 
+                  (ngModelChange)="onEditStartTimeChange($event)" 
+                  name="editStartTime" 
+                  required
+                  class="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C975]"
+                />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Hora Fin</label>
+                <input 
+                  type="time" 
+                  [ngModel]="editEndTime()" 
+                  (ngModelChange)="editEndTime.set($event)" 
+                  name="editEndTime" 
+                  required
+                  class="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C975]"
+                />
+              </div>
+            </div>
+
+            <!-- 4. Finanzas: Total y Abono -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-end">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Total a Pagar ($)</label>
+                <input 
+                  type="number" 
+                  [ngModel]="editTotalAmount()" 
+                  (ngModelChange)="editTotalAmount.set($event)" 
+                  name="editTotalAmount" 
+                  min="0"
+                  step="1000"
+                  class="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-[#00C975]"
+                />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Abono Recibido ($)</label>
+                <input 
+                  type="number" 
+                  [ngModel]="editDepositPaid()" 
+                  (ngModelChange)="editDepositPaid.set($event)" 
+                  name="editDepositPaid" 
+                  min="0"
+                  step="1000"
+                  class="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-emerald-700 font-bold focus:outline-none focus:ring-2 focus:ring-[#00C975]"
+                />
+              </div>
+              <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 text-right">
+                <span class="text-[10px] text-slate-500 block">Saldo Pendiente</span>
+                <span class="text-xs font-bold text-amber-600">
+                  {{ formatCurrency(Math.max(0, (editTotalAmount() || 0) - (editDepositPaid() || 0))) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- 5. Estado de la Cita -->
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Estado de la Cita</label>
+              <select 
+                [ngModel]="editStatus()" 
+                (ngModelChange)="editStatus.set($event)" 
+                name="editStatus"
+                class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#00C975]"
+              >
+                <option value="CONFIRMED">Confirmada</option>
+                <option value="PENDING_VERIFICATION">Por Validar Nequi</option>
+                <option value="IN_PROGRESS">En Atención</option>
+                <option value="COMPLETED">Completada</option>
+                <option value="CANCELLED">Cancelada</option>
+              </select>
+            </div>
+
+            <!-- 6. Notas Administrativas -->
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Notas Administrativas (Opcional)</label>
+              <textarea 
+                [ngModel]="editAdminNotes()" 
+                (ngModelChange)="editAdminNotes.set($event)" 
+                name="editAdminNotes" 
+                rows="2"
+                placeholder="Observaciones internas del turno..."
+                class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C975]"
+              ></textarea>
+            </div>
+
+            <!-- Botones del Pie en Modo Edición -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+              <button 
+                type="button" 
+                (click)="cancelEditingSelectedAppointment()" 
+                [disabled]="isSavingAppointmentEdit()"
+                class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs cursor-pointer transition-colors"
+              >
+                Descartar
+              </button>
+              <button 
+                type="submit" 
+                [disabled]="isSavingAppointmentEdit()"
+                class="px-5 py-2 rounded-xl bg-[#00C975] hover:bg-[#00b067] text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                @if (isSavingAppointmentEdit()) {
+                  <svg class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Guardando...</span>
+                } @else {
+                  <span>Guardar Cambios</span>
+                }
+              </button>
+            </div>
+          </form>
+        }
+
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CREAR / EDITAR SERVICIO                                            -->
+  <!-- ========================================================================= -->

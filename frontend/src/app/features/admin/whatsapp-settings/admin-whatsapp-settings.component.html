@@ -1,0 +1,624 @@
+        <div class="flex flex-col gap-6">
+
+          <!-- 1. BARRA SUPERIOR DE ESTADO EN VIVO -->
+          <div class="bg-white rounded-[28px] border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-4.5">
+              <!-- Ícono de Estado -->
+              <div 
+                [ngClass]="whatsAppAccountStatus()?.connected ? 'bg-[#ecfdf5] text-[#059669] border-[#a7f3d0]' : 'bg-[#fffbeb] text-[#d97706] border-[#fde68a]'" 
+                class="w-[52px] h-[52px] rounded-[18px] border flex items-center justify-center shrink-0 shadow-xs"
+              >
+                @if (whatsAppAccountStatus()?.connected) {
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                } @else {
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                }
+              </div>
+
+              <!-- Textos de Estado -->
+              <div>
+                <div class="flex items-center flex-wrap gap-2 mb-1">
+                  <span 
+                    [ngClass]="whatsAppAccountStatus()?.connected ? 'bg-[#ecfdf5] text-[#047857] border-[#a7f3d0]' : 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]'"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border"
+                  >
+                    <span 
+                      [ngClass]="whatsAppAccountStatus()?.connected ? 'bg-[#10b981] shadow-[0_0_0_2px_rgba(16,185,129,0.3)]' : 'bg-[#f59e0b]'" 
+                      class="w-2 h-2 rounded-full"
+                    ></span>
+                    {{ whatsAppAccountStatus()?.connected ? 'CONECTADO Y OPERATIVO' : 'PENDIENTE DE CREDENCIALES' }}
+                  </span>
+                  <span class="text-[11px] font-bold text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1 rounded-full uppercase tracking-wide">
+                    Driver Activo: {{ whatsAppForm.whatsapp_driver }}
+                  </span>
+                </div>
+
+                <h2 class="text-lg font-black text-slate-900 tracking-tight m-0">
+                  {{ whatsAppAccountStatus()?.verified_name || salonTitle() || 'Canal Oficial de WhatsApp' }}
+                  @if (whatsAppAccountStatus()?.display_phone_number) {
+                    <span class="font-medium text-slate-500 text-sm ml-1">({{ whatsAppAccountStatus()?.display_phone_number }})</span>
+                  }
+                </h2>
+                <p class="text-xs text-slate-500 font-medium mt-0.5 mb-0">
+                  {{ whatsAppAccountStatus()?.message || 'Conectado correctamente a Meta WhatsApp Cloud API.' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Botón Verificar Estado -->
+            <div>
+              <button 
+                type="button" 
+                (click)="checkWhatsAppStatus()" 
+                [disabled]="isCheckingWhatsAppStatus()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold text-slate-800 bg-white border border-slate-200/90 hover:bg-slate-50 hover:border-slate-300 shadow-xs cursor-pointer transition-all disabled:opacity-50"
+              >
+                @if (isCheckingWhatsAppStatus()) {
+                  <svg class="w-4 h-4 animate-spin text-teal-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                  </svg>
+                  <span>Verificando...</span>
+                } @else {
+                  <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Verificar Estado en Vivo</span>
+                }
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. GRID PRINCIPAL DE 2 COLUMNAS -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- COLUMNA IZQUIERDA: CONFIGURACIÓN Y WEBHOOK (7 COLS) -->
+            <div class="lg:col-span-7 flex flex-col gap-6">
+
+              <!-- Tarjeta Parámetros de Conexión -->
+              <div class="bg-white rounded-[28px] border border-slate-200/80 shadow-xs p-6 flex flex-col gap-5">
+                <div class="pb-3 border-b border-slate-100">
+                  <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2 m-0">
+                    <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Parámetros de Conexión</span>
+                  </h3>
+                  <p class="text-xs text-slate-500 mt-1 mb-0">
+                    Configura las credenciales de Meta WhatsApp Cloud API o conmuta el proveedor del salón.
+                  </p>
+                </div>
+
+                <div class="flex flex-col gap-4.5">
+                  <!-- Proveedor de Notificaciones -->
+                  <div>
+                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1.5">
+                      Proveedor de Notificaciones
+                    </label>
+                    <select [(ngModel)]="whatsAppForm.whatsapp_driver" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-slate-900 focus:bg-white focus:border-teal-600 focus:outline-none transition-all">
+                      <option value="meta">Meta WhatsApp Cloud API (API Oficial de Meta Business - Recomendado)</option>
+                      <option value="evolution">Evolution API (Gateway QR / Baileys)</option>
+                      <option value="log">Modo Simulación (Log local para pruebas)</option>
+                    </select>
+                    <span class="block text-[11px] text-slate-500 mt-1">
+                      Meta Cloud API es la vía oficial y estable sin depender de un teléfono encendido 24/7.
+                    </span>
+                  </div>
+
+                  <!-- Campos Específicos para Meta Cloud API -->
+                  @if (whatsAppForm.whatsapp_driver === 'meta') {
+                    <div class="bg-slate-50 border border-slate-200/90 rounded-[22px] p-5 flex flex-col gap-4">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                          <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1.5">
+                            Phone Number ID
+                          </label>
+                          <input 
+                            type="text" 
+                            [(ngModel)]="whatsAppForm.meta_phone_number_id" 
+                            placeholder="Ej: 105928374650192" 
+                            class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono font-semibold text-slate-900 focus:border-teal-600 focus:outline-none" 
+                          />
+                          <span class="block text-[11px] text-slate-500 mt-1">Identificador del número en Meta for Developers.</span>
+                        </div>
+                        <div>
+                          <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1.5">
+                            WABA ID (Account ID)
+                          </label>
+                          <input 
+                            type="text" 
+                            [(ngModel)]="whatsAppForm.meta_waba_id" 
+                            placeholder="Ej: 109482736451920" 
+                            class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono font-semibold text-slate-900 focus:border-teal-600 focus:outline-none" 
+                          />
+                          <span class="block text-[11px] text-slate-500 mt-1">Identificador de la cuenta de WhatsApp Business.</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1.5">
+                          Access Token (Temporal 24h o Permanente System User)
+                        </label>
+                        <textarea 
+                          rows="3" 
+                          [(ngModel)]="whatsAppForm.meta_access_token" 
+                          placeholder="EAAG..." 
+                          class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono font-semibold text-slate-900 focus:border-teal-600 focus:outline-none resize-none"
+                        ></textarea>
+                        <span class="block text-[11px] text-slate-500 mt-1">
+                          Token generado en Meta for Developers o Meta Business Suite con permiso <code class="bg-slate-200/70 text-slate-800 px-1 py-0.5 rounded text-[10.5px]">whatsapp_business_messaging</code>.
+                        </span>
+                      </div>
+
+                      <div>
+                        <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1.5">
+                          Webhook Verify Token
+                        </label>
+                        <input 
+                          type="text" 
+                          [(ngModel)]="whatsAppForm.meta_verify_token" 
+                          placeholder="nuvex_meta_verify_2026" 
+                          class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono font-semibold text-slate-900 focus:border-teal-600 focus:outline-none" 
+                        />
+                        <span class="block text-[11px] text-slate-500 mt-1">Token de verificación para el handshake de Webhook con Meta.</span>
+                      </div>
+
+                      <!-- Tarjeta de Activación con PIN (Resuelve Error #133010) -->
+                      <div class="bg-[#f0fdf4] border-[1.5px] border-[#a7f3d0] rounded-[20px] p-4.5 mt-1">
+                        <div class="flex items-center justify-between gap-3 flex-wrap mb-2">
+                          <div class="text-xs font-extrabold text-[#14532d] flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-[#16a34a]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                            </svg>
+                            <span>Activación del Número en Meta Cloud API (PIN de 6 Dígitos)</span>
+                          </div>
+                          <span class="text-[11px] font-bold text-[#15803d] bg-[#dcfce7] border border-[#bbf7d0] px-2.5 py-0.5 rounded-full">
+                            Resuelve Error #133010
+                          </span>
+                        </div>
+                        <p class="text-[11.5px] text-[#166534] leading-relaxed mb-3">
+                          Meta exige registrar el número con un PIN de 6 dígitos antes de permitir envíos. Si el número está activo en la app de WhatsApp de un celular físico, debes eliminar la cuenta en la app móvil previamente.
+                        </p>
+                        <div class="flex items-center gap-3 flex-wrap">
+                          <div class="w-32">
+                            <input 
+                              type="text" 
+                              maxlength="6" 
+                              [(ngModel)]="metaPinCode" 
+                              placeholder="123456" 
+                              class="w-full text-center font-mono font-black text-sm tracking-[4px] bg-white border border-emerald-300 rounded-xl py-2 px-3 focus:outline-none focus:border-emerald-600" 
+                            />
+                          </div>
+                          <button 
+                            type="button" 
+                            (click)="registerMetaPin()" 
+                            [disabled]="isRegisteringPin()"
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white bg-[#059669] hover:bg-[#047857] shadow-sm cursor-pointer transition-all disabled:opacity-50"
+                          >
+                            @if (isRegisteringPin()) {
+                              <svg class="w-3.5 h-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                              </svg>
+                              <span>Activando en Meta...</span>
+                            } @else {
+                              <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                              </svg>
+                              <span>Activar Número con PIN</span>
+                            }
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Modo Evolution API -->
+                  @if (whatsAppForm.whatsapp_driver === 'evolution') {
+                    <div class="bg-[#fffbeb] border border-[#fde68a] rounded-[20px] p-4 text-[#92400e] text-xs leading-relaxed">
+                      <strong class="block font-bold mb-1">Modo Evolution API (QR) seleccionado:</strong>
+                      Este modo conecta mediante sesión de WhatsApp Web. Para escanear o reiniciar el código QR, abre la pantalla de vinculación:
+                      <div class="mt-3">
+                        <a href="/admin/whatsapp" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#fde68a] text-[#92400e] hover:bg-amber-50 rounded-full font-bold text-xs shadow-2xs">
+                          <span>Abrir Pantalla de Vinculación QR</span>
+                          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Número de WhatsApp del Salón -->
+                  <div>
+                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1.5">
+                      Número de WhatsApp del Salón (Alertas Admin & Enlaces wa.me)
+                    </label>
+                    <input 
+                      type="text" 
+                      [(ngModel)]="whatsAppForm.whatsapp_number" 
+                      placeholder="Ej: 3106080402" 
+                      class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-900 focus:bg-white focus:border-teal-600 focus:outline-none" 
+                    />
+                    <span class="block text-[11px] text-slate-500 mt-1">
+                      Número al que llegan las alertas de nueva cita y al que apuntan los botones de contacto del portal.
+                    </span>
+                  </div>
+
+                  <!-- Botón Guardar Parámetros -->
+                  <div class="flex justify-end pt-2">
+                    <button 
+                      type="button" 
+                      (click)="saveWhatsAppSettings()" 
+                      [disabled]="isSavingWhatsApp()"
+                      class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold text-white bg-[#0d9488] hover:bg-[#0f766e] shadow-md shadow-teal-700/20 cursor-pointer transition-all disabled:opacity-50"
+                    >
+                      @if (isSavingWhatsApp()) {
+                        <svg class="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                        <span>Guardando Parámetros...</span>
+                      } @else {
+                        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Guardar Parámetros de Conexión</span>
+                      }
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tarjeta de Webhook para Meta for Developers -->
+              <div class="bg-white rounded-[28px] border border-slate-200/80 shadow-xs p-6 flex flex-col gap-3">
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2 m-0">
+                  <svg class="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                  <span>Datos de Webhook para Meta for Developers</span>
+                </h3>
+                <p class="text-xs text-slate-500 leading-relaxed m-0">
+                  En Meta for Developers (<code class="bg-slate-100 text-slate-800 px-1 py-0.5 rounded text-[10.5px]">WhatsApp &gt; Configuración &gt; Webhook</code>), registra esta URL de callback y token:
+                </p>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 font-mono text-xs font-semibold text-slate-900 select-all break-all">
+                  {{ whatsAppSettings()?.webhook_url || 'https://tu-dominio.com/api/v1/webhooks/whatsapp' }}
+                </div>
+                <div class="text-xs text-slate-600 flex items-center gap-2 mt-1">
+                  <strong>Token de Verificación:</strong>
+                  <code class="bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-lg font-bold border border-emerald-200">
+                    {{ whatsAppForm.meta_verify_token || 'nuvex_meta_verify_2026' }}
+                  </code>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- COLUMNA DERECHA: TEST DE CONEXIÓN EN VIVO (5 COLS) -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
+
+              <!-- Tarjeta Test de Envío -->
+              <div class="bg-white rounded-[28px] border border-slate-200/80 shadow-xs p-6 flex flex-col gap-5">
+                <div class="pb-3 border-b border-slate-100">
+                  <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2 m-0">
+                    <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    <span>Test de Conexión en Vivo</span>
+                  </h3>
+                  <p class="text-xs text-slate-500 mt-1 mb-0">
+                    Envía un mensaje de prueba inmediato al celular indicado para certificar la entrega.
+                  </p>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                  <!-- Celular de Destino -->
+                  <div>
+                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1.5">
+                      Celular de Destino
+                    </label>
+                    <input 
+                      type="text" 
+                      [(ngModel)]="whatsAppTestPhone" 
+                      placeholder="Ej: 3106080402" 
+                      class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-900 focus:bg-white focus:border-teal-600 focus:outline-none" 
+                    />
+                    <span class="block text-[11px] text-slate-500 mt-1 leading-relaxed">
+                      Se normalizará a formato internacional (+57). <strong class="text-slate-700">Importante:</strong> Debe ser un celular personal o de prueba diferente al número comercial del salón (Meta rechaza el auto-envío).
+                    </span>
+                  </div>
+
+                  <!-- Modo de Envío en Meta -->
+                  @if (whatsAppForm.whatsapp_driver === 'meta') {
+                    <div>
+                      <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1.5">
+                        Modo de Envío en Meta
+                      </label>
+                      <div class="grid grid-cols-2 p-1 bg-slate-100 rounded-full border border-slate-200">
+                        <button 
+                          type="button" 
+                          (click)="whatsAppTestMode.set('template')"
+                          [ngClass]="whatsAppTestMode() === 'template' ? 'bg-[#0d9488] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                          class="py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer"
+                        >
+                          Plantilla Aprobada
+                        </button>
+                        <button 
+                          type="button" 
+                          (click)="whatsAppTestMode.set('text')"
+                          [ngClass]="whatsAppTestMode() === 'text' ? 'bg-[#0d9488] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                          class="py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer"
+                        >
+                          Texto Libre (24h)
+                        </button>
+                      </div>
+                      <span class="block text-[11px] text-slate-500 mt-1 leading-relaxed">
+                        {{ whatsAppTestMode() === 'template' ? 'Recomendado para la primera prueba: se entrega siempre aunque no exista conversación previa de 24h.' : 'El texto libre requiere que el destinatario haya escrito al número del salón en las últimas 24 horas.' }}
+                      </span>
+                    </div>
+
+                    <!-- Campos de Plantilla -->
+                    @if (whatsAppTestMode() === 'template') {
+                      <div class="bg-slate-50 border border-slate-200 rounded-[20px] p-4 flex flex-col gap-3">
+                        <div class="grid grid-cols-2 gap-3">
+                          <div>
+                            <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1">
+                              Nombre Plantilla
+                            </label>
+                            <input 
+                              type="text" 
+                              [(ngModel)]="whatsAppTestTemplateName" 
+                              placeholder="reserva_confirmada" 
+                              class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:border-teal-600" 
+                            />
+                          </div>
+                          <div>
+                            <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1">
+                              Código Idioma
+                            </label>
+                            <input 
+                              type="text" 
+                              [(ngModel)]="whatsAppTestTemplateLang" 
+                              placeholder="es_CO" 
+                              class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:border-teal-600" 
+                            />
+                          </div>
+                        </div>
+
+                        <!-- Plantillas Rápidas & Botón Sincronizar -->
+                        <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
+                          <div class="flex items-center flex-wrap gap-1.5">
+                            <span class="text-[11px] text-slate-500 font-semibold">Rápidas:</span>
+                            <button 
+                              type="button" 
+                              (click)="selectWhatsAppTemplate('reserva_confirmada', 'es_CO')"
+                              class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-200/80 hover:bg-teal-100 text-slate-800 hover:text-teal-900 border border-slate-300 transition-all cursor-pointer"
+                            >
+                              reserva_confirmada
+                            </button>
+                            <button 
+                              type="button" 
+                              (click)="selectWhatsAppTemplate('cita_recibida', 'es_CO')"
+                              class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-200/80 hover:bg-teal-100 text-slate-800 hover:text-teal-900 border border-slate-300 transition-all cursor-pointer"
+                            >
+                              cita_recibida
+                            </button>
+                            <button 
+                              type="button" 
+                              (click)="selectWhatsAppTemplate('recordatorio_cita_24h', 'es_CO')"
+                              class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-200/80 hover:bg-teal-100 text-slate-800 hover:text-teal-900 border border-slate-300 transition-all cursor-pointer"
+                            >
+                              recordatorio_cita_24h
+                            </button>
+                          </div>
+
+                          <button 
+                            type="button" 
+                            (click)="syncWhatsAppTemplates()" 
+                            [disabled]="isSyncingTemplates()"
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11.5px] font-bold text-slate-800 bg-white border border-slate-200 hover:bg-slate-50 shadow-2xs cursor-pointer transition-all disabled:opacity-50"
+                          >
+                            @if (isSyncingTemplates()) {
+                              <svg class="w-3 h-3 animate-spin text-teal-600" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                              </svg>
+                              <span>Consultando...</span>
+                            } @else {
+                              <svg class="w-3.5 h-3.5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                              <span>Ver Plantillas de mi Meta</span>
+                            }
+                          </button>
+                        </div>
+
+                        <!-- Lista de Plantillas encontradas en Meta -->
+                        @if (wabaTemplates().length > 0) {
+                          <div class="mt-2 p-3 bg-white border-[1.5px] border-emerald-300 rounded-2xl flex flex-col gap-2">
+                            <span class="text-[11px] font-extrabold text-teal-800">
+                              Plantillas encontradas en tu WABA (haz clic para usarla):
+                            </span>
+                            <div class="flex flex-wrap gap-1.5">
+                              @for (t of wabaTemplates(); track t.name) {
+                                <button 
+                                  type="button" 
+                                  (click)="selectWhatsAppTemplate(t.name, t.language)"
+                                  [ngClass]="whatsAppTestTemplateName() === t.name ? 'bg-[#0d9488] text-white' : 'bg-emerald-50 text-emerald-800 border-emerald-200'"
+                                  class="text-[11px] font-bold px-2.5 py-1 rounded-full border transition-all cursor-pointer"
+                                >
+                                  <strong>{{ t.name }}</strong> ({{ t.language }}) - {{ t.status }}
+                                </button>
+                              }
+                            </div>
+                          </div>
+                        }
+
+                        <span class="block text-[11px] text-slate-500 mt-1 leading-relaxed">
+                          💡 <strong class="text-slate-700">Importante en el idioma:</strong> Tu plantilla en Meta está registrada como <em>Spanish (COL)</em>, por lo que el código obligatorio es <code class="bg-slate-200 px-1 py-0.5 rounded font-mono">es_CO</code>. <strong class="text-slate-700">No uses <code class="bg-slate-200 px-1 py-0.5 rounded font-mono">es_ES</code></strong> (España).
+                        </span>
+                      </div>
+                    }
+                  }
+
+                  <!-- Mensaje Personalizado -->
+                  @if (whatsAppForm.whatsapp_driver !== 'meta' || whatsAppTestMode() === 'text') {
+                    <div>
+                      <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1.5">
+                        Mensaje Personalizado (Opcional)
+                      </label>
+                      <textarea 
+                        rows="2" 
+                        [(ngModel)]="whatsAppTestCustomMessage" 
+                        placeholder="Mensaje de prueba desde Cita Clave..." 
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-900 focus:bg-white focus:border-teal-600 focus:outline-none resize-none"
+                      ></textarea>
+                    </div>
+                  }
+
+                  <!-- Botón Ejecutar Test -->
+                  <button 
+                    type="button" 
+                    (click)="sendWhatsAppTest()" 
+                    [disabled]="isSendingWhatsAppTest() || !whatsAppTestPhone().trim()"
+                    class="w-full py-3 rounded-full text-xs font-extrabold text-white bg-[#1E293B] hover:bg-[#0f172a] shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50"
+                  >
+                    @if (isSendingWhatsAppTest()) {
+                      <svg class="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      </svg>
+                      <span>Enviando mensaje a WhatsApp...</span>
+                    } @else {
+                      <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                      <span>Ejecutar Test de Envío</span>
+                    }
+                  </button>
+
+                  <!-- Resultado del Test -->
+                  @if (whatsAppTestResult()) {
+                    <div 
+                      [ngClass]="whatsAppTestResult()!.success ? 'bg-[#f0fdf4] border-[#bbf7d0] text-[#14532d]' : 'bg-[#fef2f2] border-[#fecaca] text-[#7f1d1d]'" 
+                      class="rounded-[20px] border-[1.5px] p-4 text-xs leading-relaxed"
+                    >
+                      <div class="flex items-center gap-2 font-black text-sm mb-1.5">
+                        @if (whatsAppTestResult()!.success) {
+                          <svg class="w-4.5 h-4.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Envío Confirmado Exitosamente</span>
+                        } @else {
+                          <svg class="w-4.5 h-4.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Diagnóstico del Intento de Envío</span>
+                        }
+                      </div>
+                      <div class="font-mono text-[11.5px] break-words whitespace-pre-wrap">
+                        {{ whatsAppTestResult()!.message }}
+                      </div>
+
+                      <!-- Solución Rápida para Error #133010 -->
+                      @if (!whatsAppTestResult()!.success && whatsAppTestResult()!.has_pin_error) {
+                        <div class="mt-3.5 p-3.5 bg-white rounded-2xl border border-rose-200 text-left">
+                          <div class="font-black text-rose-800 text-xs mb-1 flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span>Solución Rápida para Error #133010:</span>
+                          </div>
+                          <p class="text-[11.5px] text-rose-900 mb-2.5 leading-relaxed">
+                            Meta exige registrar el número con su PIN de 6 dígitos antes de enviar mensajes. Si el número está activo en la app de WhatsApp de tu celular físico, debes eliminar la cuenta en la app de WhatsApp del celular previamente. Luego presiona:
+                          </p>
+                          <button 
+                            type="button" 
+                            (click)="registerMetaPin()" 
+                            [disabled]="isRegisteringPin()"
+                            class="px-4 py-2 rounded-full text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md cursor-pointer transition-all disabled:opacity-50"
+                          >
+                            @if (isRegisteringPin()) {
+                              <span>Activando en Meta...</span>
+                            } @else {
+                              <span>Activar Número Ahora con PIN ({{ metaPinCode() || '123456' }})</span>
+                            }
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Tarjeta Flujos Automáticos Conectados -->
+              <div class="bg-slate-50 rounded-[28px] border border-slate-200/80 p-6 flex flex-col gap-3">
+                <h4 class="text-sm font-extrabold text-slate-900 flex items-center gap-2 m-0">
+                  <svg class="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <span>Flujos Automáticos Conectados</span>
+                </h4>
+                <div class="flex flex-col gap-2.5">
+                  <div class="flex items-start gap-2.5 text-xs text-slate-600 leading-relaxed">
+                    <span class="w-2 h-2 rounded-full bg-teal-600 mt-1.5 shrink-0"></span>
+                    <div><strong class="text-slate-800">Solicitud Recibida (Nequi):</strong> Acuse a la clienta con enlace de voucher.</div>
+                  </div>
+                  <div class="flex items-start gap-2.5 text-xs text-slate-600 leading-relaxed">
+                    <span class="w-2 h-2 rounded-full bg-teal-600 mt-1.5 shrink-0"></span>
+                    <div><strong class="text-slate-800">Alerta a Administradora:</strong> Notificación inmediata al <code class="bg-slate-200/80 text-slate-800 px-1 py-0.5 rounded text-[10.5px] font-mono">{{ whatsAppForm.whatsapp_number || '3106080402' }}</code> en cada reserva.</div>
+                  </div>
+                  <div class="flex items-start gap-2.5 text-xs text-slate-600 leading-relaxed">
+                    <span class="w-2 h-2 rounded-full bg-teal-600 mt-1.5 shrink-0"></span>
+                    <div><strong class="text-slate-800">Abono Verificado / Rechazado:</strong> Aviso automático al validar en Filament o panel admin.</div>
+                  </div>
+                  <div class="flex items-start gap-2.5 text-xs text-slate-600 leading-relaxed">
+                    <span class="w-2 h-2 rounded-full bg-teal-600 mt-1.5 shrink-0"></span>
+                    <div><strong class="text-slate-800">Reagendamiento y Cancelación:</strong> Disparo automático desde portal o panel admin.</div>
+                  </div>
+                  <div class="flex items-start gap-2.5 text-xs text-slate-600 leading-relaxed">
+                    <span class="w-2 h-2 rounded-full bg-teal-600 mt-1.5 shrink-0"></span>
+                    <div><strong class="text-slate-800">Recordatorio 24h Antes:</strong> Con enlace de confirmación de asistencia en 1 clic.</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Acceso Directo al Nuevo Menú de Plantillas Oficiales -->
+          <div class="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-[28px] border border-teal-200/80 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-base font-extrabold text-slate-900 m-0">
+                  Plantillas Oficiales de WhatsApp (Meta Cloud API)
+                </h4>
+                <p class="text-xs text-slate-600 mt-0.5 mb-0 leading-relaxed">
+                  Las 8 plantillas oficiales del salón ahora cuentan con su propio menú dedicado con vista previa interactiva y registro en 1 clic.
+                </p>
+              </div>
+            </div>
+
+            <a 
+              routerLink="/admin/plantillas"
+              class="px-5 py-2.5 rounded-full text-xs font-bold text-white bg-teal-700 hover:bg-teal-800 shadow-sm transition-all cursor-pointer shrink-0 flex items-center gap-2 no-underline"
+            >
+              <span>Abrir Módulo de Plantillas</span>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+
+        </div>

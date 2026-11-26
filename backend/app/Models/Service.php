@@ -24,6 +24,7 @@ class Service extends Model
         'deposit_amount',
         'image_url',
         'is_active',
+        'is_favorite',
         'sort_order',
     ];
 
@@ -35,6 +36,7 @@ class Service extends Model
             'base_price' => 'decimal:2',
             'deposit_amount' => 'decimal:2',
             'is_active' => 'boolean',
+            'is_favorite' => 'boolean',
             'sort_order' => 'integer',
         ];
     }
@@ -62,6 +64,11 @@ class Service extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopeFavorite($query)
+    {
+        return $query->where('is_favorite', true);
     }
 
     public function getImageUrlAttribute(?string $value): ?string

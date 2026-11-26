@@ -146,6 +146,13 @@
                             {{ $service->category->label() }}
                         </span>
 
+                        @if($service->is_favorite)
+                        <!-- Favorite Badge (Top Right if not selected) -->
+                        <span x-show="selectedService?.id !== {{ $service->id }}" class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-amber-400 text-slate-900 text-[10px] font-extrabold uppercase tracking-wider shadow-sm flex items-center gap-1 z-10">
+                            ★ Favorito
+                        </span>
+                        @endif
+
                         <!-- Duration Badge (Bottom Left) -->
                         <span class="absolute bottom-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold flex items-center gap-1 shadow-sm">
                             <i data-lucide="clock" class="w-3 h-3 text-teal-300"></i>

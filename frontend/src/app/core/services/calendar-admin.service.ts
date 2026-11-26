@@ -4,6 +4,8 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AdminSlotsResponse, CalendarSummary } from '../models/admin-appointment.models';
 
+export * from '../models/admin-appointment.models';
+
 @Injectable({
   providedIn: 'root'
 })

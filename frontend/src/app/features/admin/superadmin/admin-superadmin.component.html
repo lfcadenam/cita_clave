@@ -1,0 +1,283 @@
+@if (!isSuperAdmin()) {
+  <div class="bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-8 max-w-2xl mx-auto flex flex-col items-center text-center gap-4 my-8">
+    <div class="w-14 h-14 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100 shadow-xs">
+      <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+      </svg>
+    </div>
+    <div>
+      <h2 class="text-lg font-black text-slate-900 tracking-tight">Módulo Exclusivo SuperAdministrador Nuvex</h2>
+      <p class="text-xs text-slate-500 mt-1 max-w-md leading-relaxed">
+        Este panel está destinado a la gobernanza global de la plataforma multi-tenant (analíticas de red, salones y usuarios). Tu usuario actual cuenta con rol de administradora de salón.
+      </p>
+    </div>
+    <div class="p-3.5 rounded-2xl bg-purple-50/60 border border-purple-100 text-[11px] text-purple-900 font-medium">
+      Para gestionar la red global completa, inicia sesión con las credenciales de SuperAdmin (<span class="font-mono font-bold">admin&#64;nuvex-tecnologia.com</span>).
+    </div>
+    <a 
+      routerLink="/admin/calendario" 
+      class="mt-2 px-5 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all no-underline shadow-xs"
+    >
+      Volver al Calendario
+    </a>
+  </div>
+} @else {
+  <div class="flex flex-col gap-6">
+
+    <!-- Selector de Pestañas SuperAdmin: [Vista Global] [Salones / Negocios] [Usuarios & Cuentas] -->
+    <div class="flex flex-wrap items-center justify-between gap-3 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/80 shadow-2xs">
+      <div class="flex items-center gap-1.5 overflow-x-auto">
+        <button 
+          type="button" 
+          (click)="setActiveTab('all')" 
+          [ngClass]="activeTab() === 'all' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-medium'"
+          class="px-4 py-2 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
+        >
+          Vista Global & KPIs
+        </button>
+        <button 
+          type="button" 
+          (click)="setActiveTab('tenants')" 
+          [ngClass]="activeTab() === 'tenants' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-medium'"
+          class="px-4 py-2 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
+        >
+          Empresas & Salones ({{ superTenants().length }})
+        </button>
+        <button 
+          type="button" 
+          (click)="setActiveTab('users')" 
+          [ngClass]="activeTab() === 'users' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-medium'"
+          class="px-4 py-2 rounded-xl text-xs transition-all cursor-pointer whitespace-nowrap"
+        >
+          Usuarios & Plataforma ({{ superUsers().length }})
+        </button>
+      </div>
+    </div>
+    
+    @if (superAnalytics() && activeTab() === 'all') {
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in fade-in duration-150">
+        <div class="p-5 rounded-[28px] bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <span class="text-xs font-bold text-slate-400">Salones Activos</span>
+          <span class="text-2xl font-black text-slate-900 mt-1">{{ superAnalytics()!.active_tenants_count }} / {{ superAnalytics()!.tenants_count }}</span>
+        </div>
+        <div class="p-5 rounded-[28px] bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <span class="text-xs font-bold text-slate-400">Usuarios Totales</span>
+          <span class="text-2xl font-black text-slate-900 mt-1">{{ superAnalytics()!.users_count }}</span>
+        </div>
+        <div class="p-5 rounded-[28px] bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <span class="text-xs font-bold text-slate-400">Citas en la Red</span>
+          <span class="text-2xl font-black text-slate-900 mt-1">{{ superAnalytics()!.total_appointments }}</span>
+        </div>
+        <div class="p-5 rounded-[28px] bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <span class="text-xs font-bold text-slate-400">Facturación Red Nuvex</span>
+          <span class="text-2xl font-black text-emerald-600 mt-1">{{ formatCurrency(superAnalytics()!.total_revenue) }}</span>
+        </div>
+      </div>
+    }
+
+    <!-- TABLA DE SALONES (EMPRESAS & SALONES) -->
+    @if (activeTab() === 'all' || activeTab() === 'tenants') {
+      <div class="bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-6 flex flex-col gap-4 animate-in fade-in duration-150">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Salones / Negocios Registrados</h2>
+            <p class="text-xs text-slate-500">Gestión de inquilinos multi-tenant de la infraestructura Nuvex</p>
+          </div>
+          <button (click)="openCreateTenantModal()" class="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold cursor-pointer">
+            + Registrar Salón
+          </button>
+        </div>
+
+            <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th class="p-3.5">Salón</th>
+                    <th class="p-3.5">Slug / Dominio</th>
+                    <th class="p-3.5">Citas</th>
+                    <th class="p-3.5">WhatsApp</th>
+                    <th class="p-3.5">Estado</th>
+                    <th class="p-3.5 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (t of superTenants(); track t.id) {
+                    <tr class="hover:bg-slate-50/60">
+                      <td class="p-3.5 font-bold text-slate-900">{{ t.name }}</td>
+                      <td class="p-3.5 text-slate-500 font-mono">{{ t.slug }}</td>
+                      <td class="p-3.5 font-semibold">{{ t.appointments_count }}</td>
+                      <td class="p-3.5">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold" [ngClass]="t.whatsapp_configured ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'">
+                          {{ t.whatsapp_configured ? 'Conectado' : 'Pendiente' }}
+                        </span>
+                      </td>
+                      <td class="p-3.5">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold" [ngClass]="t.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'">
+                          {{ t.is_active ? 'Activo' : 'Suspendido' }}
+                        </span>
+                      </td>
+                      <td class="p-3.5 text-right">
+                        <button (click)="toggleTenantStatus(t)" class="px-2.5 py-1 rounded-xl text-xs font-semibold border border-slate-200 hover:bg-slate-100 cursor-pointer">
+                          {{ t.is_active ? 'Suspender' : 'Activar' }}
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        <!-- TABLA DE USUARIOS (SISTEMA & PLATAFORMA) -->
+        @if (activeTab() === 'all' || activeTab() === 'users') {
+          <div class="bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-6 flex flex-col gap-4 animate-in fade-in duration-150">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h2 class="text-base font-bold text-slate-900">Usuarios de Plataforma</h2>
+                <p class="text-xs text-slate-500">Cuentas administrativas y roles de acceso global</p>
+              </div>
+              <button (click)="openCreateUserModal()" class="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold cursor-pointer">
+                + Crear Usuario
+              </button>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th class="p-3.5">Nombre</th>
+                    <th class="p-3.5">Email</th>
+                    <th class="p-3.5">Rol</th>
+                    <th class="p-3.5">Salón Asignado</th>
+                    <th class="p-3.5 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (u of superUsers(); track u.id) {
+                    <tr class="hover:bg-slate-50/60">
+                      <td class="p-3.5 font-bold text-slate-900">{{ u.name }}</td>
+                      <td class="p-3.5 text-slate-500">{{ u.email }}</td>
+                      <td class="p-3.5">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" [ngClass]="u.role === 'SUPER_ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-800'">
+                          {{ u.role }}
+                        </span>
+                      </td>
+                      <td class="p-3.5 text-slate-500">{{ u.tenant_name }}</td>
+                      <td class="p-3.5 text-right whitespace-nowrap">
+                        <button (click)="openEditUserModal(u)" class="px-2.5 py-1 rounded-xl text-purple-600 hover:bg-purple-50 text-xs font-semibold cursor-pointer transition-colors">
+                          Editar
+                        </button>
+                        @if (u.role !== 'SUPER_ADMIN') {
+                          <button (click)="deleteSuperUser(u.id)" class="px-2.5 py-1 rounded-xl text-rose-600 hover:bg-rose-50 text-xs font-semibold cursor-pointer transition-colors">
+                            Eliminar
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+      </div>
+
+  @if (showTenantModal()) {
+    <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3">
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md p-6 flex flex-col gap-4">
+        <h3 class="font-bold text-base text-slate-900">Registrar Nuevo Salón Inquilino</h3>
+
+        <div>
+          <label class="block text-xs font-semibold mb-1">Nombre Comercial del Salón</label>
+          <input type="text" [(ngModel)]="tenantForm.name" placeholder="Ej: Studio Spa Belleza" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold mb-1">Slug Identificador (Opcional)</label>
+          <input type="text" [(ngModel)]="tenantForm.slug" placeholder="studio-spa" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 font-mono" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Teléfono</label>
+            <input type="text" [(ngModel)]="tenantForm.phone" placeholder="310..." class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Email</label>
+            <input type="email" [(ngModel)]="tenantForm.email" placeholder="salon@correo.com" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200" />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button (click)="showTenantModal.set(false)" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer">Cancelar</button>
+          <button (click)="saveTenant()" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md cursor-pointer">Crear Salón</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showUserModal()) {
+    <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3">
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md p-6 flex flex-col gap-4">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-base text-slate-900">
+            {{ editingUser() ? 'Editar Usuario de Plataforma' : 'Crear Usuario de Plataforma' }}
+          </h3>
+          <button (click)="closeUserModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold p-1 cursor-pointer">✕</button>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-slate-700">Nombre Completo</label>
+          <input type="text" [(ngModel)]="userForm.name" placeholder="Ej: Recepcionista Paola" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-slate-700">Correo Electrónico</label>
+          <input type="email" [(ngModel)]="userForm.email" placeholder="usuario@nuvex.com" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-semibold text-slate-700">Contraseña</label>
+            @if (editingUser()) {
+              <span class="text-[11px] text-slate-400 font-normal">(dejar en blanco para no cambiarla)</span>
+            }
+          </div>
+          <input type="password" [(ngModel)]="userForm.password" [placeholder]="editingUser() ? '•••••••• (opcional)' : '•••••••• (mínimo 8 caracteres)'" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold mb-1 text-slate-700">Rol</label>
+            <select [(ngModel)]="userForm.role" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500">
+              <option value="ADMIN">ADMIN (Salón)</option>
+              <option value="SUPER_ADMIN">SUPER_ADMIN (Nuvex)</option>
+              <option value="CLIENT">CLIENTE</option>
+              @if (userForm.role && userForm.role !== 'ADMIN' && userForm.role !== 'SUPER_ADMIN' && userForm.role !== 'CLIENT') {
+                <option [value]="userForm.role">{{ userForm.role }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1 text-slate-700">Salón Asignado</label>
+            <select [(ngModel)]="userForm.tenant_id" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500">
+              <option [ngValue]="null">Sin asignar (Global)</option>
+              @for (t of superTenants(); track t.id) {
+                <option [ngValue]="t.id">{{ t.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button (click)="closeUserModal()" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer">Cancelar</button>
+          <button (click)="saveSuperUser()" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md cursor-pointer transition-colors">
+            {{ editingUser() ? 'Guardar Cambios' : 'Crear Usuario' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+}

@@ -48,13 +48,7 @@ fi
 echo "📦 Ejecutando migraciones de base de datos..."
 php artisan migrate --force
 
-# Ejecutar seeder del Super Admin exclusivamente
-echo "👤 Asegurando existencia del Super Admin global..."
-php artisan db:seed --class="Database\\Seeders\\SuperAdminSeeder" --force
-
-# Asegurar existencia del tenant inicial La Belle Nails en producción
-echo "💅 Asegurando existencia del salón La Belle Nails Bogotá en producción..."
-php artisan db:seed --class="Database\\Seeders\\ProductionTenantSeeder" --force
+# Seeders deshabilitados: la plataforma se encuentra en producción y los datos reales no deben ser alterados.
 
 # Limpiar y optimizar caché en producción
 php artisan optimize:clear || true

@@ -22,12 +22,14 @@ class AppointmentObserver
      */
     public function created(Appointment $appointment): void
     {
-        // 1. Enviar correos iniciales de agendamiento (a la dueña y a la clienta)
-        $this->mailService->sendAppointmentBookedEmails($appointment);
+        // 1. Notificaciones por correo (desactivadas por defecto; canal oficial es WhatsApp)
+        if ($this->mailService->isEnabled()) {
+            $this->mailService->sendAppointmentBookedEmails($appointment);
 
-        // 2. Si la cita nace directamente en estado CONFIRMADO (ej. clienta habitual o creada en el local por Paola)
-        if ($appointment->status === AppointmentStatus::CONFIRMED) {
-            $this->mailService->sendPaymentConfirmedEmail($appointment);
+            // 2. Si la cita nace directamente en estado CONFIRMADO
+            if ($appointment->status === AppointmentStatus::CONFIRMED) {
+                $this->mailService->sendPaymentConfirmedEmail($appointment);
+            }
         }
 
         // 3. Enviar notificación instantánea de "Nueva Cita Agendada" al WhatsApp del administrador
@@ -56,11 +58,13 @@ class AppointmentObserver
             
             // Si el estado previo no era CONFIRMED, notificamos que el pago fue validado y la cita confirmada
             if ($originalStatus !== AppointmentStatus::CONFIRMED && $originalStatus !== AppointmentStatus::CONFIRMED->value) {
-                // Notificación por correo a la clienta
-                try {
-                    $this->mailService->sendPaymentConfirmedEmail($appointment);
-                } catch (\Throwable $e) {
-                    Log::warning("No se pudo enviar correo de confirmación de cita #{$appointment->appointment_number}: " . $e->getMessage());
+                // Notificación por correo a la clienta (solo si está habilitado)
+                if ($this->mailService->isEnabled()) {
+                    try {
+                        $this->mailService->sendPaymentConfirmedEmail($appointment);
+                    } catch (\Throwable $e) {
+                        Log::warning("No se pudo enviar correo de confirmación de cita #{$appointment->appointment_number}: " . $e->getMessage());
+                    }
                 }
 
                 // Notificación por WhatsApp a la clienta

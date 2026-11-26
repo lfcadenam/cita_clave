@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\v1\Admin\CustomerAdminController;
 use App\Http\Controllers\Api\v1\Admin\ServiceAdminController;
 use App\Http\Controllers\Api\v1\Admin\WaitlistAdminController;
 use App\Http\Controllers\Api\v1\Admin\WhatsAppAdminController;
+use App\Http\Controllers\Api\v1\Admin\WhatsAppBroadcastAdminController;
 use App\Http\Controllers\Api\v1\Admin\WorkingScheduleAdminController;
 use App\Http\Controllers\Api\v1\AppointmentBookingController;
 use App\Http\Controllers\Api\v1\Auth\AuthController;
@@ -138,6 +139,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/services/{id}', [ServiceAdminController::class, 'show']);
         Route::put('/services/{id}', [ServiceAdminController::class, 'update']);
         Route::post('/services/{id}', [ServiceAdminController::class, 'update']);
+        Route::patch('/services/{id}/toggle-favorite', [ServiceAdminController::class, 'toggleFavorite']);
         Route::delete('/services/{id}', [ServiceAdminController::class, 'destroy']);
 
         // Jornadas y Horarios de Trabajo
@@ -161,7 +163,18 @@ Route::prefix('v1')->group(function () {
         Route::put('/settings/whatsapp', [WhatsAppAdminController::class, 'updateSettings']);
         Route::post('/settings/whatsapp/register-pin', [WhatsAppAdminController::class, 'registerPin']);
         Route::get('/settings/whatsapp/templates', [WhatsAppAdminController::class, 'syncTemplates']);
+        Route::get('/settings/whatsapp/templates/catalog', [WhatsAppAdminController::class, 'templatesCatalog']);
+        Route::post('/settings/whatsapp/templates/create', [WhatsAppAdminController::class, 'createTemplate']);
+        Route::put('/settings/whatsapp/templates/{key}', [WhatsAppAdminController::class, 'updateTemplate']);
+        Route::post('/settings/whatsapp/templates/{key}/reset', [WhatsAppAdminController::class, 'resetTemplate']);
         Route::post('/settings/whatsapp/test', [WhatsAppAdminController::class, 'sendTest']);
+
+        // Campañas y Listas de Difusión (WhatsApp)
+        Route::get('/broadcasts/audience', [WhatsAppBroadcastAdminController::class, 'audience']);
+        Route::get('/broadcasts', [WhatsAppBroadcastAdminController::class, 'index']);
+        Route::post('/broadcasts', [WhatsAppBroadcastAdminController::class, 'store']);
+        Route::post('/broadcasts/test', [WhatsAppBroadcastAdminController::class, 'sendTest']);
+        Route::get('/broadcasts/{id}', [WhatsAppBroadcastAdminController::class, 'show']);
     });
 
     // =========================================================================

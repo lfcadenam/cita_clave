@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { StorageService } from '../../core/services/storage.service';
+import { NuvexNotificationService } from '../../core/services/nuvex-notification.service';
 import { Service, AvailableSlot, ClientProfile, AppointmentResponse, SalonProfile } from '../../core/models/booking.models';
 import { environment } from '../../../environments/environment';
 
@@ -17,6 +18,7 @@ export class BookingComponent implements OnInit {
   private api = inject(ApiService);
   private storage = inject(StorageService);
   private fb = inject(FormBuilder);
+  private nuvexNotify = inject(NuvexNotificationService);
 
   // Stepper State: 1: Servicio, 2: Horario, 3: Tus Datos, 4: Abono, 5: Confirmación VIP
   currentStep = signal<number>(1);
@@ -182,7 +184,11 @@ export class BookingComponent implements OnInit {
       list = list.filter(s => s.name.toLowerCase().includes(q) || (s.description || '').toLowerCase().includes(q));
     }
 
-    return list;
+    return list.slice().sort((a, b) => {
+      const favA = (a.is_favorite || a.featured) ? 1 : 0;
+      const favB = (b.is_favorite || b.featured) ? 1 : 0;
+      return favB - favA;
+    });
   });
 
   formattedDateDisplay = computed(() => {
@@ -571,7 +577,7 @@ export class BookingComponent implements OnInit {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       if (file.size > 10 * 1024 * 1024) {
-        alert('El comprobante no debe superar 10 MB.');
+        this.nuvexNotify.error('Archivo demasiado pesado', 'El comprobante no debe superar 10 MB.');
         return;
       }
       this.receiptFile = file;
@@ -616,21 +622,21 @@ export class BookingComponent implements OnInit {
 
     // Validaciones estrictas por paso
     if (this.currentStep() === 1 && !this.selectedService()) {
-      alert('Por favor selecciona un tratamiento del catálogo para continuar.');
+      this.nuvexNotify.warning('Tratamiento Requerido', 'Por favor selecciona un tratamiento del catálogo para continuar.');
       return;
     }
 
     if (this.currentStep() === 2 && !this.isStep2Valid()) {
-      alert('Por favor selecciona una fecha con un turno disponible antes de avanzar.');
+      this.nuvexNotify.warning('Horario Requerido', 'Por favor selecciona una fecha con un turno disponible antes de avanzar.');
       return;
     }
 
     if (this.currentStep() === 3 && !this.isStep3Valid()) {
       this.clientForm.markAllAsTouched();
       if (!this.clientForm.get('accept_terms')?.value) {
-        alert('Debes aceptar la política de tratamiento de datos personales para continuar.');
+        this.nuvexNotify.warning('Términos y Condiciones', 'Debes aceptar la política de tratamiento de datos personales para continuar.');
       } else {
-        alert('Por favor completa tu Nombre (mínimo 3 caracteres) y tu WhatsApp (10 dígitos) para continuar.');
+        this.nuvexNotify.warning('Datos Incompletos', 'Por favor completa tu Nombre (mínimo 3 caracteres) y tu WhatsApp (10 dígitos) para continuar.');
       }
       return;
     }
@@ -658,20 +664,20 @@ export class BookingComponent implements OnInit {
 
   submitBooking(): void {
     if (!this.selectedService()) {
-      alert('Por favor selecciona un tratamiento.');
+      this.nuvexNotify.warning('Tratamiento Requerido', 'Por favor selecciona un tratamiento.');
       this.goToStep(1);
       return;
     }
 
     if (!this.isStep2Valid()) {
-      alert('Por favor selecciona una fecha y horario disponible.');
+      this.nuvexNotify.warning('Horario Requerido', 'Por favor selecciona una fecha y horario disponible.');
       this.goToStep(2);
       return;
     }
 
     if (!this.isStep3Valid()) {
       this.clientForm.markAllAsTouched();
-      alert('Por favor completa tu Nombre y celular WhatsApp.');
+      this.nuvexNotify.warning('Datos Incompletos', 'Por favor completa tu Nombre y celular WhatsApp.');
       this.goToStep(3);
       return;
     }
@@ -679,12 +685,12 @@ export class BookingComponent implements OnInit {
     // Solo exigir comprobante y validar método si el servicio requiere abono
     if (this.isDepositRequired()) {
       if (this.paymentMethod() === 'NEQUI' && !this.receiptFile) {
-        alert('Por favor adjunta el comprobante de transferencia Nequi para apartar tu cupo.');
+        this.nuvexNotify.warning('Comprobante Requerido', 'Por favor adjunta el comprobante de transferencia Nequi para apartar tu cupo.');
         return;
       }
 
       if (this.paymentMethod() === 'BOLD' && !this.isBoldEnabled()) {
-        alert('La pasarela de pago en línea (Bold) no está habilitada para este salón.');
+        this.nuvexNotify.warning('Pasarela no disponible', 'La pasarela de pago en línea (Bold) no está habilitada para este salón.');
         this.paymentMethod.set('NEQUI');
         return;
       }

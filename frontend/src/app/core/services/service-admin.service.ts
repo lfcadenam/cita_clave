@@ -13,6 +13,7 @@ export interface AdminServiceItem {
   base_price: number;
   deposit_amount: number;
   is_active: boolean;
+  is_favorite?: boolean;
   requires_deposit?: boolean;
   image_url?: string | null;
 }
@@ -97,6 +98,15 @@ export class ServiceAdminService {
       );
     }
     return this.http.put<{ success: boolean; data: AdminServiceItem }>(`${this.apiUrl}/${id}`, payload).pipe(
+      map(res => res.data)
+    );
+  }
+
+  /**
+   * Alternar estado favorito/destacado de un tratamiento.
+   */
+  toggleFavorite(id: number): Observable<AdminServiceItem> {
+    return this.http.patch<{ success: boolean; data: AdminServiceItem }>(`${this.apiUrl}/${id}/toggle-favorite`, {}).pipe(
       map(res => res.data)
     );
   }

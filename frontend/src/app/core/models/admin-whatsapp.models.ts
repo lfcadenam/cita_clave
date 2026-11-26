@@ -46,3 +46,113 @@ export interface WhatsAppTestResponse {
   has_pin_error?: boolean;
   account_status?: WhatsAppAccountStatus;
 }
+
+export interface TemplateVariableItem {
+  key: string;
+  label: string;
+  sample: string;
+  token: string;
+}
+
+export interface OfficialWhatsAppTemplate {
+  key: string;
+  name: string;
+  display_name: string;
+  description: string;
+  category: string;
+  language: string;
+  body: string;
+  samples: string[];
+  variable_keys?: string[];
+  trigger: string;
+  exists_in_meta: boolean;
+  meta_status: string;
+  meta_id?: string | null;
+  meta_language?: string;
+  meta_category?: string;
+  preview_text: string;
+  is_customized?: boolean;
+  original_body?: string;
+}
+
+export interface TemplatesCatalogResponse {
+  success: boolean;
+  meta_connected: boolean;
+  meta_error_message?: string | null;
+  available_variables?: TemplateVariableItem[];
+  templates: OfficialWhatsAppTemplate[];
+}
+
+export interface TemplateCreateResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+  catalog?: OfficialWhatsAppTemplate[];
+}
+
+export interface BroadcastAudienceCounts {
+  all: number;
+  recurring: number;
+  inactive_30: number;
+  new: number;
+}
+
+export interface BroadcastAudienceSample {
+  id: number;
+  name: string;
+  nickname?: string | null;
+  display_name: string;
+  phone: string;
+  is_legacy: boolean;
+  total_appointments: number;
+}
+
+export interface BroadcastAudienceResponse {
+  success: boolean;
+  current_segment: string;
+  counts: BroadcastAudienceCounts;
+  preview: {
+    segment: string;
+    total_count: number;
+    sample: BroadcastAudienceSample[];
+  };
+}
+
+export interface BroadcastRecipientItem {
+  id: number;
+  customer_id?: number | null;
+  phone: string;
+  client_name: string;
+  client_nickname?: string | null;
+  status: 'pending' | 'sent' | 'failed';
+  error_message?: string | null;
+  sent_at?: string | null;
+}
+
+export interface BroadcastCampaignItem {
+  id: number;
+  name: string;
+  channel: string;
+  template_key?: string | null;
+  segment: string;
+  message_body: string;
+  status: 'draft' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  total_recipients: number;
+  sent_count: number;
+  failed_count: number;
+  metadata?: any;
+  created_at: string;
+  completed_at?: string | null;
+  recipients?: BroadcastRecipientItem[];
+}
+
+export interface CreateBroadcastPayload {
+  name: string;
+  segment: string;
+  template_key?: string | null;
+  message_body: string;
+  promo_text?: string;
+  target_url?: string;
+  customer_ids?: number[];
+}
+

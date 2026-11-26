@@ -23,7 +23,7 @@ class ServiceAdminController extends Controller
             'active_only' => 'nullable|boolean',
         ]);
 
-        $query = Service::query()->orderBy('sort_order', 'asc')->orderBy('name', 'asc');
+        $query = Service::query()->orderBy('is_favorite', 'desc')->orderBy('sort_order', 'asc')->orderBy('name', 'asc');
 
         if ($request->has('active_only') || $request->boolean('active_only')) {
             $query->where('is_active', true);
@@ -90,6 +90,7 @@ class ServiceAdminController extends Controller
             'base_price' => 'required|numeric|min:0',
             'deposit_amount' => 'required|numeric|min:0',
             'is_active' => 'nullable|boolean',
+            'is_favorite' => 'nullable|boolean',
             'sort_order' => 'nullable|integer|min:0',
             'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
             'image_url' => 'nullable|string|max:500',
@@ -112,6 +113,7 @@ class ServiceAdminController extends Controller
             'deposit_amount' => (float) $validated['deposit_amount'],
             'image_url' => $imageUrl,
             'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true,
+            'is_favorite' => $request->has('is_favorite') ? $request->boolean('is_favorite') : false,
             'sort_order' => $validated['sort_order'] ?? 0,
         ]);
 
@@ -137,6 +139,7 @@ class ServiceAdminController extends Controller
             'base_price' => 'nullable|numeric|min:0',
             'deposit_amount' => 'nullable|numeric|min:0',
             'is_active' => 'nullable|boolean',
+            'is_favorite' => 'nullable|boolean',
             'sort_order' => 'nullable|integer|min:0',
             'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
             'image_url' => 'nullable|string|max:500',
@@ -165,6 +168,9 @@ class ServiceAdminController extends Controller
         if ($request->has('is_active')) {
             $service->is_active = $request->boolean('is_active');
         }
+        if ($request->has('is_favorite')) {
+            $service->is_favorite = $request->boolean('is_favorite');
+        }
         if (isset($validated['sort_order'])) {
             $service->sort_order = (int) $validated['sort_order'];
         }
@@ -182,6 +188,22 @@ class ServiceAdminController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Tratamiento actualizado correctamente.',
+            'data' => $this->formatService($service, true),
+        ]);
+    }
+
+    /**
+     * Alternar estado de favorito / destacado de un servicio.
+     */
+    public function toggleFavorite(int $id): JsonResponse
+    {
+        $service = Service::query()->findOrFail($id);
+        $service->is_favorite = ! $service->is_favorite;
+        $service->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $service->is_favorite ? 'Servicio marcado como favorito.' : 'Servicio desmarcado como favorito.',
             'data' => $this->formatService($service, true),
         ]);
     }
@@ -212,6 +234,7 @@ class ServiceAdminController extends Controller
             'base_price' => (float) $service->base_price,
             'deposit_amount' => (float) $service->deposit_amount,
             'is_active' => (bool) $service->is_active,
+            'is_favorite' => (bool) $service->is_favorite,
             'sort_order' => (int) $service->sort_order,
             'image_url' => $service->image_url,
         ];

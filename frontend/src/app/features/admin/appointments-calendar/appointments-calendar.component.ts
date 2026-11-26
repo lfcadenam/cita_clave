@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -11,6 +11,8 @@ import { WorkingScheduleService } from '../../../core/services/working-schedule.
 import { WaitlistAdminService } from '../../../core/services/waitlist-admin.service';
 import { WhatsAppAdminService } from '../../../core/services/whatsapp-admin.service';
 import { SuperAdminService } from '../../../core/services/super-admin.service';
+import { NuvexNotificationService } from '../../../core/services/nuvex-notification.service';
+import { AdminNavigationService } from '../../../core/services/admin-navigation.service';
 
 import { 
   AdminAppointment, 
@@ -27,7 +29,13 @@ import {
   WhatsAppSettings, 
   WhatsAppAccountStatus, 
   WhatsAppTemplate, 
-  WhatsAppTestResponse 
+  WhatsAppTestResponse,
+  OfficialWhatsAppTemplate,
+  TemplateVariableItem,
+  BroadcastAudienceCounts,
+  BroadcastAudienceSample,
+  BroadcastCampaignItem,
+  CreateBroadcastPayload
 } from '../../../core/models/admin-whatsapp.models';
 import { PlatformAnalytics, SuperTenant, SuperUser } from '../../../core/models/super-admin.models';
 
@@ -83,6 +91,8 @@ export type AdminSection =
   | 'horarios' 
   | 'espera' 
   | 'whatsapp' 
+  | 'plantillas'
+  | 'difusion'
   | 'superadmin';
 
 @Component({
@@ -102,7 +112,10 @@ export class AppointmentsCalendarComponent implements OnInit {
   private waitlistService = inject(WaitlistAdminService);
   private whatsappService = inject(WhatsAppAdminService);
   private superAdminService = inject(SuperAdminService);
+  private nuvexNotify = inject(NuvexNotificationService);
   private router = inject(Router);
+  readonly nav = inject(AdminNavigationService, { optional: true });
+  readonly isEmbeddedInLayout = computed(() => !!this.nav);
 
   // Perfil del Salón y Usuario Activo
   currentUser = this.authService.currentUser;
@@ -113,7 +126,19 @@ export class AppointmentsCalendarComponent implements OnInit {
   salonTitle = computed(() => this.currentTenant()?.name || 'Paola Aguilera');
 
   // Módulo / Sección Activa en el Hub Administrativo
-  activeSection = signal<AdminSection>('escritorio');
+  activeSection = signal<AdminSection>('calendario');
+
+  constructor() {
+    if (this.nav) {
+      this.activeSection.set('calendario');
+      effect(() => {
+        const trigger = this.nav!.openNewAppointmentModalTrigger();
+        if (trigger > 0) {
+          this.openNewAppointmentModal();
+        }
+      });
+    }
+  }
 
   // Menú Lateral Móvil (Drawer)
   sidebarOpen = signal<boolean>(false);
@@ -140,6 +165,8 @@ export class AppointmentsCalendarComponent implements OnInit {
       case 'horarios': return 'HORARIOS & PAUSAS';
       case 'espera': return 'LISTA DE ESPERA';
       case 'whatsapp': return 'WHATSAPP META API';
+      case 'plantillas': return 'PLANTILLAS WHATSAPP META';
+      case 'difusion': return 'LISTAS DE DIFUSIÓN & CAMPAÑAS';
       case 'superadmin': return 'SUPERADMIN NUVEX';
       default: return 'DASHBOARD';
     }
@@ -305,14 +332,20 @@ export class AppointmentsCalendarComponent implements OnInit {
 
   filteredServicesForModal = computed(() => {
     const q = this.serviceSearchQuery().toLowerCase().trim();
-    const list = this.servicesList();
-    if (!q) return list;
-    return list.filter(s =>
-      s.name.toLowerCase().includes(q) ||
-      (s.category && s.category.toLowerCase().includes(q)) ||
-      s.duration_minutes.toString().includes(q) ||
-      s.base_price.toString().includes(q)
-    );
+    let list = this.servicesList();
+    if (q) {
+      list = list.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        (s.category && s.category.toLowerCase().includes(q)) ||
+        s.duration_minutes.toString().includes(q) ||
+        s.base_price.toString().includes(q)
+      );
+    }
+    return list.slice().sort((a, b) => {
+      const favA = a.is_favorite ? 1 : 0;
+      const favB = b.is_favorite ? 1 : 0;
+      return favB - favA;
+    });
   });
 
   toggleServiceDropdown(): void {
@@ -561,6 +594,105 @@ export class AppointmentsCalendarComponent implements OnInit {
   whatsAppTestCustomMessage = signal<string>('');
   whatsAppTestResult = signal<WhatsAppTestResponse | null>(null);
   isSendingWhatsAppTest = signal<boolean>(false);
+
+  // Catálogo Oficial de Plantillas y Previsualización
+  officialTemplates = signal<OfficialWhatsAppTemplate[]>([]);
+  isLoadingTemplatesCatalog = signal<boolean>(false);
+  isCreatingMetaTemplate = signal<string | null>(null);
+  selectedTemplateForPreview = signal<OfficialWhatsAppTemplate | null>(null);
+  templateActionFeedback = signal<{ success: boolean; message: string } | null>(null);
+
+  // Variables Disponibles y Edición de Plantillas
+  availableVariables = signal<TemplateVariableItem[]>([]);
+  selectedTemplateForEdit = signal<OfficialWhatsAppTemplate | null>(null);
+  editTemplateBody = signal<string>('');
+  editTemplateSamples = signal<string[]>([]);
+  isSavingTemplate = signal<boolean>(false);
+  templateEditValidationError = signal<string | null>(null);
+
+  editTemplateLivePreview = computed(() => {
+    let preview = this.editTemplateBody();
+    const samples = this.editTemplateSamples();
+    samples.forEach((sample, idx) => {
+      preview = preview.replaceAll(`{{${idx + 1}}}`, sample || `[Variable ${idx + 1}]`);
+    });
+    return preview;
+  });
+
+  templatesSummary = computed(() => {
+    const list = this.officialTemplates();
+    const approved = list.filter(t => t.meta_status === 'APPROVED').length;
+    const pending = list.filter(t => t.meta_status === 'PENDING').length;
+    const notCreated = list.filter(t => !t.exists_in_meta || t.meta_status === 'NOT_REGISTERED').length;
+    const rejected = list.filter(t => t.meta_status === 'REJECTED').length;
+    return {
+      total: list.length,
+      approved,
+      pending,
+      notCreated,
+      rejected
+    };
+  });
+
+  templatesFilter = signal<'ALL' | 'APPROVED' | 'PENDING'>('ALL');
+
+  filteredOfficialTemplates = computed(() => {
+    const list = this.officialTemplates();
+    const f = this.templatesFilter();
+    if (f === 'APPROVED') {
+      return list.filter(t => t.meta_status === 'APPROVED');
+    }
+    if (f === 'PENDING') {
+      return list.filter(t => t.meta_status !== 'APPROVED');
+    }
+    return list;
+  });
+
+  // =========================================================================
+  // LISTAS DE DIFUSIÓN Y CAMPAÑAS MASIVAS (WHATSAPP)
+  // =========================================================================
+  broadcastSegment = signal<'all' | 'recurring' | 'inactive_30' | 'new'>('all');
+  broadcastAudienceCounts = signal<BroadcastAudienceCounts>({ all: 0, recurring: 0, inactive_30: 0, new: 0 });
+  broadcastAudienceSample = signal<BroadcastAudienceSample[]>([]);
+  isLoadingBroadcastAudience = signal<boolean>(false);
+
+  broadcastName = signal<string>('Promo Especial ' + new Date().toLocaleDateString('es-CO', { month: 'short', day: 'numeric' }));
+  broadcastTemplateKey = signal<string>('promocion_salon');
+  broadcastPromoText = signal<string>('20% de descuento en todos los servicios de Manicura y Pestañas este fin de semana');
+  broadcastTargetUrl = signal<string>('https://labellenailsbog.com');
+  broadcastCustomBody = signal<string>('Hola {{1}}, en {{2}} tenemos una promoción especial para ti: {{3}}.\n\nReserva tu cita en el siguiente enlace: {{4}}\n\n¡Esperamos verte pronto!');
+  broadcastTestPhone = signal<string>('');
+  isSendingTestBroadcast = signal<boolean>(false);
+  testBroadcastFeedback = signal<{ success: boolean; message: string } | null>(null);
+
+  isLaunchingBroadcast = signal<boolean>(false);
+  broadcastLaunchFeedback = signal<{ success: boolean; message: string; campaign?: BroadcastCampaignItem } | null>(null);
+
+  broadcastCampaignsList = signal<BroadcastCampaignItem[]>([]);
+  isLoadingBroadcastCampaigns = signal<boolean>(false);
+  selectedCampaignDetail = signal<BroadcastCampaignItem | null>(null);
+
+  broadcastLivePreview = computed(() => {
+    const tKey = this.broadcastTemplateKey();
+    const salonName = this.salonTitle() || 'La Belle Nails';
+    const promo = this.broadcastPromoText() || 'Promoción especial';
+    const link = this.broadcastTargetUrl() || 'https://labellenailsbog.com';
+    const sampleNickname = 'Cami';
+
+    if (tKey === 'promocion_salon') {
+      return `Hola ${sampleNickname}, en ${salonName} tenemos una promoción especial para ti: ${promo}.\n\nReserva tu cita en el siguiente enlace: ${link}\n\n¡Esperamos verte pronto!`;
+    } else if (tKey === 'reactivacion_clientas') {
+      return `Hola ${sampleNickname}, te extrañamos en ${salonName}. Hace días que no te consentimos y queremos invitarte a renovar tu look.\n\nAgenda tu próxima cita aquí: ${link}\n\n¡Te esperamos con una atención especial!`;
+    } else {
+      let body = this.broadcastCustomBody();
+      body = body.replaceAll('{{1}}', sampleNickname).replaceAll('{{apodo}}', sampleNickname);
+      body = body.replaceAll('{{2}}', salonName).replaceAll('{{salon}}', salonName);
+      body = body.replaceAll('{{3}}', promo).replaceAll('{{mensaje_promo}}', promo);
+      body = body.replaceAll('{{4}}', link).replaceAll('{{link_portal}}', link);
+      return body;
+    }
+  });
+
   whatsAppForm = {
     whatsapp_driver: 'meta',
     whatsapp_number: '',
@@ -761,6 +893,11 @@ export class AppointmentsCalendarComponent implements OnInit {
       this.loadWaitlist();
     } else if (section === 'whatsapp') {
       this.loadWhatsAppSettings();
+    } else if (section === 'plantillas') {
+      this.loadTemplatesCatalog();
+    } else if (section === 'difusion') {
+      this.loadBroadcastAudience();
+      this.loadBroadcastCampaigns();
     } else if (section === 'superadmin' && this.isSuperAdmin()) {
       this.loadSuperAdminData();
     }
@@ -895,17 +1032,21 @@ export class AppointmentsCalendarComponent implements OnInit {
 
     // Mantener la lista completa para modales de agendamiento si aún no se ha cargado
     if (this.servicesList().length === 0) {
-      this.serviceAdminService.getServices(true).subscribe({
-        next: (svcs) => this.servicesList.set(svcs),
-        error: (err) => console.warn('Error al precargar servicios completos:', err)
-      });
+      this.ensureServicesLoaded();
     }
   }
 
-  ensureServicesLoaded(): void {
-    if (this.servicesList().length === 0) {
+  ensureServicesLoaded(force: boolean = false): void {
+    if (force || this.servicesList().length === 0) {
       this.serviceAdminService.getServices(true).subscribe({
-        next: (svcs) => this.servicesList.set(svcs),
+        next: (svcs) => {
+          const sorted = (svcs || []).slice().sort((a, b) => {
+            const favA = a.is_favorite ? 1 : 0;
+            const favB = b.is_favorite ? 1 : 0;
+            return favB - favA;
+          });
+          this.servicesList.set(sorted);
+        },
         error: (err) => console.warn('Error al precargar servicios completos:', err)
       });
     }
@@ -1021,14 +1162,27 @@ export class AppointmentsCalendarComponent implements OnInit {
     });
   }
 
-  deleteService(id: number): void {
-    if (!confirm('¿Deseas dar de baja este tratamiento del catálogo?')) return;
+  async deleteService(id: number): Promise<void> {
+    const ok = await this.nuvexNotify.confirm({
+      title: '¿Dar de baja este tratamiento?',
+      subtitle: 'El servicio dejará de estar disponible para las clientas en el portal',
+      message: 'Los turnos y citas existentes que ya lo tengan asignado no se verán afectados.',
+      confirmText: 'Sí, Dar de Baja',
+      cancelText: 'Cancelar',
+      variant: 'danger',
+      icon: 'trash'
+    });
+    if (!ok) return;
+
     this.serviceAdminService.deleteService(id).subscribe({
       next: () => {
+        this.nuvexNotify.success('Tratamiento retirado', 'El servicio ha sido dado de baja del catálogo.');
         this.loadCatalogServices(this.servicesPage());
         this.serviceAdminService.getServices(true).subscribe(svcs => this.servicesList.set(svcs));
       },
-      error: (err) => console.error('Error al eliminar servicio:', err)
+      error: (err) => {
+        this.nuvexNotify.error('Error al dar de baja', err?.error?.message || 'No fue posible eliminar el servicio.');
+      }
     });
   }
 
@@ -1247,11 +1401,11 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.scheduleService.batchUpdateSchedules(this.weeklySchedules()).subscribe({
       next: () => {
         this.isSavingSchedules.set(false);
-        alert('Horarios semanales actualizados exitosamente.');
+        this.nuvexNotify.success('Horarios actualizados', 'La jornada semanal del salón se guardó exitosamente.');
       },
       error: (err) => {
         this.isSavingSchedules.set(false);
-        console.error('Error al guardar horarios:', err);
+        this.nuvexNotify.error('Error al guardar', err?.error?.message || 'No fue posible guardar los horarios.');
       }
     });
   }
@@ -1291,21 +1445,39 @@ export class AppointmentsCalendarComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.showBlockModal.set(false);
+        this.nuvexNotify.success('Horario bloqueado', 'La franja seleccionada ha quedado reservada.');
         this.loadBlockedSlots();
         this.loadAppointmentsForCurrentRange();
       },
-      error: (err) => console.error('Error al crear bloqueo:', err)
+      error: (err) => {
+        console.error('Error al crear bloqueo:', err);
+        this.nuvexNotify.error('Error al bloquear', err?.error?.message || 'No fue posible registrar el bloqueo.');
+      }
     });
   }
 
-  deleteBlockedSlot(id: number): void {
-    if (!confirm('¿Deseas eliminar este bloqueo de horario?')) return;
+  async deleteBlockedSlot(id: number, skipConfirm: boolean = false): Promise<void> {
+    if (!skipConfirm) {
+      const ok = await this.nuvexNotify.confirm({
+        title: '¿Eliminar bloqueo de horario?',
+        subtitle: 'El turno quedará disponible nuevamente para citas en el calendario',
+        variant: 'danger',
+        icon: 'lock',
+        confirmText: 'Sí, Eliminar Bloqueo',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+    }
+
     this.scheduleService.deleteBlockedSlot(id).subscribe({
       next: () => {
+        this.nuvexNotify.success('Bloqueo eliminado', 'El horario ha sido liberado en el calendario.');
         this.loadBlockedSlots();
         this.loadAppointmentsForCurrentRange();
       },
-      error: (err) => console.error('Error al eliminar bloqueo:', err)
+      error: (err) => {
+        this.nuvexNotify.error('Error al eliminar', err?.error?.message || 'Error al eliminar el bloqueo.');
+      }
     });
   }
 
@@ -1333,11 +1505,25 @@ export class AppointmentsCalendarComponent implements OnInit {
     });
   }
 
-  deleteWaitlistItem(id: number): void {
-    if (!confirm('¿Deseas retirar esta solicitud de la lista de espera?')) return;
+  async deleteWaitlistItem(id: number): Promise<void> {
+    const ok = await this.nuvexNotify.confirm({
+      title: '¿Retirar de la lista de espera?',
+      subtitle: 'Esta solicitud de turno será retirada del sistema',
+      variant: 'warning',
+      icon: 'trash',
+      confirmText: 'Sí, Retirar',
+      cancelText: 'Cancelar'
+    });
+    if (!ok) return;
+
     this.waitlistService.deleteWaitlist(id).subscribe({
-      next: () => this.loadWaitlist(),
-      error: (err) => console.error('Error al eliminar de lista de espera:', err)
+      next: () => {
+        this.nuvexNotify.success('Solicitud retirada', 'La clienta fue retirada de la lista de espera.');
+        this.loadWaitlist();
+      },
+      error: (err) => {
+        this.nuvexNotify.error('Error al retirar', err?.error?.message || 'Error al eliminar de lista de espera.');
+      }
     });
   }
 
@@ -1415,7 +1601,7 @@ export class AppointmentsCalendarComponent implements OnInit {
   registerMetaPin(): void {
     const pin = this.metaPinCode().trim();
     if (!/^\d{6}$/.test(pin)) {
-      alert('El PIN debe contener exactamente 6 dígitos numéricos (ej: 123456).');
+      this.nuvexNotify.warning('PIN Inválido', 'El PIN debe contener exactamente 6 dígitos numéricos (ej: 123456).');
       return;
     }
 
@@ -1426,6 +1612,7 @@ export class AppointmentsCalendarComponent implements OnInit {
     }).subscribe({
       next: (res) => {
         this.isRegisteringPin.set(false);
+        this.nuvexNotify.success('PIN Registrado', 'El número de WhatsApp fue registrado exitosamente en Meta.');
         if (res.account_status) {
           this.whatsAppAccountStatus.set(res.account_status);
         }
@@ -1433,7 +1620,7 @@ export class AppointmentsCalendarComponent implements OnInit {
       },
       error: (err) => {
         this.isRegisteringPin.set(false);
-        alert(err?.error?.message || 'Error al registrar el número con PIN en Meta.');
+        this.nuvexNotify.error('Error al registrar PIN', err?.error?.message || 'Error al registrar el número con PIN en Meta.');
       }
     });
   }
@@ -1462,7 +1649,7 @@ export class AppointmentsCalendarComponent implements OnInit {
   sendWhatsAppTest(): void {
     const phone = this.whatsAppTestPhone().trim();
     if (!phone) {
-      alert('Ingresa un número de celular de destino.');
+      this.nuvexNotify.warning('Número Requerido', 'Ingresa un número de celular de destino con indicativo.');
       return;
     }
 
@@ -1500,6 +1687,399 @@ export class AppointmentsCalendarComponent implements OnInit {
         }
       }
     });
+  }
+
+  // =========================================================================
+  // MÉTODOS PARA PLANTILLAS OFICIALES META CLOUD API (1-CLIC & PREVIEW)
+  // =========================================================================
+  loadTemplatesCatalog(): void {
+    this.isLoadingTemplatesCatalog.set(true);
+    this.templateActionFeedback.set(null);
+    this.whatsappService.getTemplatesCatalog().subscribe({
+      next: (res) => {
+        this.isLoadingTemplatesCatalog.set(false);
+        this.officialTemplates.set(res.templates || []);
+        if (res.available_variables) {
+          this.availableVariables.set(res.available_variables);
+        }
+      },
+      error: (err) => {
+        this.isLoadingTemplatesCatalog.set(false);
+        console.error('Error al cargar catálogo de plantillas:', err);
+      }
+    });
+  }
+
+  openTemplatePreview(template: OfficialWhatsAppTemplate): void {
+    this.selectedTemplateForPreview.set(template);
+  }
+
+  closeTemplatePreview(): void {
+    this.selectedTemplateForPreview.set(null);
+  }
+
+  openTemplateEdit(template: OfficialWhatsAppTemplate): void {
+    this.selectedTemplateForEdit.set(template);
+    this.editTemplateBody.set(template.body);
+    this.editTemplateSamples.set([...(template.samples || [])]);
+    this.templateEditValidationError.set(null);
+  }
+
+  closeTemplateEdit(): void {
+    this.selectedTemplateForEdit.set(null);
+    this.templateEditValidationError.set(null);
+  }
+
+  insertVariableIntoBody(varItem: TemplateVariableItem): void {
+    const currentBody = this.editTemplateBody();
+    const matches = currentBody.match(/\{\{(\d+)\}\}/g) || [];
+    const nextIndex = matches.length + 1;
+    const token = `{{${nextIndex}}}`;
+
+    const newBody = currentBody ? `${currentBody.trimEnd()} ${token}` : token;
+    this.editTemplateBody.set(newBody);
+
+    const currentSamples = [...this.editTemplateSamples()];
+    currentSamples[nextIndex - 1] = varItem.sample;
+    this.editTemplateSamples.set(currentSamples);
+    this.validateEditTemplateBody();
+  }
+
+  validateEditTemplateBody(): boolean {
+    const body = this.editTemplateBody().trim();
+    if (!body) {
+      this.templateEditValidationError.set('El cuerpo del mensaje no puede estar vacío.');
+      return false;
+    }
+
+    if (/^\s*\{\{\d+\}\}/.test(body)) {
+      this.templateEditValidationError.set('Meta prohíbe que la plantilla inicie con una variable. Debe iniciar con texto fijo (ej: "Hola {{1}}").');
+      return false;
+    }
+
+    if (/\{\{\d+\}\}\s*$/.test(body)) {
+      this.templateEditValidationError.set('Meta prohíbe que la plantilla termine en una variable (Error #2388299). Debes incluir una frase de cierre.');
+      return false;
+    }
+
+    this.templateEditValidationError.set(null);
+    return true;
+  }
+
+  saveTemplateEdit(syncToMeta: boolean = false): void {
+    const template = this.selectedTemplateForEdit();
+    if (!template) return;
+
+    if (!this.validateEditTemplateBody()) {
+      return;
+    }
+
+    this.isSavingTemplate.set(true);
+    this.templateActionFeedback.set(null);
+
+    this.whatsappService.updateTemplate(template.key, {
+      body: this.editTemplateBody().trim(),
+      samples: this.editTemplateSamples(),
+      sync_to_meta: syncToMeta,
+    }).subscribe({
+      next: (res) => {
+        this.isSavingTemplate.set(false);
+        this.templateActionFeedback.set({
+          success: res.success,
+          message: res.message || 'Plantilla actualizada exitosamente.',
+        });
+        if (res.catalog) {
+          this.officialTemplates.set(res.catalog);
+        } else {
+          this.loadTemplatesCatalog();
+        }
+        this.closeTemplateEdit();
+      },
+      error: (err) => {
+        this.isSavingTemplate.set(false);
+        this.templateEditValidationError.set(err?.error?.message || 'Error al guardar la plantilla.');
+      }
+    });
+  }
+
+  async resetTemplateToOriginal(template: OfficialWhatsAppTemplate): Promise<void> {
+    const ok = await this.nuvexNotify.confirm({
+      title: '¿Restablecer Plantilla Oficial?',
+      subtitle: `Se restaurará "${template.display_name}" a su versión estándar`,
+      message: 'Las personalizaciones realizadas por el salón para esta plantilla serán reemplazadas por la redacción oficial aprobada.',
+      variant: 'warning',
+      icon: 'whatsapp',
+      confirmText: 'Sí, Restablecer',
+      cancelText: 'Cancelar'
+    });
+    if (!ok) return;
+
+    this.isSavingTemplate.set(true);
+    this.templateActionFeedback.set(null);
+
+    this.whatsappService.resetTemplate(template.key).subscribe({
+      next: (res) => {
+        this.isSavingTemplate.set(false);
+        this.nuvexNotify.success('Plantilla restablecida', res.message || 'Plantilla restablecida a la versión oficial.');
+        this.templateActionFeedback.set({
+          success: true,
+          message: res.message || 'Plantilla restablecida a la versión oficial.',
+        });
+        if (res.catalog) {
+          this.officialTemplates.set(res.catalog);
+        } else {
+          this.loadTemplatesCatalog();
+        }
+        if (this.selectedTemplateForEdit()?.key === template.key) {
+          this.closeTemplateEdit();
+        }
+      },
+      error: (err) => {
+        this.isSavingTemplate.set(false);
+        this.nuvexNotify.error('Error al restablecer', err?.error?.message || 'Error al restablecer la plantilla.');
+        this.templateActionFeedback.set({
+          success: false,
+          message: err?.error?.message || 'Error al restablecer la plantilla.',
+        });
+      }
+    });
+  }
+
+  createSingleMetaTemplate(template: OfficialWhatsAppTemplate): void {
+    this.isCreatingMetaTemplate.set(template.key);
+    this.templateActionFeedback.set(null);
+
+    this.whatsappService.createTemplate(template.key).subscribe({
+      next: (res) => {
+        this.isCreatingMetaTemplate.set(null);
+        this.nuvexNotify.success('Plantilla procesada', res.message || `Plantilla "${template.display_name}" procesada en Meta.`);
+        this.templateActionFeedback.set({
+          success: res.success,
+          message: res.message || `Plantilla "${template.display_name}" procesada en Meta.`
+        });
+        if (res.catalog) {
+          this.officialTemplates.set(res.catalog);
+        } else {
+          this.loadTemplatesCatalog();
+        }
+        this.syncWhatsAppTemplates();
+      },
+      error: (err) => {
+        this.isCreatingMetaTemplate.set(null);
+        const msg = err?.error?.message || `Error al crear plantilla "${template.name}" en Meta.`;
+        this.nuvexNotify.error('Error en Meta', msg);
+        this.templateActionFeedback.set({
+          success: false,
+          message: msg
+        });
+      }
+    });
+  }
+
+  async createAllMetaTemplates(): Promise<void> {
+    const ok = await this.nuvexNotify.confirm({
+      title: 'Registrar Catálogo en Meta',
+      subtitle: 'Creación automática masiva en WhatsApp Cloud API',
+      message: '¿Deseas enviar las 8 plantillas oficiales a tu cuenta de Meta WhatsApp Cloud API para su registro y aprobación?',
+      variant: 'primary',
+      icon: 'whatsapp',
+      confirmText: 'Crear Todas en Meta',
+      cancelText: 'Cancelar'
+    });
+    if (!ok) return;
+
+    this.isCreatingMetaTemplate.set('ALL');
+    this.templateActionFeedback.set(null);
+
+    this.whatsappService.createAllTemplates().subscribe({
+      next: (res) => {
+        this.isCreatingMetaTemplate.set(null);
+        this.templateActionFeedback.set({
+          success: res.success,
+          message: res.message || 'Proceso de registro masivo de plantillas completado.'
+        });
+        if (res.catalog) {
+          this.officialTemplates.set(res.catalog);
+        } else {
+          this.loadTemplatesCatalog();
+        }
+        this.syncWhatsAppTemplates();
+      },
+      error: (err) => {
+        this.isCreatingMetaTemplate.set(null);
+        const msg = err?.error?.message || 'Error al registrar las plantillas en Meta.';
+        this.templateActionFeedback.set({
+          success: false,
+          message: msg
+        });
+      }
+    });
+  }
+
+  // =========================================================================
+  // MÉTODOS PARA LISTAS DE DIFUSIÓN Y CAMPAÑAS (WHATSAPP)
+  // =========================================================================
+  loadBroadcastAudience(segment?: string): void {
+    const targetSegment = segment || this.broadcastSegment();
+    this.isLoadingBroadcastAudience.set(true);
+    this.whatsappService.getBroadcastAudience(targetSegment).subscribe({
+      next: (res) => {
+        this.isLoadingBroadcastAudience.set(false);
+        if (res.counts) {
+          this.broadcastAudienceCounts.set(res.counts);
+        }
+        if (res.preview?.sample) {
+          this.broadcastAudienceSample.set(res.preview.sample);
+        }
+      },
+      error: (err) => {
+        this.isLoadingBroadcastAudience.set(false);
+        console.error('Error al cargar audiencia de difusión:', err);
+      }
+    });
+  }
+
+  loadBroadcastCampaigns(): void {
+    this.isLoadingBroadcastCampaigns.set(true);
+    this.whatsappService.getBroadcastCampaigns().subscribe({
+      next: (res) => {
+        this.isLoadingBroadcastCampaigns.set(false);
+        if (res.campaigns?.data) {
+          this.broadcastCampaignsList.set(res.campaigns.data);
+        }
+      },
+      error: (err) => {
+        this.isLoadingBroadcastCampaigns.set(false);
+        console.error('Error al cargar campañas de difusión:', err);
+      }
+    });
+  }
+
+  onSelectBroadcastSegment(segment: 'all' | 'recurring' | 'inactive_30' | 'new'): void {
+    this.broadcastSegment.set(segment);
+    this.loadBroadcastAudience(segment);
+  }
+
+  onSelectBroadcastTemplate(templateKey: string): void {
+    this.broadcastTemplateKey.set(templateKey);
+  }
+
+  sendTestBroadcastMessage(): void {
+    const phone = this.broadcastTestPhone().trim();
+    if (!phone) {
+      this.testBroadcastFeedback.set({
+        success: false,
+        message: 'Ingresa un número de WhatsApp con indicativo para recibir la prueba.'
+      });
+      return;
+    }
+
+    this.isSendingTestBroadcast.set(true);
+    this.testBroadcastFeedback.set(null);
+
+    this.whatsappService.sendTestBroadcast({
+      phone,
+      template_key: this.broadcastTemplateKey(),
+      promo_text: this.broadcastPromoText(),
+      target_url: this.broadcastTargetUrl(),
+      message_body: this.broadcastTemplateKey() === 'custom' ? this.broadcastCustomBody() : undefined
+    }).subscribe({
+      next: (res) => {
+        this.isSendingTestBroadcast.set(false);
+        this.testBroadcastFeedback.set({
+          success: res.success,
+          message: res.message || 'Mensaje de prueba enviado con éxito a tu WhatsApp.'
+        });
+      },
+      error: (err) => {
+        this.isSendingTestBroadcast.set(false);
+        this.testBroadcastFeedback.set({
+          success: false,
+          message: err?.error?.message || 'Error al enviar mensaje de prueba por WhatsApp.'
+        });
+      }
+    });
+  }
+
+  async launchBroadcastCampaign(): Promise<void> {
+    const counts = this.broadcastAudienceCounts();
+    const seg = this.broadcastSegment();
+    const totalCount = counts[seg] || 0;
+
+    if (totalCount === 0) {
+      this.nuvexNotify.warning('Sin Destinatarias', 'El segmento seleccionado no contiene clientas disponibles con número telefónico válido.');
+      this.broadcastLaunchFeedback.set({
+        success: false,
+        message: 'El segmento seleccionado no contiene clientas disponibles con número telefónico válido.'
+      });
+      return;
+    }
+
+    const campaignName = this.broadcastName().trim() || 'Difusión Masiva';
+    const segLabel = seg === 'all' ? 'Todas las clientas' : (seg === 'recurring' ? 'Clientas VIP (Frecuentes)' : (seg === 'inactive_30' ? 'Inactivas (+30 días)' : 'Nuevas clientas'));
+
+    const ok = await this.nuvexNotify.confirm({
+      title: 'Lanzar Campaña Masiva de Difusión',
+      subtitle: `Se enviará vía WhatsApp Cloud API a ${totalCount} clientas`,
+      message: `¿Confirmas el lanzamiento de la campaña "${campaignName}"? Los mensajes se personalizarán dinámicamente con el apodo de cada clienta.`,
+      variant: 'primary',
+      icon: 'whatsapp',
+      details: [
+        { label: 'Campaña', value: campaignName },
+        { label: 'Segmento', value: segLabel },
+        { label: 'Destinatarias', value: `${totalCount} contactos` }
+      ],
+      confirmText: `Sí, Disparar Difusión (${totalCount})`,
+      cancelText: 'Cancelar'
+    });
+    if (!ok) return;
+
+    this.isLaunchingBroadcast.set(true);
+    this.broadcastLaunchFeedback.set(null);
+
+    const payload: CreateBroadcastPayload = {
+      name: campaignName,
+      segment: seg,
+      template_key: this.broadcastTemplateKey(),
+      promo_text: this.broadcastPromoText(),
+      target_url: this.broadcastTargetUrl(),
+      message_body: this.broadcastLivePreview()
+    };
+
+    this.whatsappService.createAndExecuteBroadcast(payload).subscribe({
+      next: (res) => {
+        this.isLaunchingBroadcast.set(false);
+        this.broadcastLaunchFeedback.set({
+          success: res.success,
+          message: res.message || 'Campaña de difusión completada.',
+          campaign: res.campaign
+        });
+        this.loadBroadcastCampaigns();
+      },
+      error: (err) => {
+        this.isLaunchingBroadcast.set(false);
+        this.broadcastLaunchFeedback.set({
+          success: false,
+          message: err?.error?.message || 'Error al ejecutar la campaña de difusión.'
+        });
+      }
+    });
+  }
+
+  viewCampaignDetail(campaign: BroadcastCampaignItem): void {
+    this.selectedCampaignDetail.set(campaign);
+    this.whatsappService.getBroadcastCampaignDetails(campaign.id).subscribe({
+      next: (res) => {
+        if (res.campaign) {
+          this.selectedCampaignDetail.set(res.campaign);
+        }
+      },
+      error: (err) => console.error('Error al cargar detalle de campaña:', err)
+    });
+  }
+
+  closeCampaignDetail(): void {
+    this.selectedCampaignDetail.set(null);
   }
 
   // =========================================================================
@@ -1573,30 +2153,59 @@ export class AppointmentsCalendarComponent implements OnInit {
     });
   }
 
-  deleteSuperUser(id: number): void {
-    if (!confirm('¿Deseas eliminar este usuario de la plataforma?')) return;
+  async deleteSuperUser(id: number): Promise<void> {
+    const ok = await this.nuvexNotify.confirm({
+      title: '¿Eliminar usuario de la plataforma?',
+      subtitle: 'El usuario perderá inmediatamente el acceso al sistema',
+      variant: 'danger',
+      icon: 'trash',
+      confirmText: 'Sí, Eliminar Usuario',
+      cancelText: 'Cancelar'
+    });
+    if (!ok) return;
+
     this.superAdminService.deleteUser(id).subscribe({
-      next: () => this.loadSuperAdminData(),
-      error: (err) => console.error('Error al eliminar usuario:', err)
+      next: () => {
+        this.nuvexNotify.success('Usuario eliminado', 'El usuario ha sido retirado de la plataforma.');
+        this.loadSuperAdminData();
+      },
+      error: (err) => {
+        this.nuvexNotify.error('Error al eliminar', err?.error?.message || 'Error al eliminar usuario.');
+      }
     });
   }
 
   // =========================================================================
   // GESTIÓN DE CITAS: APROBAR NEQUI, ESTADOS Y ACCIONES DIRECTAS
   // =========================================================================
-  approveNequi(apt: AdminAppointment): void {
-    if (!confirm(`¿Confirmar recepción del abono para la cita ${apt.appointment_number} de ${apt.client.name}?`)) return;
-
+  async approveNequi(apt: AdminAppointment): Promise<void> {
     const deposit = apt.financials?.deposit_paid || apt.financials?.deposit_amount || 15000;
+    const ok = await this.nuvexNotify.confirm({
+      title: 'Confirmar Recepción de Abono',
+      subtitle: `Cita #${apt.appointment_number} • ${apt.client.name}`,
+      message: '¿Confirmas que el dinero del anticipo fue recibido exitosamente en la cuenta del salón? La cita pasará al estado Confirmada.',
+      variant: 'primary',
+      icon: 'check',
+      details: [
+        { label: 'Clienta', value: apt.client.name },
+        { label: 'Cita', value: `#${apt.appointment_number}` },
+        { label: 'Valor Abono', value: this.formatCurrency(deposit) }
+      ],
+      confirmText: 'Aprobar Abono',
+      cancelText: 'Cancelar'
+    });
+    if (!ok) return;
+
     this.appointmentService.approveNequi(apt.id, deposit, 'Comprobante aprobado desde el panel administrativo').subscribe({
       next: () => {
+        this.nuvexNotify.success('Abono aprobado', `El anticipo de ${apt.client.name} fue registrado con éxito.`);
         this.loadAppointmentsForCurrentRange();
         this.loadDailySummary();
         this.loadTableAppointments(this.tableCitasPage());
       },
       error: (err) => {
         console.error('Error al aprobar Nequi:', err);
-        alert(err?.error?.message || 'Error al validar comprobante.');
+        this.nuvexNotify.error('Error al validar comprobante', err?.error?.message || 'Error al validar comprobante.');
       }
     });
   }
@@ -1700,8 +2309,8 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.ensureServicesLoaded();
     this.editServiceId.set(apt.service?.id || null);
     this.editAppointmentDate.set(apt.date);
-    this.editStartTime.set(apt.start_time ? apt.start_time.substring(0, 5) : '08:00');
-    this.editEndTime.set(apt.end_time ? apt.end_time.substring(0, 5) : '09:00');
+    this.editStartTime.set(this.roundTo15Minutes(apt.start_time ? apt.start_time.substring(0, 5) : '08:00'));
+    this.editEndTime.set(this.roundTo15Minutes(apt.end_time ? apt.end_time.substring(0, 5) : '09:00'));
     this.editClientName.set(apt.client.name);
     this.editClientPhone.set(apt.client.phone);
     this.editTotalAmount.set(apt.financials?.total_amount || 0);
@@ -1723,8 +2332,10 @@ export class AppointmentsCalendarComponent implements OnInit {
     const svc = this.servicesList().find(s => s.id === numId);
     if (svc) {
       if (this.editStartTime()) {
-        const [h, m] = this.editStartTime().split(':').map(n => parseInt(n, 10) || 0);
-        const totalMin = h * 60 + m + (svc.duration_minutes || 60);
+        const roundedStart = this.roundTo15Minutes(this.editStartTime());
+        const [h, m] = roundedStart.split(':').map(n => parseInt(n, 10) || 0);
+        let totalMin = h * 60 + m + (svc.duration_minutes || 60);
+        totalMin = Math.round(totalMin / 15) * 15;
         const endH = Math.floor(totalMin / 60) % 24;
         const endM = totalMin % 60;
         this.editEndTime.set(`${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`);
@@ -1736,15 +2347,36 @@ export class AppointmentsCalendarComponent implements OnInit {
   }
 
   onEditStartTimeChange(startTime: string): void {
-    this.editStartTime.set(startTime);
+    const rounded = this.roundTo15Minutes(startTime);
+    this.editStartTime.set(rounded);
     const svc = this.servicesList().find(s => s.id === Number(this.editServiceId()));
     const dur = svc?.duration_minutes || 60;
-    if (startTime && startTime.includes(':')) {
-      const [h, m] = startTime.split(':').map(n => parseInt(n, 10) || 0);
-      const totalMin = h * 60 + m + dur;
+    if (rounded && rounded.includes(':')) {
+      const [h, m] = rounded.split(':').map(n => parseInt(n, 10) || 0);
+      let totalMin = h * 60 + m + dur;
+      totalMin = Math.round(totalMin / 15) * 15;
       const endH = Math.floor(totalMin / 60) % 24;
       const endM = totalMin % 60;
       this.editEndTime.set(`${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`);
+    }
+  }
+
+  onEditStartTimeBlur(): void {
+    const rounded = this.roundTo15Minutes(this.editStartTime());
+    if (rounded !== this.editStartTime()) {
+      this.onEditStartTimeChange(rounded);
+    }
+  }
+
+  onEditEndTimeChange(endTime: string): void {
+    const rounded = this.roundTo15Minutes(endTime);
+    this.editEndTime.set(rounded);
+  }
+
+  onEditEndTimeBlur(): void {
+    const rounded = this.roundTo15Minutes(this.editEndTime());
+    if (rounded !== this.editEndTime()) {
+      this.editEndTime.set(rounded);
     }
   }
 
@@ -1765,12 +2397,17 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.isSavingAppointmentEdit.set(true);
     this.editAppointmentError.set(null);
 
+    const finalStart = this.roundTo15Minutes(this.editStartTime());
+    const finalEnd = this.roundTo15Minutes(this.editEndTime());
+    this.editStartTime.set(finalStart);
+    this.editEndTime.set(finalEnd);
+
     const payload: Partial<CreateAppointmentPayload> = {
       client_name: this.editClientName().trim(),
       client_phone: this.editClientPhone().trim(),
       appointment_date: this.editAppointmentDate(),
-      start_time: this.editStartTime(),
-      end_time: this.editEndTime(),
+      start_time: finalStart,
+      end_time: finalEnd,
       service_id: Number(this.editServiceId()) || apt.service.id,
       total_amount: Number(this.editTotalAmount()) || 0,
       deposit_paid: Number(this.editDepositPaid()) || 0,
@@ -1807,7 +2444,7 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.isSavingAppointment.set(false);
 
     this.newApptDate.set(prefillDate || this.selectedDateStr() || this.todayStr);
-    this.startTime.set(prefillTime || '09:00');
+    this.startTime.set(this.roundTo15Minutes(prefillTime || '09:00'));
 
     this.clientName.set('');
     this.clientPhone.set('');
@@ -1828,6 +2465,7 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.recalculateEndTime(this.startTime(), 50);
     this.modalStep.set(1);
 
+    this.ensureServicesLoaded(true);
     this.showNewAppointmentModal.set(true);
   }
 
@@ -1863,16 +2501,55 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.onServicesChange();
   }
 
+  roundTo15Minutes(timeStr: string): string {
+    if (!timeStr || !timeStr.includes(':')) return timeStr;
+    const parts = timeStr.split(':');
+    let h = parseInt(parts[0], 10);
+    let m = parseInt(parts[1], 10);
+    if (isNaN(h) || isNaN(m)) return timeStr;
+    m = Math.round(m / 15) * 15;
+    if (m >= 60) {
+      h = (h + Math.floor(m / 60)) % 24;
+      m = m % 60;
+    }
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  }
+
   onStartTimeManuallyChanged(newStart: string): void {
-    this.startTime.set(newStart);
+    const rounded = this.roundTo15Minutes(newStart);
+    this.startTime.set(rounded);
     const duration = this.totalDurationMinutes() || 50;
-    this.recalculateEndTime(newStart, duration);
+    this.recalculateEndTime(rounded, duration);
+  }
+
+  onStartTimeBlur(): void {
+    const rounded = this.roundTo15Minutes(this.startTime());
+    if (rounded !== this.startTime()) {
+      this.startTime.set(rounded);
+      const duration = this.totalDurationMinutes() || 50;
+      this.recalculateEndTime(rounded, duration);
+    }
+  }
+
+  onEndTimeManuallyChanged(newEnd: string): void {
+    const rounded = this.roundTo15Minutes(newEnd);
+    this.endTime.set(rounded);
+  }
+
+  onEndTimeBlur(): void {
+    const rounded = this.roundTo15Minutes(this.endTime());
+    if (rounded !== this.endTime()) {
+      this.endTime.set(rounded);
+    }
   }
 
   recalculateEndTime(start: string, durationMinutes: number): void {
     if (!start || !start.includes(':')) return;
-    const [hStr, mStr] = start.split(':');
-    let totalMinutes = parseInt(hStr, 10) * 60 + parseInt(mStr, 10) + durationMinutes;
+    const roundedStart = this.roundTo15Minutes(start);
+    const [hStr, mStr] = roundedStart.split(':');
+    let totalMinutes = (parseInt(hStr, 10) || 0) * 60 + (parseInt(mStr, 10) || 0) + durationMinutes;
+
+    totalMinutes = Math.round(totalMinutes / 15) * 15;
 
     const endH = Math.floor(totalMinutes / 60) % 24;
     const endM = totalMinutes % 60;
@@ -2040,12 +2717,17 @@ export class AppointmentsCalendarComponent implements OnInit {
     const primaryService = this.selectedServices()[0];
     const serviceIds = this.selectedServices().map(s => s.id);
 
+    const finalStart = this.roundTo15Minutes(this.startTime());
+    const finalEnd = this.roundTo15Minutes(this.endTime());
+    this.startTime.set(finalStart);
+    this.endTime.set(finalEnd);
+
     const payload = {
       service_id: Number(primaryService.id),
       service_ids: serviceIds,
       appointment_date: this.newApptDate(),
-      start_time: this.startTime(),
-      end_time: this.endTime(),
+      start_time: finalStart,
+      end_time: finalEnd,
       client_name: this.clientName().trim(),
       client_phone: this.clientPhone().trim(),
       client_email: this.clientEmail().trim() || undefined,
@@ -2276,12 +2958,33 @@ export class AppointmentsCalendarComponent implements OnInit {
     });
   }
 
-  onBlockedSlotClicked(slot: BlockedSlot, event: MouseEvent): void {
+  async onBlockedSlotClicked(slot: BlockedSlot, event: MouseEvent): Promise<void> {
     event.stopPropagation();
     const typeStr = slot.is_recurring ? 'Recurrente Diario' : `Fecha puntual (${slot.blocked_date})`;
     const range = slot.time_range || `${slot.start_time?.substring(0, 5)} – ${slot.end_time?.substring(0, 5)}`;
-    if (confirm(`🔒 Horario Bloqueado:\n"${slot.title}"\nHorario: ${range}\nTipo: ${typeStr}\n${slot.reason ? 'Motivo: ' + slot.reason + '\n' : ''}\n¿Deseas eliminar este bloqueo para habilitar el horario en el calendario?`)) {
-      this.deleteBlockedSlot(slot.id);
+
+    const details = [
+      { label: 'Título', value: slot.title },
+      { label: 'Horario', value: range },
+      { label: 'Tipo', value: typeStr }
+    ];
+    if (slot.reason) {
+      details.push({ label: 'Motivo', value: slot.reason });
+    }
+
+    const ok = await this.nuvexNotify.confirm({
+      title: 'Horario Bloqueado',
+      subtitle: '¿Deseas eliminar este bloqueo para habilitar el horario en el calendario?',
+      message: `El intervalo de ${range} volverá a estar disponible para reservas de clientas.`,
+      variant: 'danger',
+      icon: 'lock',
+      details,
+      confirmText: 'Sí, Eliminar Bloqueo',
+      cancelText: 'Conservar'
+    });
+
+    if (ok) {
+      this.deleteBlockedSlot(slot.id, true);
     }
   }
 

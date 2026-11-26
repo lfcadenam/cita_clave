@@ -131,7 +131,7 @@ class TenantResource extends Resource
                                             ->label('Correo Electrónico')
                                             ->email()
                                             ->prefixIcon('heroicon-o-envelope')
-                                            ->placeholder('contacto@labellenailsbog.com')
+                                            ->placeholder('admin@salon.com')
                                             ->maxLength(255),
                                     ])->columns(3),
 

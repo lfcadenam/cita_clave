@@ -159,10 +159,17 @@ class AdminApiTest extends TestCase
                     'groups' => [
                         'morning' => ['label', 'count', 'slots'],
                         'afternoon' => ['label', 'count', 'slots'],
+                        'evening' => ['label', 'count', 'slots'],
                     ],
                     'slots',
                 ],
             ]);
+
+        $slots = $response->json('data.slots');
+        $this->assertNotEmpty($slots);
+        $this->assertEquals('06:00', $slots[0]['start_time'], 'El primer turno administrativo debe empezar a las 06:00 AM');
+        $lastSlot = end($slots);
+        $this->assertLessThanOrEqual('23:00', $lastSlot['end_time'], 'Los turnos administrativos no deben sobrepasar las 11:00 PM');
     }
 
     public function test_admin_can_get_daily_calendar_summary_and_kpis(): void
@@ -326,5 +333,40 @@ class AdminApiTest extends TestCase
         $this->assertNotEmpty($services);
         $this->assertArrayHasKey('base_price', $services[0]);
         $this->assertArrayHasKey('deposit_amount', $services[0]);
+        $this->assertArrayHasKey('is_favorite', $services[0]);
+    }
+
+    public function test_admin_can_toggle_service_favorite_and_favorites_appear_first(): void
+    {
+        // Obtener el último servicio de la lista
+        $services = Service::where('tenant_id', $this->tenant->id)->get();
+        $this->assertGreaterThan(1, $services->count());
+        $lastService = $services->last();
+
+        // Asegurarse de que no esté como favorito inicialmente
+        $lastService->update(['is_favorite' => false]);
+
+        // Alternar a favorito
+        $response = $this->patchJson("/api/v1/admin/services/{$lastService->id}/toggle-favorite", [], $this->authHeaders());
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'id' => $lastService->id,
+                    'is_favorite' => true,
+                ],
+            ]);
+
+        // Al consultar la lista administrativa, el servicio favorito debe aparecer de primero
+        $listResponse = $this->getJson('/api/v1/admin/services?all=1', $this->authHeaders());
+        $listResponse->assertStatus(200);
+        $listData = $listResponse->json('data');
+        $this->assertEquals($lastService->id, $listData[0]['id'], 'El servicio marcado como favorito debe ser el primero en la lista administrativa');
+
+        // Al consultar la lista pública para clientes, el servicio favorito debe aparecer de primero
+        $publicResponse = $this->getJson('/api/v1/services', ['X-Tenant-Slug' => $this->tenant->slug]);
+        $publicResponse->assertStatus(200);
+        $publicData = $publicResponse->json('data');
+        $this->assertEquals($lastService->id, $publicData[0]['id'], 'El servicio marcado como favorito debe ser el primero en el portal de clientes');
     }
 }

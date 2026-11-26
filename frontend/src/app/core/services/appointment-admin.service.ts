@@ -4,6 +4,8 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AdminAppointment, AppointmentStatus } from '../models/admin-appointment.models';
 
+export * from '../models/admin-appointment.models';
+
 export interface AppointmentFilterParams {
   date?: string;
   start_date?: string;

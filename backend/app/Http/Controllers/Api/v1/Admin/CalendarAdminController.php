@@ -34,10 +34,12 @@ class CalendarAdminController extends Controller
         $strict = $request->boolean('strict_anti_gaps', false); // Por defecto flexible para administración
         $customDuration = $request->filled('duration_minutes') ? (int) $validated['duration_minutes'] : null;
 
-        $rawSlots = $this->availabilityService->getAvailableSlots($service, $date, $strict, $customDuration);
+        // Para la administración, el horario habilitado para turnos sugeridos es de 6:00 AM a 11:00 PM
+        $rawSlots = $this->availabilityService->getAvailableSlots($service, $date, $strict, $customDuration, forAdmin: true);
 
         $morningSlots = [];
         $afternoonSlots = [];
+        $eveningSlots = [];
         $allSlots = [];
 
         foreach ($rawSlots as $slot) {
@@ -64,8 +66,10 @@ class CalendarAdminController extends Controller
 
             if ($slot['start_time'] < '12:00') {
                 $morningSlots[] = $formattedSlot;
-            } else {
+            } elseif ($slot['start_time'] < '18:00') {
                 $afternoonSlots[] = $formattedSlot;
+            } else {
+                $eveningSlots[] = $formattedSlot;
             }
         }
 
@@ -85,7 +89,7 @@ class CalendarAdminController extends Controller
                 'total_slots' => count($allSlots),
                 'groups' => [
                     'morning' => [
-                        'label' => 'Mañana (8:00 AM – 12:00 PM)',
+                        'label' => 'Mañana (6:00 AM – 12:00 PM)',
                         'count' => count($morningSlots),
                         'slots' => $morningSlots,
                     ],
@@ -93,6 +97,11 @@ class CalendarAdminController extends Controller
                         'label' => 'Tarde (12:00 PM – 6:00 PM)',
                         'count' => count($afternoonSlots),
                         'slots' => $afternoonSlots,
+                    ],
+                    'evening' => [
+                        'label' => 'Noche (6:00 PM – 11:00 PM)',
+                        'count' => count($eveningSlots),
+                        'slots' => $eveningSlots,
                     ],
                 ],
                 'slots' => $allSlots,

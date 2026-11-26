@@ -36,7 +36,7 @@ class ProductionTenantSeeder extends Seeder
                 'domain' => 'labellenailsbog.com',
                 'phone' => '3103248385',
                 'whatsapp_number' => '3103248385',
-                'email' => 'contacto@labellenailsbog.com',
+                'email' => null,
                 'address' => 'Carrera 15 # 93-75, Chicó',
                 'city' => 'Bogotá',
                 'specialties' => 'Uñas Esculpidas · Pestañas · Cejas · Cuidado Facial',

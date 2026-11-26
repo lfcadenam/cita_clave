@@ -4,6 +4,8 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AdminCustomer } from '../models/admin-customer.models';
 
+export * from '../models/admin-customer.models';
+
 export interface CustomerPaginationMeta {
   current_page: number;
   last_page: number;
@@ -22,6 +24,13 @@ export interface PaginatedCustomersResponse {
 export class CustomerAdminService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/admin/customers`;
+
+  /**
+   * Obtener todas las clientas (primeros 100 por defecto).
+   */
+  getCustomers(): Observable<AdminCustomer[]> {
+    return this.searchCustomers('', 100);
+  }
 
   /**
    * Buscar clientas por nombre, teléfono o email para autocompletado y gestión rápida.

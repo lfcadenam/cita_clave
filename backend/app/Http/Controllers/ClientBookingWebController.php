@@ -26,7 +26,7 @@ class ClientBookingWebController extends Controller
      */
     public function index()
     {
-        $services = Service::where('is_active', true)->orderBy('sort_order')->get();
+        $services = Service::where('is_active', true)->orderBy('is_favorite', 'desc')->orderBy('sort_order')->orderBy('name')->get();
         $categories = Service::where('is_active', true)->pluck('category')->unique()->values();
         $nequiConfig = config('payment.nequi');
 

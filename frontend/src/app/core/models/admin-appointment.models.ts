@@ -102,6 +102,7 @@ export interface AdminSlotsResponse {
   groups: {
     morning: AdminSlotsGroup;
     afternoon: AdminSlotsGroup;
+    evening?: AdminSlotsGroup;
   };
   slots: AdminSlot[];
 }

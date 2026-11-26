@@ -31,36 +31,43 @@ class BookingAvailabilityService
         Service $service, 
         Carbon|string $date, 
         bool $strictAntiGaps = true, 
-        ?int $customDurationMinutes = null
+        ?int $customDurationMinutes = null,
+        bool $forAdmin = false
     ): array
     {
         $targetDate = is_string($date) ? Carbon::parse($date)->startOfDay() : $date->copy()->startOfDay();
 
-        // Past dates cannot be booked
-        if ($targetDate->lt(Carbon::today())) {
+        // Past dates cannot be booked (for client bookings)
+        if (! $forAdmin && $targetDate->lt(Carbon::today())) {
             return [];
         }
 
         $dayOfWeek = $targetDate->dayOfWeek; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
         $schedule = WorkingSchedule::where('day_of_week', $dayOfWeek)->first();
 
-        // If no schedule or closed day, return empty
-        if (! $schedule || ! $schedule->is_working_day) {
+        // If no schedule or closed day, return empty (for client booking)
+        if (! $forAdmin && (! $schedule || ! $schedule->is_working_day)) {
             return [];
         }
 
-        $openDateTime = Carbon::parse($targetDate->toDateString() . ' ' . $schedule->open_time);
-        $closeDateTime = Carbon::parse($targetDate->toDateString() . ' ' . $schedule->close_time);
+        if ($forAdmin) {
+            // El horario de turnos sugeridos para el administrador es a partir de las 6:00 AM hasta las 11:00 PM (23:00)
+            $openDateTime = Carbon::parse($targetDate->toDateString() . ' 06:00:00');
+            $closeDateTime = Carbon::parse($targetDate->toDateString() . ' 23:00:00');
+        } else {
+            $openDateTime = Carbon::parse($targetDate->toDateString() . ' ' . $schedule->open_time);
+            $closeDateTime = Carbon::parse($targetDate->toDateString() . ' ' . $schedule->close_time);
 
-        // If today, cannot book slots in the past (minimum 30 minutes ahead)
-        $now = Carbon::now();
-        if ($targetDate->isToday() && $now->gt($openDateTime)) {
-            $minBookingTime = $now->copy()->addMinutes(30)->ceilMinutes(15);
-            if ($minBookingTime->gte($closeDateTime)) {
-                return [];
-            }
-            if ($minBookingTime->gt($openDateTime)) {
-                $openDateTime = $minBookingTime;
+            // If today, cannot book slots in the past (minimum 30 minutes ahead)
+            $now = Carbon::now();
+            if ($targetDate->isToday() && $now->gt($openDateTime)) {
+                $minBookingTime = $now->copy()->addMinutes(30)->ceilMinutes(15);
+                if ($minBookingTime->gte($closeDateTime)) {
+                    return [];
+                }
+                if ($minBookingTime->gt($openDateTime)) {
+                    $openDateTime = $minBookingTime;
+                }
             }
         }
 
@@ -146,7 +153,7 @@ class BookingAvailabilityService
         $serviceDuration = ($customDurationMinutes && $customDurationMinutes > 0) 
             ? (int) $customDurationMinutes 
             : (int) $service->duration_minutes;
-        $stepMinutes = $schedule->slot_interval_minutes ?: 15;
+        $stepMinutes = $schedule?->slot_interval_minutes ?: 15;
 
         // 3. Generate candidate slots evaluating free windows and flexible lunch shift
         return $this->buildSlots(

@@ -19,7 +19,7 @@ class AppointmentMailNotificationService
      */
     public function isEnabled(): bool
     {
-        return (bool) config('mail.notifications_enabled', true);
+        return (bool) config('mail.notifications_enabled', false);
     }
 
     /**

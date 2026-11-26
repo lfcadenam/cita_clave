@@ -1,0 +1,595 @@
+        <div class="bg-white rounded-[32px] border border-slate-200/80 shadow-xs p-6 flex flex-col gap-5">
+          
+          <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">Directorio y Fidelización de Clientas (CRM)</h2>
+              <p class="text-xs text-slate-500">Historial de asistencia, badges de fidelidad e integración directa con WhatsApp</p>
+            </div>
+            <button (click)="openCreateCustomerModal()" class="px-4 py-2 rounded-2xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-md shadow-emerald-600/20 cursor-pointer">
+              + Registrar Clienta
+            </button>
+          </div>
+
+          <input 
+            type="text" 
+            [ngModel]="crmSearch()"
+            (ngModelChange)="onCrmSearchChange($event)"
+            placeholder="Buscar por nombre, celular WhatsApp o email..."
+            class="px-4 py-2.5 rounded-xl text-xs bg-slate-50 border border-slate-200 w-full sm:w-96 text-slate-900"
+          />
+
+          <!-- Tabla / Lista de Clientas -->
+          <div class="overflow-x-auto border border-slate-200/80 rounded-2xl bg-white shadow-2xs">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50/80 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200/80">
+                <tr>
+                  <th class="p-3.5 pl-4">Clienta</th>
+                  <th class="p-3.5">WhatsApp / Celular</th>
+                  <th class="p-3.5">Correo Electrónico</th>
+                  <th class="p-3.5">Nivel / Fidelidad</th>
+                  <th class="p-3.5 pr-4 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700">
+                @for (cust of crmCustomers(); track cust.id) {
+                  <tr class="transition-colors {{ cust.is_active === false ? 'bg-slate-50/60 opacity-80' : 'hover:bg-slate-50/70' }}">
+                    
+                    <!-- Nombre y Avatar -->
+                    <td class="p-3.5 pl-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full {{ cust.is_active === false ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200/60' }} font-bold text-xs flex items-center justify-center shrink-0 border">
+                          {{ cust.name.substring(0, 1).toUpperCase() }}
+                        </div>
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="font-bold text-slate-900 block truncate leading-tight">{{ cust.name }}</span>
+                            @if (cust.nickname) {
+                              <span class="text-[10px] font-semibold text-teal-700 bg-teal-50 border border-teal-200/70 px-1.5 py-0.2 rounded-md shrink-0" title="Apodo para notificaciones">"{{ cust.nickname }}"</span>
+                            }
+                            @if (cust.is_active === false) {
+                              <span class="px-1.5 py-0.2 rounded-md text-[9px] font-bold bg-slate-200 text-slate-600">Inactiva</span>
+                            }
+                          </div>
+                          @if (cust.notes) {
+                            <span class="text-[10px] text-slate-400 block truncate max-w-[200px]" [title]="cust.notes">{{ cust.notes }}</span>
+                          }
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Teléfono / WhatsApp -->
+                    <td class="p-3.5">
+                      <div class="flex items-center gap-1.5 font-semibold text-slate-800">
+                        <span>{{ cust.display_phone }}</span>
+                      </div>
+                    </td>
+
+                    <!-- Correo -->
+                    <td class="p-3.5">
+                      <span class="text-slate-600 block truncate max-w-[200px]">{{ cust.email || '—' }}</span>
+                    </td>
+
+                    <!-- Badge de Fidelidad -->
+                    <td class="p-3.5">
+                      @if (cust.loyalty_badge) {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-block {{ cust.loyalty_badge.bg_class }}">
+                          {{ cust.loyalty_badge.label }}
+                        </span>
+                      } @else {
+                        <span class="text-[11px] text-slate-400 font-medium">Estándar</span>
+                      }
+                    </td>
+
+                    <!-- Acciones (Solo Iconos con Tooltip) -->
+                    <td class="p-3.5 pr-4 text-right whitespace-nowrap">
+                      <div class="inline-flex items-center justify-end gap-1.5">
+                        
+                        <!-- 1. Ver Historial de Citas -->
+                        <button 
+                          type="button"
+                          (click)="openCustomerAppointmentsModal(cust)" 
+                          title="Ver citas agendadas"
+                          class="w-8 h-8 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200/80 flex items-center justify-center transition-all hover:scale-105 cursor-pointer shadow-2xs"
+                        >
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </button>
+
+                        <!-- 2. WhatsApp -->
+                        <button 
+                          type="button"
+                          (click)="openWhatsAppChat(cust.phone, cust.name)" 
+                          title="Contactar por WhatsApp"
+                          class="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200/80 flex items-center justify-center transition-all hover:scale-105 cursor-pointer shadow-2xs"
+                        >
+                          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.173.086.275.071.376-.043.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824zm-3.423-10.416c-4.402 0-7.985 3.583-7.986 7.986 0 1.41.368 2.784 1.066 3.992l-1.134 4.14 4.238-1.112a7.935 7.935 0 003.816.97h.003c4.401 0 7.986-3.584 7.986-7.988 0-2.135-.831-4.14-2.34-5.649-1.51-1.509-3.515-2.34-5.649-2.339z"/>
+                          </svg>
+                        </button>
+                        
+                        <!-- 3. Editar Datos -->
+                        <button 
+                          type="button"
+                          (click)="openEditCustomerModal(cust)" 
+                          title="Editar datos de clienta"
+                          class="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 flex items-center justify-center transition-all hover:scale-105 cursor-pointer shadow-2xs"
+                        >
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+
+                        <!-- 4. Eliminar / Desactivar / Reactivar -->
+                        @if (cust.is_active !== false) {
+                          <button 
+                            type="button"
+                            (click)="openDeleteCustomerConfirm(cust)" 
+                            [title]="(cust.has_appointments || (cust.completed_appointments_count > 0)) ? 'Desactivar clienta (tiene citas asociadas)' : 'Eliminar clienta permanentemente'"
+                            class="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 cursor-pointer shadow-2xs border {{ (cust.has_appointments || (cust.completed_appointments_count > 0)) ? 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200/80' : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200/80' }}"
+                          >
+                            @if (cust.has_appointments || (cust.completed_appointments_count > 0)) {
+                              <!-- Icono Desactivar / Pausa -->
+                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                              </svg>
+                            } @else {
+                              <!-- Icono Eliminar / Papelera -->
+                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            }
+                          </button>
+                        } @else {
+                          <!-- Icono Reactivar -->
+                          <button 
+                            type="button"
+                            (click)="toggleCustomerActive(cust)" 
+                            title="Reactivar clienta en el sistema"
+                            class="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 flex items-center justify-center transition-all hover:scale-105 cursor-pointer shadow-2xs"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                          </button>
+                        }
+
+                      </div>
+                    </td>
+
+                  </tr>
+                }
+
+                @if (crmCustomers().length === 0) {
+                  <tr>
+                    <td colspan="5" class="p-8 text-center text-slate-400">
+                      No se encontraron clientas con el criterio de búsqueda.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginación Backend de Clientas (10 registros por página) -->
+          @if (crmTotalPages() > 1 || crmTotalItems() > 0) {
+            <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
+              <span class="text-xs text-slate-500 font-medium">
+                Mostrando <strong class="text-slate-800">{{ crmTotalItems() === 0 ? 0 : (crmPage() - 1) * crmPerPage + 1 }}</strong> - <strong class="text-slate-800">{{ getMin(crmPage() * crmPerPage, crmTotalItems()) }}</strong> de <strong class="text-slate-800">{{ crmTotalItems() }}</strong> clientas
+              </span>
+
+              <div class="flex items-center gap-1.5">
+                <button 
+                  type="button" 
+                  (click)="setCrmPage(crmPage() - 1)" 
+                  [disabled]="crmPage() <= 1"
+                  class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  &larr; Anterior
+                </button>
+
+                @for (p of getPageNumbers(crmPage(), crmTotalPages()); track p) {
+                  <button 
+                    type="button" 
+                    (click)="setCrmPage(p)"
+                    [ngClass]="crmPage() === p ? 'bg-[#00C975] text-white font-bold shadow-xs' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold'"
+                    class="w-8 h-8 rounded-xl text-xs flex items-center justify-center cursor-pointer transition-all"
+                  >
+                    {{ p }}
+                  </button>
+                }
+
+                <button 
+                  type="button" 
+                  (click)="setCrmPage(crmPage() + 1)" 
+                  [disabled]="crmPage() >= crmTotalPages() || crmTotalPages() === 0"
+                  class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  Siguiente &rarr;
+                </button>
+              </div>
+            </div>
+          }
+
+        </div>
+
+  @if (showCustomerModal()) {
+    <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3">
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-base text-slate-900">{{ editingCustomer() ? 'Editar Datos de Clienta' : 'Registrar Nueva Clienta' }}</h3>
+          <button (click)="closeCustomerModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        @if (customerFormError()) {
+          <div class="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
+            <svg class="w-4 h-4 shrink-0 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>{{ customerFormError() }}</span>
+          </div>
+        }
+
+        <!-- Resumen de Fidelidad Actual (al editar) -->
+        @if (editingCustomer()) {
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Fidelidad y Nivel Actual</span>
+              <div class="flex items-center gap-2 mt-1">
+                @if (editingCustomer()?.loyalty_badge) {
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ editingCustomer()?.loyalty_badge?.bg_class }}">
+                    {{ editingCustomer()?.loyalty_badge?.label }}
+                  </span>
+                }
+                <span class="text-xs font-semibold text-slate-700">
+                  {{ editingCustomer()?.completed_appointments_count || 0 }} citas registradas
+                </span>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="text-[10px] text-slate-400 block">Total Invertido</span>
+              <span class="text-xs font-bold text-slate-900">{{ formatCurrency(editingCustomer()?.total_spent || 0) }}</span>
+            </div>
+          </div>
+        }
+
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-slate-700">Nombre Completo *</label>
+          <input type="text" [(ngModel)]="customerForm.name" placeholder="Ej: Marcela Gómez" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C975]" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-slate-700">Apodo / Nombre de Confianza (Opcional)</label>
+          <input type="text" [(ngModel)]="customerForm.nickname" placeholder="Ej: Marce, Caro, Pau..." class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C975]" />
+          <span class="text-[10px] text-slate-400 mt-0.5 block">Se utilizará para personalizar los saludos en las notificaciones y mensajes de WhatsApp.</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-slate-700">Celular WhatsApp *</label>
+          <input type="tel" [(ngModel)]="customerForm.phone" placeholder="3101234567" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C975]" />
+          <span class="text-[10px] text-slate-400 mt-0.5 block">Ingresa los 10 dígitos o formato internacional (+57).</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-slate-700">Correo Electrónico (Opcional)</label>
+          <input type="email" [(ngModel)]="customerForm.email" placeholder="clienta@correo.com" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C975]" />
+        </div>
+
+        <!-- Toggle Clienta Antigua / Histórica (is_legacy) -->
+        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-2.5">
+          <input 
+            type="checkbox" 
+            id="custLegacyCheck" 
+            [(ngModel)]="customerForm.is_legacy" 
+            class="mt-0.5 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer" 
+          />
+          <div class="flex-1 text-xs">
+            <label for="custLegacyCheck" class="font-bold text-slate-800 cursor-pointer block">Clienta Antigua / Habitual (Histórica)</label>
+            <span class="text-[11px] text-slate-500 block leading-relaxed mt-0.5">
+              Identifica a clientas habituales para preservar su nivel de fidelidad sin marcarla como clienta nueva.
+            </span>
+          </div>
+        </div>
+
+        <!-- Toggle Estado Activa / Inactiva (al editar) -->
+        @if (editingCustomer()) {
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-2.5">
+            <input 
+              type="checkbox" 
+              id="custActiveCheck" 
+              [(ngModel)]="customerForm.is_active" 
+              class="mt-0.5 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer" 
+            />
+            <div class="flex-1 text-xs">
+              <label for="custActiveCheck" class="font-bold text-slate-800 cursor-pointer block">Clienta Activa en el Sistema</label>
+              <span class="text-[11px] text-slate-500 block leading-relaxed mt-0.5">
+                Desmarca esta opción si deseas desactivar a la clienta sin eliminar su historial de citas pasadas.
+              </span>
+            </div>
+          </div>
+        }
+
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-slate-700">Notas / Preferencias</label>
+          <textarea rows="2" [(ngModel)]="customerForm.notes" placeholder="Diseño favorito, alergias, notas de servicio..." class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C975]"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button (click)="closeCustomerModal()" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer">Cancelar</button>
+          <button 
+            (click)="saveCustomer()" 
+            [disabled]="isSavingCustomer()" 
+            class="px-4 py-2 rounded-xl bg-[#00C975] hover:bg-[#00b067] disabled:opacity-50 text-white text-xs font-bold shadow-md cursor-pointer flex items-center gap-2"
+          >
+            @if (isSavingCustomer()) {
+              <span class="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            }
+            Guardar Clienta
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CONFIRMAR ELIMINAR / DESACTIVAR CLIENTA                            -->
+  <!-- ========================================================================= -->
+
+  @if (showDeleteCustomerModal()) {
+    <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3">
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md p-6 flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 {{ (customerToDelete()?.has_appointments || (customerToDelete()?.completed_appointments_count || 0) > 0) ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600' }}">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900">
+              {{ (customerToDelete()?.has_appointments || (customerToDelete()?.completed_appointments_count || 0) > 0) ? 'Desactivar Ficha de Clienta' : 'Eliminar Clienta del CRM' }}
+            </h3>
+            <span class="text-xs text-slate-500 font-medium">{{ customerToDelete()?.name }} ({{ customerToDelete()?.display_phone }})</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed">
+          @if (customerToDelete()?.has_appointments || (customerToDelete()?.completed_appointments_count || 0) > 0) {
+            <p>
+              Esta clienta cuenta con <strong>{{ customerToDelete()?.completed_appointments_count || customerToDelete()?.appointments_count || 'varias' }} cita(s)</strong> registradas en el historial.
+            </p>
+            <p class="mt-2 text-slate-500">
+              Para proteger los registros contables y el historial de la agenda, la clienta <strong>se desactivará</strong> en lugar de borrarse permanentemente. Podrás reactivarla en cualquier momento con un solo clic.
+            </p>
+          } @else {
+            <p>
+              ¿Estás segura de eliminar permanentemente la ficha de <strong>{{ customerToDelete()?.name }}</strong>?
+            </p>
+            <p class="mt-2 text-rose-600 font-medium">
+              Esta clienta no tiene citas asociadas. Esta acción no se puede deshacer.
+            </p>
+          }
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button 
+            type="button" 
+            (click)="closeDeleteCustomerConfirm()" 
+            class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer"
+          >
+            Cancelar
+          </button>
+
+          <button 
+            type="button" 
+            (click)="confirmDeleteOrDeactivateCustomer()" 
+            [disabled]="isDeletingCustomer()"
+            class="px-4 py-2 rounded-xl text-white text-xs font-bold shadow-md cursor-pointer flex items-center gap-2 {{ (customerToDelete()?.has_appointments || (customerToDelete()?.completed_appointments_count || 0) > 0) ? 'bg-amber-600 hover:bg-amber-700' : 'bg-rose-600 hover:bg-rose-700' }}"
+          >
+            @if (isDeletingCustomer()) {
+              <span class="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            }
+            {{ (customerToDelete()?.has_appointments || (customerToDelete()?.completed_appointments_count || 0) > 0) ? 'Confirmar Desactivación' : 'Eliminar Permanentemente' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CREAR BLOQUEO / PAUSA                                              -->
+  <!-- ========================================================================= -->
+
+  @if (showCustomerAppointmentsModal()) {
+    <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
+      <div class="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-200 shadow-2xl w-full max-w-2xl my-auto max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Header del Modal -->
+        <div class="p-5 sm:p-6 pb-4 border-b border-slate-100 flex items-start justify-between gap-3 bg-slate-50/70">
+          <div class="flex items-center gap-3.5 min-w-0">
+            <div class="w-11 h-11 rounded-2xl bg-emerald-100 text-emerald-800 font-extrabold text-base flex items-center justify-center shrink-0 border border-emerald-200">
+              {{ selectedCustomerForAppointments()?.name?.substring(0, 1)?.toUpperCase() || 'C' }}
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-bold text-base text-slate-900 leading-tight truncate">
+                  {{ selectedCustomerForAppointments()?.name }}
+                </h3>
+                @if (selectedCustomerForAppointments()?.loyalty_badge) {
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border {{ selectedCustomerForAppointments()?.loyalty_badge?.bg_class }}">
+                    {{ selectedCustomerForAppointments()?.loyalty_badge?.label }}
+                  </span>
+                }
+              </div>
+              <div class="flex items-center gap-2.5 text-xs text-slate-500 mt-1 flex-wrap">
+                <span class="flex items-center gap-1 font-medium text-slate-700">
+                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  {{ selectedCustomerForAppointments()?.display_phone }}
+                </span>
+                @if (selectedCustomerForAppointments()?.email) {
+                  <span>•</span>
+                  <span class="truncate max-w-[180px]">{{ selectedCustomerForAppointments()?.email }}</span>
+                }
+                <span>•</span>
+                <span class="font-semibold text-slate-800">
+                  Total: {{ formatCurrency(selectedCustomerForAppointments()?.total_spent || 0) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button 
+            type="button"
+            (click)="closeCustomerAppointmentsModal()" 
+            class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer shrink-0"
+            title="Cerrar modal"
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido / Listado de Citas -->
+        <div class="p-5 sm:p-6 overflow-y-auto custom-scrollbar flex flex-col gap-3.5">
+          
+          <!-- Loading State -->
+          @if (isLoadingCustomerAppointments()) {
+            <div class="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
+              <svg class="w-8 h-8 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <span class="text-xs font-semibold text-slate-600">Consultando historial de citas...</span>
+            </div>
+          } @else {
+            
+            <!-- Resumen Rápido -->
+            <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+              <span class="font-semibold text-slate-600">
+                Historial de Citas Registradas:
+              </span>
+              <span class="font-bold px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-800">
+                {{ customerAppointmentsList().length }} {{ customerAppointmentsList().length === 1 ? 'cita' : 'citas' }}
+              </span>
+            </div>
+
+            <!-- Listado de Citas -->
+            @if (customerAppointmentsList().length === 0) {
+              <div class="py-10 px-4 text-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 flex flex-col items-center gap-2">
+                <svg class="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p class="text-xs font-bold text-slate-700">No hay citas registradas</p>
+                <p class="text-[11px] text-slate-400 max-w-xs">
+                  Esta clienta aún no tiene citas asociadas en el sistema.
+                </p>
+              </div>
+            } @else {
+              <div class="flex flex-col gap-3">
+                @for (apt of customerAppointmentsList(); track apt.id) {
+                  <div class="p-4 rounded-2xl border border-slate-200 hover:border-slate-300 bg-white shadow-2xs hover:shadow-xs transition-all flex flex-col gap-2.5">
+                    
+                    <!-- Fila Superior: Servicio + Estado -->
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                      <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded-md bg-slate-100 text-[10px] font-bold text-slate-600 tracking-wider">
+                          #{{ apt.appointment_number }}
+                        </span>
+                        <h4 class="font-bold text-sm text-slate-900">
+                          {{ apt.service_name }}
+                        </h4>
+                      </div>
+                      <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ getStatusBadgeClass(apt.status) }}">
+                        {{ apt.status_label || getStatusLabel(apt.status) }}
+                      </span>
+                    </div>
+
+                    <!-- Fila Intermedia: Fecha, Horario y Valores Financieros -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100 text-slate-600">
+                      <div class="flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="font-semibold text-slate-800">{{ apt.date_formatted }}</span>
+                        <span class="text-slate-400">•</span>
+                        <span>{{ apt.time_range }}</span>
+                      </div>
+
+                      <div class="flex items-center sm:justify-end gap-3 font-semibold">
+                        <span>Total: <strong class="text-slate-900">{{ formatCurrency(apt.total_amount) }}</strong></span>
+                        @if (apt.deposit_paid > 0) {
+                          <span class="text-emerald-700">Abono: {{ formatCurrency(apt.deposit_paid) }}</span>
+                        }
+                        @if (apt.balance_due > 0) {
+                          <span class="text-amber-700">Saldo: {{ formatCurrency(apt.balance_due) }}</span>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Motivo de cancelación si aplica -->
+                    @if (apt.status === 'CANCELLED' && apt.cancellation_reason) {
+                      <div class="p-2 rounded-xl bg-rose-50 border border-rose-100 text-[11px] text-rose-800 flex items-start gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span><strong>Motivo de cancelación:</strong> {{ apt.cancellation_reason }}</span>
+                      </div>
+                    }
+
+                    <!-- Notas adicionales si existen -->
+                    @if (apt.admin_notes || apt.client_notes) {
+                      <div class="text-[11px] text-slate-500 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                        @if (apt.client_notes) {
+                          <p class="truncate"><strong class="text-slate-700">Nota de clienta:</strong> {{ apt.client_notes }}</p>
+                        }
+                        @if (apt.admin_notes) {
+                          <p class="truncate"><strong class="text-slate-700">Nota interna:</strong> {{ apt.admin_notes }}</p>
+                        }
+                      </div>
+                    }
+
+                  </div>
+                }
+              </div>
+            }
+
+          }
+
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="p-4 sm:px-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
+          @if (selectedCustomerForAppointments()) {
+            <button 
+              type="button"
+              (click)="openWhatsAppChat(selectedCustomerForAppointments()!.phone, selectedCustomerForAppointments()!.name)" 
+              class="px-3.5 py-1.5 rounded-xl bg-green-500 hover:bg-green-600 text-white text-xs font-bold transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+            >
+              <span>Abrir WhatsApp</span>
+            </button>
+          } @else {
+            <div></div>
+          }
+
+          <button 
+            type="button"
+            (click)="closeCustomerAppointmentsModal()" 
+            class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            Cerrar
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: VISTA PREVIA SIMULADA DE PLANTILLA WHATSAPP                        -->
+  <!-- ========================================================================= -->

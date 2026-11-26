@@ -214,6 +214,108 @@ class WhatsAppAdminController extends Controller
     }
 
     /**
+     * Consulta el catálogo de plantillas oficiales con su estado en vivo en Meta.
+     */
+    public function templatesCatalog(Request $request): JsonResponse
+    {
+        $tenant = $this->getTenant($request);
+        $service = app(WhatsAppNotificationService::class);
+        $res = $service->getOfficialTemplatesCatalog($tenant);
+
+        return response()->json($res);
+    }
+
+    /**
+     * Crea una o todas las plantillas oficiales en Meta Cloud API en 1 solo clic.
+     */
+    public function createTemplate(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'template_key' => 'nullable|string|max:100',
+            'create_all' => 'nullable|boolean',
+        ]);
+
+        $tenant = $this->getTenant($request);
+        $service = app(WhatsAppNotificationService::class);
+
+        if (! empty($validated['create_all'])) {
+            $result = $service->createAllOfficialTemplates($tenant);
+            $catalog = $service->getOfficialTemplatesCatalog($tenant);
+
+            return response()->json([
+                'success' => $result['success'],
+                'message' => $result['message'],
+                'data' => $result,
+                'catalog' => $catalog['templates'] ?? [],
+            ], $result['success'] ? 200 : 207);
+        }
+
+        $templateKey = $validated['template_key'] ?? '';
+        if (empty($templateKey)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Especifica el identificador de la plantilla (template_key) o activa create_all.',
+            ], 422);
+        }
+
+        $result = $service->createOfficialTemplate($templateKey, $tenant);
+        $catalog = $service->getOfficialTemplatesCatalog($tenant);
+
+        return response()->json([
+            'success' => $result['success'] ?? false,
+            'message' => $result['message'] ?? 'Plantilla procesada en Meta.',
+            'data' => $result,
+            'catalog' => $catalog['templates'] ?? [],
+        ], ($result['success'] ?? false) ? 200 : 422);
+    }
+
+    /**
+     * Actualiza y personaliza el cuerpo y variables de una plantilla oficial para el Tenant.
+     */
+    public function updateTemplate(Request $request, string $key): JsonResponse
+    {
+        $validated = $request->validate([
+            'body' => 'required|string|max:1024',
+            'samples' => 'nullable|array',
+            'samples.*' => 'nullable|string|max:100',
+            'variable_keys' => 'nullable|array',
+            'sync_to_meta' => 'nullable|boolean',
+        ]);
+
+        $tenant = $this->getTenant($request);
+        $service = app(WhatsAppNotificationService::class);
+
+        $result = $service->saveTenantCustomTemplate($key, $validated, $tenant);
+        $catalog = $service->getOfficialTemplatesCatalog($tenant);
+
+        return response()->json([
+            'success' => $result['success'] ?? false,
+            'message' => $result['message'] ?? 'Plantilla actualizada correctamente.',
+            'data' => $result,
+            'catalog' => $catalog['templates'] ?? [],
+        ], ($result['success'] ?? false) ? 200 : 422);
+    }
+
+    /**
+     * Restablece una plantilla oficial a su versión por defecto del sistema.
+     */
+    public function resetTemplate(Request $request, string $key): JsonResponse
+    {
+        $tenant = $this->getTenant($request);
+        $service = app(WhatsAppNotificationService::class);
+
+        $result = $service->resetTenantCustomTemplate($key, $tenant);
+        $catalog = $service->getOfficialTemplatesCatalog($tenant);
+
+        return response()->json([
+            'success' => $result['success'] ?? false,
+            'message' => $result['message'] ?? 'Plantilla restablecida a la oficial.',
+            'data' => $result,
+            'catalog' => $catalog['templates'] ?? [],
+        ]);
+    }
+
+    /**
      * Enviar mensaje de prueba para verificar conectividad con WhatsApp.
      * Soporta modo plantilla (Meta) y texto libre (24h / Evolution / Log).
      */

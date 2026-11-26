@@ -14,7 +14,7 @@ class ServiceController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Service::query()->where('is_active', true)->orderBy('sort_order');
+        $query = Service::query()->where('is_active', true)->orderBy('is_favorite', 'desc')->orderBy('sort_order')->orderBy('name');
 
         if ($request->has('category')) {
             $query->where('category', $request->input('category'));

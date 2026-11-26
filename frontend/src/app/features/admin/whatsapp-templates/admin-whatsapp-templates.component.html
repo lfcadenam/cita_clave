@@ -1,0 +1,687 @@
+        <div class="flex flex-col gap-6">
+
+          <!-- 1. BARRA SUPERIOR DE CABECERA Y ACCIONES RÁPIDAS -->
+          <div class="bg-white rounded-[28px] border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-teal-50 text-teal-800 border border-teal-200">
+                  <span class="w-2 h-2 rounded-full bg-teal-600"></span>
+                  Meta WhatsApp Cloud API
+                </span>
+                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                  Idioma es_CO • Categoría Utility
+                </span>
+              </div>
+              <h2 class="text-xl font-black text-slate-900 tracking-tight m-0">
+                Plantillas Oficiales de WhatsApp
+              </h2>
+              <p class="text-xs text-slate-500 font-medium mt-1 mb-0 max-w-2xl leading-relaxed">
+                Catálogo de plantillas oficiales para confirmaciones, cancelaciones, abonos y recordatorios. Previsualiza cómo las verá la clienta y regístralas en Meta en 1 clic.
+              </p>
+            </div>
+
+            <!-- Botones Globales de Sincronización y Creación Masiva -->
+            <div class="flex items-center flex-wrap gap-2.5 shrink-0">
+              <button 
+                type="button" 
+                (click)="loadTemplatesCatalog()" 
+                [disabled]="isLoadingTemplatesCatalog()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 hover:bg-slate-100 shadow-2xs cursor-pointer transition-all disabled:opacity-50"
+              >
+                @if (isLoadingTemplatesCatalog()) {
+                  <svg class="w-4 h-4 animate-spin text-teal-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                  </svg>
+                  <span>Sincronizando...</span>
+                } @else {
+                  <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Sincronizar Estados</span>
+                }
+              </button>
+
+              <button 
+                type="button" 
+                (click)="createAllMetaTemplates()" 
+                [disabled]="isCreatingMetaTemplate() !== null"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold text-white bg-[#0d9488] hover:bg-[#0f766e] shadow-sm shadow-teal-700/20 cursor-pointer transition-all disabled:opacity-50"
+              >
+                @if (isCreatingMetaTemplate() === 'ALL') {
+                  <svg class="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                  </svg>
+                  <span>Creando Todas en Meta...</span>
+                } @else {
+                  <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Crear Todas en Meta (1 Clic)</span>
+                }
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. TARJETAS KPI DE RESUMEN DE PLANTILLAS -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Total Plantillas -->
+            <div class="bg-white rounded-[28px] border border-slate-200/80 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex items-center justify-between group">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Plantillas</span>
+                <div class="text-3xl font-black text-slate-900 tracking-tight mt-1">{{ templatesSummary().total }}</div>
+                <span class="text-[11px] font-medium text-slate-500 mt-0.5 block">Catálogo oficial</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 border border-slate-200/60 group-hover:scale-105 transition-transform">
+                <svg class="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Aprobadas en Meta -->
+            <div class="bg-white rounded-[28px] border border-emerald-200/90 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex items-center justify-between group bg-gradient-to-br from-white to-emerald-50/30">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Aprobadas Meta</span>
+                <div class="text-3xl font-black text-emerald-800 tracking-tight mt-1">{{ templatesSummary().approved }}</div>
+                <span class="text-[11px] font-semibold text-emerald-600 mt-0.5 block">Listas para envío</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/80 group-hover:scale-105 transition-transform">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- En Revisión -->
+            <div class="bg-white rounded-[28px] border border-amber-200/90 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex items-center justify-between group bg-gradient-to-br from-white to-amber-50/30">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-amber-700">En Revisión</span>
+                <div class="text-3xl font-black text-amber-800 tracking-tight mt-1">{{ templatesSummary().pending }}</div>
+                <span class="text-[11px] font-semibold text-amber-600 mt-0.5 block">Auditoría de Meta</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200/80 group-hover:scale-105 transition-transform">
+                <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Pendientes de Registro -->
+            <div class="bg-white rounded-[28px] border border-slate-200/80 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex items-center justify-between group">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Sin Registrar</span>
+                <div class="text-3xl font-black text-slate-700 tracking-tight mt-1">{{ templatesSummary().notCreated }}</div>
+                <span class="text-[11px] font-semibold text-slate-400 mt-0.5 block">Pendientes de 1-clic</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 border border-slate-200/60 group-hover:scale-105 transition-transform">
+                <svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. FEEDBACK Y MENSAJES DE ACCIÓN -->
+          @if (templateActionFeedback()) {
+            <div 
+              [ngClass]="templateActionFeedback()!.success ? 'bg-[#f0fdf4] border-[#bbf7d0] text-[#14532d]' : 'bg-[#fef2f2] border-[#fecaca] text-[#7f1d1d]'"
+              class="rounded-2xl border p-4 text-xs flex items-center justify-between gap-3 animate-in fade-in duration-200 shadow-2xs"
+            >
+              <div class="flex items-center gap-2.5">
+                @if (templateActionFeedback()!.success) {
+                  <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                } @else {
+                  <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                }
+                <span class="font-semibold">{{ templateActionFeedback()!.message }}</span>
+              </div>
+              <button 
+                type="button" 
+                (click)="templateActionFeedback.set(null)"
+                class="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+          }
+
+          <!-- 4. BARRA DE FILTROS Y PESTAÑAS -->
+          <div class="flex items-center justify-between flex-wrap gap-3 pb-1">
+            <div class="inline-flex p-1 bg-slate-100 rounded-full border border-slate-200 shadow-2xs">
+              <button 
+                type="button" 
+                (click)="templatesFilter.set('ALL')"
+                [ngClass]="templatesFilter() === 'ALL' ? 'bg-white text-slate-900 font-black shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold'"
+                class="px-4 py-1.5 rounded-full text-xs transition-all cursor-pointer"
+              >
+                Todas ({{ templatesSummary().total }})
+              </button>
+              <button 
+                type="button" 
+                (click)="templatesFilter.set('APPROVED')"
+                [ngClass]="templatesFilter() === 'APPROVED' ? 'bg-white text-emerald-800 font-black shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold'"
+                class="px-4 py-1.5 rounded-full text-xs transition-all cursor-pointer"
+              >
+                Aprobadas en Meta ({{ templatesSummary().approved }})
+              </button>
+              <button 
+                type="button" 
+                (click)="templatesFilter.set('PENDING')"
+                [ngClass]="templatesFilter() === 'PENDING' ? 'bg-white text-slate-900 font-black shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold'"
+                class="px-4 py-1.5 rounded-full text-xs transition-all cursor-pointer"
+              >
+                Pendientes de Registro ({{ templatesSummary().notCreated + templatesSummary().pending }})
+              </button>
+            </div>
+          </div>
+
+          <!-- 5. GRID DE TARJETAS DE PLANTILLAS -->
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+            @for (template of filteredOfficialTemplates(); track template.key) {
+              <div class="bg-white border border-slate-200/80 rounded-[32px] p-6 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_36px_-10px_rgba(15,23,42,0.1)] hover:border-teal-500/40 transition-all duration-300 flex flex-col justify-between gap-5 relative group">
+                
+                <div class="flex flex-col gap-4">
+                  <!-- Fila Superior: Icono de Categoría & Badge de Estado Meta -->
+                  <div class="flex items-center justify-between gap-3">
+                    
+                    <!-- Icono Temático por tipo de plantilla -->
+                    @if (template.key === 'confirmacion_cita') {
+                      <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l2 2 4-4" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'cita_confirmada_abono') {
+                      <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'cita_cancelada') {
+                      <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l4 4m0-4l-4 4" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'cita_reagendada') {
+                      <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'recordatorio_cita_24h') {
+                      <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'novedad_comprobante_cita') {
+                      <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 border border-orange-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                    } @else if (template.key === 'cita_recibida') {
+                      <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                      </div>
+                    } @else {
+                      <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                      </div>
+                    }
+
+                    <!-- Capsule de Estado Meta -->
+                    @if (template.meta_status === 'APPROVED') {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-black tracking-wide bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        APROBADA
+                      </span>
+                    } @else if (template.meta_status === 'PENDING') {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-black tracking-wide bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        EN REVISIÓN
+                      </span>
+                    } @else if (template.meta_status === 'REJECTED') {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-black tracking-wide bg-rose-50 text-rose-800 border border-rose-200 shadow-2xs shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                        RECHAZADA
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-bold tracking-wide bg-slate-100 text-slate-600 border border-slate-200/90 shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                        NO CREADA
+                      </span>
+                    }
+                  </div>
+
+                  <!-- Título y Llave Técnica -->
+                  <div>
+                    <div class="flex items-center justify-between gap-2">
+                      <h4 class="text-[15px] font-black text-slate-900 m-0 leading-snug group-hover:text-teal-950 transition-colors">
+                        {{ template.display_name }}
+                      </h4>
+                      @if (template.is_customized) {
+                        <span class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-200/90 px-2 py-0.5 rounded-full shrink-0">
+                          <span class="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+                          Personalizada
+                        </span>
+                      }
+                    </div>
+                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <code class="text-[11px] font-mono font-semibold text-slate-600 bg-slate-100/90 px-2 py-0.5 rounded-md border border-slate-200/70 inline-block">
+                        {{ template.name }}
+                      </code>
+                      <span class="text-[10px] font-extrabold text-slate-400 tracking-wider uppercase bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/50">
+                        {{ template.category }} • {{ template.language }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Descripción -->
+                  <p class="text-xs text-slate-500 leading-relaxed m-0 font-normal min-h-[34px]">
+                    {{ template.description }}
+                  </p>
+
+                  <!-- Vista Rápida del Mensaje (Mini Globo WhatsApp) -->
+                  <div class="bg-[#f8fafc] rounded-2xl p-3.5 border border-slate-200/70 flex flex-col gap-2 relative">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        Vista rápida del mensaje
+                      </span>
+                      <span class="text-[10px] font-bold text-teal-800 bg-teal-50 border border-teal-200/80 px-2 py-0.5 rounded-full">
+                        {{ template.samples.length }} variables
+                      </span>
+                    </div>
+                    <p class="text-xs text-slate-700 italic leading-relaxed m-0 line-clamp-2">
+                      "{{ template.preview_text }}"
+                    </p>
+                  </div>
+
+                  <!-- Detalle de Disparo Automático -->
+                  <div class="text-[11.5px] text-slate-600 bg-slate-50/80 rounded-xl px-3 py-2 border border-slate-200/60 flex items-start gap-2 leading-relaxed">
+                    <svg class="w-4 h-4 text-teal-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <div class="truncate">
+                      <strong class="text-slate-800 font-bold">Disparo:</strong> {{ template.trigger }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex items-center gap-2 pt-3.5 border-t border-slate-100/90 mt-1">
+                  <!-- Botón Vista Previa -->
+                  <button 
+                    type="button" 
+                    (click)="openTemplatePreview(template)"
+                    class="py-2.5 px-3 rounded-full text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs hover:border-slate-300 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]"
+                    title="Previsualizar mensaje completo"
+                  >
+                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span>Ver</span>
+                  </button>
+
+                  <!-- Botón Editar Plantilla -->
+                  <button 
+                    type="button" 
+                    (click)="openTemplateEdit(template)"
+                    class="py-2.5 px-3 rounded-full text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs hover:border-slate-300 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]"
+                    title="Editar texto y variables de la plantilla"
+                  >
+                    <svg class="w-3.5 h-3.5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>Editar</span>
+                  </button>
+
+                  <!-- Botón Crear en Meta (1 Clic) -->
+                  @if (template.meta_status === 'APPROVED') {
+                    <div 
+                      class="flex-1 py-2.5 px-3 rounded-full text-xs font-black text-emerald-800 bg-emerald-50 border border-emerald-200/90 flex items-center justify-center gap-1.5 select-none shadow-2xs"
+                    >
+                      <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Lista en Meta</span>
+                    </div>
+                  } @else {
+                    <button 
+                      type="button" 
+                      (click)="createSingleMetaTemplate(template)"
+                      [disabled]="isCreatingMetaTemplate() !== null"
+                      class="flex-1 py-2.5 px-3 rounded-full text-xs font-black text-white bg-slate-900 hover:bg-[#00C975] hover:text-slate-950 shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 active:scale-[0.98]"
+                    >
+                      @if (isCreatingMetaTemplate() === template.key) {
+                        <svg class="w-3.5 h-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                        <span>Creando...</span>
+                      } @else {
+                        <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Crear en Meta</span>
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+        </div>
+
+  @if (selectedTemplateForPreview()) {
+    <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-[32px] shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200/80 animate-in fade-in zoom-in-95 duration-150 flex flex-col">
+        
+        <!-- Encabezado del Modal -->
+        <div class="p-5 bg-slate-900 text-white flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center">
+              <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold m-0 text-white">
+                {{ selectedTemplateForPreview()!.display_name }}
+              </h3>
+              <p class="text-[11px] text-slate-300 font-mono m-0 mt-0.5">
+                {{ selectedTemplateForPreview()!.name }} ({{ selectedTemplateForPreview()!.language }})
+              </p>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
+            (click)="closeTemplatePreview()"
+            class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Cuerpo del Modal: Simulación Visual de Chat de WhatsApp -->
+        <div class="p-6 bg-[#efeae2] flex flex-col gap-4">
+          <!-- Burbuja de WhatsApp -->
+          <div class="flex justify-start">
+            <div class="bg-white rounded-2xl rounded-tl-xs p-4 shadow-sm border border-slate-200/60 max-w-[94%] relative">
+              <!-- Texto del Mensaje formateado -->
+              <div class="text-[12.5px] text-slate-800 leading-relaxed whitespace-pre-wrap font-sans">
+                {{ selectedTemplateForPreview()!.preview_text }}
+              </div>
+
+              <!-- Metadatos de la Burbuja (Hora y doble check azul) -->
+              <div class="flex items-center justify-end gap-1 mt-2 text-[10px] text-slate-400 font-medium">
+                <span>14:35</span>
+                <svg class="w-3.5 h-3.5 text-teal-600" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18 7l-8.5 8.5-4-4-1.5 1.5 5.5 5.5 10-10z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desglose de Parámetros de Muestra -->
+        <div class="p-5 bg-white border-t border-slate-100 flex flex-col gap-3">
+          <span class="text-[11px] font-black uppercase tracking-wider text-slate-700">
+            Variables de muestra configuradas en Meta:
+          </span>
+          <div class="flex flex-col gap-1.5 text-xs max-h-48 overflow-y-auto">
+            @for (sample of selectedTemplateForPreview()!.samples; track $index) {
+              <div class="flex items-center gap-2 font-mono text-[11px] bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+                <span class="font-bold text-teal-800 shrink-0">{{ '{{' + ($index + 1) + '}}' }}:</span>
+                <span class="text-slate-800 truncate">{{ sample }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Pie del Modal con Acciones -->
+        <div class="p-5 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between gap-2.5">
+          <div class="text-[11px] text-slate-500 font-semibold">
+            Categoría: <strong class="text-slate-700">{{ selectedTemplateForPreview()!.category }}</strong>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button 
+              type="button" 
+              (click)="closeTemplatePreview()"
+              class="px-5 py-2.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-200 border border-slate-300 transition-all cursor-pointer"
+            >
+              Cerrar
+            </button>
+
+            @if (selectedTemplateForPreview()!.meta_status !== 'APPROVED') {
+              <button 
+                type="button" 
+                (click)="createSingleMetaTemplate(selectedTemplateForPreview()!); closeTemplatePreview()"
+                [disabled]="isCreatingMetaTemplate() !== null"
+                class="px-5 py-2.5 rounded-full text-xs font-bold text-white bg-[#0d9488] hover:bg-[#0f766e] shadow-md shadow-teal-700/20 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Registrar en Meta (1 Clic)</span>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: EDITOR DE PLANTILLA WHATSAPP CON VARIABLE RESOLVER                 -->
+  <!-- ========================================================================= -->
+  @if (selectedTemplateForEdit()) {
+    <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div class="bg-white rounded-[32px] shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200/80 animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92vh]">
+        
+        <!-- Encabezado del Modal -->
+        <div class="p-5 bg-slate-900 text-white flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center">
+              <svg class="w-5 h-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-extrabold m-0 text-white">
+                  Editar: {{ selectedTemplateForEdit()!.display_name }}
+                </h3>
+                @if (selectedTemplateForEdit()!.is_customized) {
+                  <span class="text-[9.5px] font-black uppercase tracking-wider text-purple-300 bg-purple-900/80 border border-purple-400/40 px-2 py-0.5 rounded-full">
+                    Personalizada
+                  </span>
+                }
+              </div>
+              <p class="text-[11px] text-slate-300 font-mono m-0 mt-0.5">
+                {{ selectedTemplateForEdit()!.name }} ({{ selectedTemplateForEdit()!.language }})
+              </p>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
+            (click)="closeTemplateEdit()"
+            class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Cuerpo del Modal (Scrollable) -->
+        <div class="p-5 sm:p-6 overflow-y-auto flex flex-col gap-5">
+
+          <!-- 1. Alerta de Validación en Vivo si hay error -->
+          @if (templateEditValidationError()) {
+            <div class="rounded-2xl border border-rose-200 bg-rose-50 text-rose-800 p-3.5 text-xs flex items-start gap-2.5 shadow-2xs">
+              <svg class="w-4 h-4 text-rose-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div class="leading-relaxed">
+                <strong class="font-bold">Regla de Validación Meta:</strong> {{ templateEditValidationError() }}
+              </div>
+            </div>
+          }
+
+          <!-- 2. Variables Dinámicas Disponibles (Chips con 1 Clic) -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                Variables Dinámicas Disponibles (Haz clic para insertar)
+              </span>
+              <span class="text-[10.5px] text-slate-400 font-medium">Se inyectan según la cita</span>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 p-3 bg-slate-50 rounded-2xl border border-slate-200/70">
+              @for (v of availableVariables(); track v.key) {
+                <button 
+                  type="button" 
+                  (click)="insertVariableIntoBody(v)"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-700 hover:bg-teal-50/30 shadow-2xs cursor-pointer transition-all active:scale-95 text-slate-700"
+                  title="Insertar {{ v.label }} (Ejemplo: {{ v.sample }})"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                  <span>+ {{ v.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- 3. Área de Edición del Texto -->
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label for="templateEditInput" class="text-[11px] font-black uppercase tracking-wider text-slate-700">
+                Cuerpo del Mensaje (Body)
+              </label>
+              <span class="text-[10.5px] font-mono text-slate-400">
+                {{ editTemplateBody().length }} / 1024 caracteres
+              </span>
+            </div>
+
+            <textarea 
+              id="templateEditInput"
+              rows="6"
+              [ngModel]="editTemplateBody()"
+              (ngModelChange)="editTemplateBody.set($event); validateEditTemplateBody()"
+              class="w-full text-xs font-mono p-3.5 rounded-2xl border border-slate-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none leading-relaxed text-slate-800 bg-white shadow-2xs resize-y"
+              placeholder="Escribe el texto de la plantilla. Recuerda no terminar en variable..."
+            ></textarea>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
+              <span>* Las variables se numeran automáticamente: {{ '{{1}}' }}, {{ '{{2}}' }}, etc.</span>
+              <span class="text-teal-600 font-semibold">Adaptación dinámica activa</span>
+            </div>
+          </div>
+
+          <!-- 4. Vista Previa en Vivo (Simulación Chat WhatsApp) -->
+          <div class="flex flex-col gap-2">
+            <span class="text-[11px] font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              Vista Previa en Vivo (Cómo lo leerá la clienta):
+            </span>
+
+            <div class="p-4 bg-[#efeae2] rounded-2xl border border-slate-200/80 flex justify-start">
+              <div class="bg-white rounded-2xl rounded-tl-xs p-3.5 shadow-sm border border-slate-200/60 max-w-[94%] relative">
+                <div class="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans">
+                  {{ editTemplateLivePreview() || 'Escribe el contenido del mensaje arriba...' }}
+                </div>
+                <div class="flex items-center justify-end gap-1 mt-2 text-[10px] text-slate-400 font-medium">
+                  <span>14:35</span>
+                  <svg class="w-3.5 h-3.5 text-teal-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18 7l-8.5 8.5-4-4-1.5 1.5 5.5 5.5 10-10z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Pie del Modal con Acciones -->
+        <div class="p-4 sm:p-5 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between gap-2.5 flex-wrap shrink-0">
+          <div>
+            @if (selectedTemplateForEdit()!.is_customized) {
+              <button 
+                type="button" 
+                (click)="resetTemplateToOriginal(selectedTemplateForEdit()!)"
+                [disabled]="isSavingTemplate()"
+                class="px-4 py-2 rounded-full text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all cursor-pointer disabled:opacity-50"
+              >
+                Restablecer Original
+              </button>
+            }
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button 
+              type="button" 
+              (click)="closeTemplateEdit()"
+              [disabled]="isSavingTemplate()"
+              class="px-4 py-2.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-200 border border-slate-300 transition-all cursor-pointer"
+            >
+              Cancelar
+            </button>
+
+            <!-- Guardar Localmente para el Salón -->
+            <button 
+              type="button" 
+              (click)="saveTemplateEdit(false)"
+              [disabled]="isSavingTemplate()"
+              class="px-5 py-2.5 rounded-full text-xs font-black text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+            >
+              @if (isSavingTemplate()) {
+                <span>Guardando...</span>
+              } @else {
+                <span>Guardar Personalización</span>
+              }
+            </button>
+
+            <!-- Guardar y Sincronizar en Meta -->
+            <button 
+              type="button" 
+              (click)="saveTemplateEdit(true)"
+              [disabled]="isSavingTemplate()"
+              class="px-5 py-2.5 rounded-full text-xs font-black text-white bg-[#0d9488] hover:bg-[#0f766e] shadow-sm shadow-teal-700/20 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Guardar y Enviar a Meta (1 Clic)</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }

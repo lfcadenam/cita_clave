@@ -1,0 +1,691 @@
+        <div class="flex flex-col gap-6">
+
+          <!-- 1. HEADER DE LA SECCIÓN -->
+          <div class="bg-white rounded-[28px] border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                  Marketing & CRM Inteligente
+                </span>
+                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                  WhatsApp Cloud API
+                </span>
+              </div>
+              <h2 class="text-xl font-black text-slate-900 tracking-tight m-0">
+                Listas de Difusión y Campañas Masivas
+              </h2>
+              <p class="text-xs text-slate-500 font-medium mt-1 mb-0 max-w-2xl leading-relaxed">
+                Envía promociones y recordatorios a tus clientas segmentadas. Los mensajes se personalizan automáticamente con el apodo o primer nombre de cada clienta.
+              </p>
+            </div>
+
+            <!-- Botones de Acción Superior -->
+            <div class="flex items-center flex-wrap gap-2.5 shrink-0">
+              <button 
+                type="button" 
+                (click)="loadBroadcastAudience()" 
+                [disabled]="isLoadingBroadcastAudience()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 hover:bg-slate-100 shadow-2xs cursor-pointer transition-all disabled:opacity-50"
+              >
+                @if (isLoadingBroadcastAudience()) {
+                  <svg class="w-4 h-4 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                  </svg>
+                  <span>Actualizando Audiencia...</span>
+                } @else {
+                  <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Refrescar Segmentos</span>
+                }
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. KPI CARDS: SEGMENTOS DE AUDIENCIA SELECCIONABLES -->
+          <div>
+            <div class="flex items-center justify-between mb-3 px-1">
+              <div>
+                <h3 class="text-sm font-black text-slate-900 tracking-tight">1. Selecciona el Segmento de Audiencia</h3>
+                <p class="text-[11px] text-slate-500">Filtra automáticamente a tus clientas según su comportamiento y recurrencia</p>
+              </div>
+              <span class="text-xs font-bold text-slate-400">Paso 1 de 3</span>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <!-- Todas las Clientas -->
+              <div 
+                (click)="onSelectBroadcastSegment('all')"
+                [ngClass]="broadcastSegment() === 'all' 
+                  ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500 shadow-md' 
+                  : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs'"
+                class="rounded-[28px] border p-5 transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Todas las Clientas</span>
+                  <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-hover:scale-105 transition-transform">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="text-3xl font-black text-slate-900 tracking-tight">
+                  {{ broadcastAudienceCounts().all }}
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100/80 text-[11px]">
+                  <span class="text-slate-500 font-medium">Base completa con teléfono</span>
+                  @if (broadcastSegment() === 'all') {
+                    <span class="font-bold text-emerald-700">✓ Activo</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Frecuentes / VIP -->
+              <div 
+                (click)="onSelectBroadcastSegment('recurring')"
+                [ngClass]="broadcastSegment() === 'recurring' 
+                  ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500 shadow-md' 
+                  : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs'"
+                class="rounded-[28px] border p-5 transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Clientas VIP</span>
+                  <div class="w-8 h-8 rounded-full bg-emerald-100/70 flex items-center justify-center text-emerald-700 group-hover:scale-105 transition-transform">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="text-3xl font-black text-emerald-800 tracking-tight">
+                  {{ broadcastAudienceCounts().recurring }}
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100/80 text-[11px]">
+                  <span class="text-slate-500 font-medium">≥ 2 citas en historial</span>
+                  @if (broadcastSegment() === 'recurring') {
+                    <span class="font-bold text-emerald-700">✓ Activo</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Inactivas (+30 días) -->
+              <div 
+                (click)="onSelectBroadcastSegment('inactive_30')"
+                [ngClass]="broadcastSegment() === 'inactive_30' 
+                  ? 'border-amber-500 bg-amber-50/40 ring-2 ring-amber-500 shadow-md' 
+                  : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs'"
+                class="rounded-[28px] border p-5 transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-amber-700">Inactivas (+30 Días)</span>
+                  <div class="w-8 h-8 rounded-full bg-amber-100/70 flex items-center justify-center text-amber-700 group-hover:scale-105 transition-transform">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="text-3xl font-black text-amber-800 tracking-tight">
+                  {{ broadcastAudienceCounts().inactive_30 }}
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100/80 text-[11px]">
+                  <span class="text-slate-500 font-medium">Reactivación de clientas</span>
+                  @if (broadcastSegment() === 'inactive_30') {
+                    <span class="font-bold text-amber-700">✓ Activo</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Nuevas Clientas -->
+              <div 
+                (click)="onSelectBroadcastSegment('new')"
+                [ngClass]="broadcastSegment() === 'new' 
+                  ? 'border-indigo-500 bg-indigo-50/40 ring-2 ring-indigo-500 shadow-md' 
+                  : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs'"
+                class="rounded-[28px] border p-5 transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-700">Nuevas Clientas</span>
+                  <div class="w-8 h-8 rounded-full bg-indigo-100/70 flex items-center justify-center text-indigo-700 group-hover:scale-105 transition-transform">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="text-3xl font-black text-indigo-800 tracking-tight">
+                  {{ broadcastAudienceCounts().new }}
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100/80 text-[11px]">
+                  <span class="text-slate-500 font-medium">Registradas recientemente</span>
+                  @if (broadcastSegment() === 'new') {
+                    <span class="font-bold text-indigo-700">✓ Activo</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. WORKSPACE PRINCIPAL: CONFIGURADOR + PREVISUALIZADOR EN VIVO -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- PANEL IZQUIERDO: CONFIGURADOR DE LA CAMPAÑA (COL 7) -->
+            <div class="lg:col-span-7 bg-white rounded-[32px] border border-slate-200/80 p-6 shadow-xs flex flex-col gap-5">
+              
+              <div class="pb-3 border-b border-slate-100">
+                <span class="text-xs font-bold text-slate-400">Paso 2 de 3</span>
+                <h3 class="text-base font-black text-slate-900 tracking-tight mt-0.5">Configuración del Mensaje</h3>
+                <p class="text-xs text-slate-500 font-medium">Selecciona la plantilla oficial de Meta o escribe un mensaje con variables.</p>
+              </div>
+
+              <!-- Nombre Interno de la Campaña -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                  Nombre de la Campaña (Para tu control interno)
+                </label>
+                <input 
+                  type="text"
+                  [ngModel]="broadcastName()"
+                  (ngModelChange)="broadcastName.set($event)"
+                  placeholder="Ej: Promo Fin de Semana Manicura"
+                  class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                />
+              </div>
+
+              <!-- Selector de Plantilla Meta -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                  Plantilla de WhatsApp
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <!-- Plantilla 1: promocion_salon -->
+                  <div 
+                    (click)="onSelectBroadcastTemplate('promocion_salon')"
+                    [ngClass]="broadcastTemplateKey() === 'promocion_salon' 
+                      ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 ring-2 ring-emerald-500/80' 
+                      : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'"
+                    class="p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-1"
+                  >
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-extrabold">Promoción Salón</span>
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-100 text-teal-800">Meta</span>
+                    </div>
+                    <span class="text-[10.5px] text-slate-500 font-medium line-clamp-2">Descuentos y novedades</span>
+                  </div>
+
+                  <!-- Plantilla 2: reactivacion_clientas -->
+                  <div 
+                    (click)="onSelectBroadcastTemplate('reactivacion_clientas')"
+                    [ngClass]="broadcastTemplateKey() === 'reactivacion_clientas' 
+                      ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 ring-2 ring-emerald-500/80' 
+                      : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'"
+                    class="p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-1"
+                  >
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-extrabold">Reactivación</span>
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-100 text-teal-800">Meta</span>
+                    </div>
+                    <span class="text-[10.5px] text-slate-500 font-medium line-clamp-2">"Te extrañamos en..."</span>
+                  </div>
+
+                  <!-- Plantilla 3: Personalizada / Fallback -->
+                  <div 
+                    (click)="onSelectBroadcastTemplate('custom')"
+                    [ngClass]="broadcastTemplateKey() === 'custom' 
+                      ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 ring-2 ring-emerald-500/80' 
+                      : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'"
+                    class="p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-1"
+                  >
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-extrabold">Personalizada</span>
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-700">Libre</span>
+                    </div>
+                    <span class="text-[10.5px] text-slate-500 font-medium line-clamp-2">Texto abierto y variables</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Campos dinámicos según plantilla -->
+              @if (broadcastTemplateKey() === 'promocion_salon') {
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                    Oferta o Descuento a Comunicar <span class="text-rose-500">*</span>
+                  </label>
+                  <textarea 
+                    rows="2"
+                    [ngModel]="broadcastPromoText()"
+                    (ngModelChange)="broadcastPromoText.set($event)"
+                    placeholder="Ej: 20% de descuento en todos los servicios de Manicura y Pestañas este fin de semana"
+                    class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all custom-scrollbar resize-none"
+                  ></textarea>
+                  <span class="text-[10.5px] text-slate-400 mt-1 block">Esta frase se insertará dinámicamente en el cuerpo del mensaje de Meta.</span>
+                </div>
+              }
+
+              @if (broadcastTemplateKey() === 'custom') {
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-bold text-slate-700">
+                      Cuerpo del Mensaje Personalizado
+                    </label>
+                    <span class="text-[10px] text-slate-400">Tokens: {{ '{{apodo}}' }}, {{ '{{salon}}' }}, {{ '{{link_portal}}' }}</span>
+                  </div>
+                  <textarea 
+                    rows="4"
+                    [ngModel]="broadcastCustomBody()"
+                    (ngModelChange)="broadcastCustomBody.set($event)"
+                    class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all custom-scrollbar"
+                  ></textarea>
+                </div>
+              }
+
+              <!-- Enlace de Reserva / Portal Web -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                  Enlace del Portal de Reservas
+                </label>
+                <input 
+                  type="url"
+                  [ngModel]="broadcastTargetUrl()"
+                  (ngModelChange)="broadcastTargetUrl.set($event)"
+                  placeholder="https://tusalon.com o https://labellenailsbog.com"
+                  class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                />
+              </div>
+
+              <!-- SECCIÓN: ENVÍO DE PRUEBA AL ADMIN -->
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col gap-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <span class="text-xs font-bold text-slate-800">Enviar Prueba a tu Teléfono Primero</span>
+                  </div>
+                  <span class="text-[10px] font-semibold text-slate-500">Recomendado</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <input 
+                    type="tel"
+                    [ngModel]="broadcastTestPhone()"
+                    (ngModelChange)="broadcastTestPhone.set($event)"
+                    placeholder="Ej: +57 300 123 4567"
+                    class="flex-1 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <button 
+                    type="button"
+                    (click)="sendTestBroadcastMessage()"
+                    [disabled]="isSendingTestBroadcast()"
+                    class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold cursor-pointer transition-all disabled:opacity-50 shrink-0 flex items-center gap-1.5"
+                  >
+                    @if (isSendingTestBroadcast()) {
+                      <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      </svg>
+                      <span>Enviando...</span>
+                    } @else {
+                      <span>Enviar Test</span>
+                    }
+                  </button>
+                </div>
+
+                @if (testBroadcastFeedback()) {
+                  <div 
+                    [ngClass]="testBroadcastFeedback()!.success ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'"
+                    class="p-2.5 rounded-xl border text-xs font-medium flex items-center justify-between"
+                  >
+                    <span>{{ testBroadcastFeedback()!.message }}</span>
+                    <button type="button" (click)="testBroadcastFeedback.set(null)" class="text-slate-400 hover:text-slate-600 font-bold ml-2">✕</button>
+                  </div>
+                }
+              </div>
+
+              <!-- BOTÓN DE LANZAMIENTO MASIVO -->
+              <div class="pt-2">
+                <button 
+                  type="button"
+                  (click)="launchBroadcastCampaign()"
+                  [disabled]="isLaunchingBroadcast() || broadcastAudienceCounts()[broadcastSegment()] === 0"
+                  class="w-full py-3.5 rounded-2xl bg-[#00C975] hover:bg-[#00b067] text-white text-sm font-extrabold shadow-md shadow-emerald-600/20 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  @if (isLaunchingBroadcast()) {
+                    <svg class="w-5 h-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    <span>Disparando Difusión por WhatsApp...</span>
+                  } @else {
+                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    <span>Lanzar Campaña a {{ broadcastAudienceCounts()[broadcastSegment()] }} Clientas</span>
+                  }
+                </button>
+              </div>
+
+              <!-- Feedback del Lanzamiento -->
+              @if (broadcastLaunchFeedback()) {
+                <div 
+                  [ngClass]="broadcastLaunchFeedback()!.success ? 'bg-emerald-50 text-emerald-900 border-emerald-200' : 'bg-rose-50 text-rose-900 border-rose-200'"
+                  class="p-4 rounded-2xl border text-xs font-medium flex items-start justify-between gap-3"
+                >
+                  <div class="flex items-start gap-2.5">
+                    <span class="w-2 h-2 rounded-full mt-1 shrink-0" [ngClass]="broadcastLaunchFeedback()!.success ? 'bg-emerald-600' : 'bg-rose-600'"></span>
+                    <div>
+                      <p class="font-bold text-xs m-0">{{ broadcastLaunchFeedback()!.message }}</p>
+                      @if (broadcastLaunchFeedback()!.campaign) {
+                        <p class="text-[11px] text-slate-600 mt-1 mb-0">
+                          Enviados con éxito: {{ broadcastLaunchFeedback()!.campaign!.sent_count }} | Fallidos: {{ broadcastLaunchFeedback()!.campaign!.failed_count }}
+                        </p>
+                      }
+                    </div>
+                  </div>
+                  <button type="button" (click)="broadcastLaunchFeedback.set(null)" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+                </div>
+              }
+
+            </div>
+
+            <!-- PANEL DERECHO: SIMULADOR DE WHATSAPP EN VIVO (COL 5) -->
+            <div class="lg:col-span-5 flex flex-col gap-4">
+              
+              <!-- Simulador de Teléfono WhatsApp -->
+              <div class="bg-slate-900 rounded-[32px] p-3 shadow-xl border border-slate-800">
+                
+                <!-- Encabezado de WhatsApp -->
+                <div class="bg-[#075e54] text-white px-4 py-3 rounded-2xl flex items-center justify-between mb-3 shadow-xs">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-full bg-emerald-700 border border-emerald-400/30 flex items-center justify-center font-black text-xs shrink-0">
+                      {{ (salonTitle() || 'LN').substring(0, 2).toUpperCase() }}
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-xs truncate">{{ salonTitle() || 'La Belle Nails' }}</span>
+                        <svg class="w-3.5 h-3.5 text-teal-300 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                      </div>
+                      <span class="text-[10px] text-teal-200 block truncate">Cuenta Comercial Oficial</span>
+                    </div>
+                  </div>
+                  <span class="text-[10px] text-emerald-200 font-bold bg-emerald-800/80 px-2 py-0.5 rounded-full">
+                    Previsualización
+                  </span>
+                </div>
+
+                <!-- Fondo de Chat de WhatsApp -->
+                <div class="bg-[#e5ddd5] p-4 rounded-2xl min-h-[300px] flex flex-col justify-end relative overflow-hidden">
+                  
+                  <!-- Watermark decorativo discreto -->
+                  <div class="text-center my-2">
+                    <span class="text-[10px] font-semibold text-slate-500 bg-white/70 px-3 py-1 rounded-full shadow-2xs">
+                      Hoy • Plantilla con Apodo Dinámico
+                    </span>
+                  </div>
+
+                  <!-- Burbuja de Mensaje WhatsApp -->
+                  <div class="max-w-[88%] bg-[#dcf8c6] text-slate-800 p-3.5 rounded-2xl rounded-tr-none shadow-sm text-xs leading-relaxed ml-auto font-normal whitespace-pre-line border border-emerald-200/50">
+                    {{ broadcastLivePreview() }}
+                    
+                    <div class="flex items-center justify-end gap-1 mt-2 text-[9.5px] text-slate-500">
+                      <span>11:42 a. m.</span>
+                      <svg class="w-3.5 h-3.5 text-teal-600" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l7-7zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0z"/>
+                      </svg>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Barra inferior simulada -->
+                <div class="px-3 pt-3 flex items-center justify-between text-[11px] text-slate-400">
+                  <span>Sustitución en vivo: <strong>{{ '{' + '{apodo}' + '}' }} &rarr; Cami</strong></span>
+                  <span class="text-teal-400 font-bold">Sin Códigos de Cita</span>
+                </div>
+              </div>
+
+              <!-- Muestra de Clientas del Segmento Seleccionado -->
+              <div class="bg-white rounded-[28px] border border-slate-200/80 p-5 shadow-xs">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                  <div>
+                    <h4 class="text-xs font-black text-slate-900 tracking-tight m-0">Muestra de Clientas</h4>
+                    <p class="text-[10.5px] text-slate-500 m-0">Primeras destinatarias en la cola de envío</p>
+                  </div>
+                  <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    {{ broadcastAudienceSample().length }} ejemplos
+                  </span>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                  @for (sample of broadcastAudienceSample(); track sample.id) {
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[10px] shrink-0">
+                          {{ (sample.nickname || sample.name).substring(0, 1).toUpperCase() }}
+                        </div>
+                        <div class="min-w-0">
+                          <span class="font-bold text-slate-900 block truncate">
+                            {{ sample.name }}
+                            @if (sample.nickname) {
+                              <span class="text-emerald-700 font-semibold text-[10.5px]">({{ sample.nickname }})</span>
+                            }
+                          </span>
+                          <span class="text-[10px] text-slate-400 block">{{ sample.phone }}</span>
+                        </div>
+                      </div>
+
+                      <span class="text-[10px] text-slate-500 font-medium shrink-0">
+                        {{ sample.total_appointments }} {{ sample.total_appointments === 1 ? 'cita' : 'citas' }}
+                      </span>
+                    </div>
+                  }
+
+                  @if (broadcastAudienceSample().length === 0) {
+                    <div class="py-4 text-center text-slate-400 text-xs">
+                      No hay clientas con número de teléfono en este segmento.
+                    </div>
+                  }
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- 4. HISTORIAL DE CAMPAÑAS ENVIADAS -->
+          <div class="bg-white rounded-[32px] border border-slate-200/80 p-6 shadow-xs flex flex-col gap-4">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 class="text-base font-black text-slate-900 tracking-tight m-0">Historial de Campañas de Difusión</h3>
+                <p class="text-xs text-slate-500 font-medium mt-0.5 mb-0">Registro y trazabilidad de mensajes masivos enviados vía WhatsApp Cloud API</p>
+              </div>
+
+              <button 
+                type="button" 
+                (click)="loadBroadcastCampaigns()"
+                [disabled]="isLoadingBroadcastCampaigns()"
+                class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-all disabled:opacity-50"
+              >
+                Refrescar Historial
+              </button>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b border-slate-100 text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                    <th class="py-3 px-3">Campaña</th>
+                    <th class="py-3 px-3">Segmento</th>
+                    <th class="py-3 px-3">Plantilla</th>
+                    <th class="py-3 px-3">Fecha de Envío</th>
+                    <th class="py-3 px-3 text-center">Destinatarios</th>
+                    <th class="py-3 px-3 text-center">Estado</th>
+                    <th class="py-3 px-3 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                  @for (c of broadcastCampaignsList(); track c.id) {
+                    <tr class="hover:bg-slate-50/70 transition-colors">
+                      <td class="py-3 px-3 font-bold text-slate-900">
+                        {{ c.name }}
+                      </td>
+                      <td class="py-3 px-3">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-slate-100 text-slate-700">
+                          {{ c.segment === 'all' ? 'Todas' : (c.segment === 'recurring' ? 'VIP' : (c.segment === 'inactive_30' ? 'Inactivas +30d' : c.segment)) }}
+                        </span>
+                      </td>
+                      <td class="py-3 px-3 text-slate-500">
+                        {{ c.template_key || 'Personalizada' }}
+                      </td>
+                      <td class="py-3 px-3 text-slate-500 text-[11px]">
+                        {{ c.created_at | date:'d MMM y, h:mm a' }}
+                      </td>
+                      <td class="py-3 px-3 text-center">
+                        <div class="inline-flex items-center gap-1.5 font-bold">
+                          <span class="text-emerald-700">{{ c.sent_count }} ok</span>
+                          @if (c.failed_count > 0) {
+                            <span class="text-rose-600">/ {{ c.failed_count }} err</span>
+                          }
+                          <span class="text-slate-400 text-[10px]">({{ c.total_recipients }})</span>
+                        </div>
+                      </td>
+                      <td class="py-3 px-3 text-center">
+                        @if (c.status === 'completed') {
+                          <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Completada
+                          </span>
+                        } @else if (c.status === 'processing') {
+                          <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            Enviando...
+                          </span>
+                        } @else {
+                          <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-slate-100 text-slate-600">
+                            {{ c.status }}
+                          </span>
+                        }
+                      </td>
+                      <td class="py-3 px-3 text-right">
+                        <button 
+                          type="button" 
+                          (click)="viewCampaignDetail(c)"
+                          class="px-3 py-1 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-50 border border-emerald-200 transition-colors cursor-pointer"
+                        >
+                          Ver Detalle
+                        </button>
+                      </td>
+                    </tr>
+                  }
+
+                  @if (broadcastCampaignsList().length === 0) {
+                    <tr>
+                      <td colspan="7" class="py-8 text-center text-slate-400">
+                        No has realizado ninguna campaña de difusión todavía. ¡Crea la primera arriba!
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+          <!-- MODAL: DETALLE DE DESTINATARIOS DE CAMPAÑA -->
+          @if (selectedCampaignDetail()) {
+            <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+              <div class="bg-white rounded-[32px] border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+                
+                <!-- Header Modal -->
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Detalle de Difusión</span>
+                    <h3 class="text-base font-extrabold text-slate-900 m-0">{{ selectedCampaignDetail()!.name }}</h3>
+                  </div>
+                  <button type="button" (click)="closeCampaignDetail()" class="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer">
+                    ✕
+                  </button>
+                </div>
+
+                <!-- Contenido con Scroll -->
+                <div class="p-6 overflow-y-auto custom-scrollbar flex flex-col gap-4">
+                  <div class="grid grid-cols-3 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-center text-xs">
+                    <div>
+                      <span class="text-slate-400 block text-[10.5px]">Total</span>
+                      <strong class="text-slate-900 font-bold text-base">{{ selectedCampaignDetail()!.total_recipients }}</strong>
+                    </div>
+                    <div>
+                      <span class="text-emerald-700 block text-[10.5px]">Enviados</span>
+                      <strong class="text-emerald-700 font-bold text-base">{{ selectedCampaignDetail()!.sent_count }}</strong>
+                    </div>
+                    <div>
+                      <span class="text-rose-600 block text-[10.5px]">Fallidos</span>
+                      <strong class="text-rose-600 font-bold text-base">{{ selectedCampaignDetail()!.failed_count }}</strong>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-700 mb-2">Mensaje Emitido</h4>
+                    <div class="p-3.5 rounded-2xl bg-[#e5ddd5] text-slate-800 text-xs whitespace-pre-line font-normal">
+                      {{ selectedCampaignDetail()!.message_body }}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-700 mb-2">Destinatarios</h4>
+                    <div class="max-h-60 overflow-y-auto custom-scrollbar border border-slate-100 rounded-2xl divide-y divide-slate-100">
+                      @for (rec of selectedCampaignDetail()!.recipients || []; track rec.id) {
+                        <div class="p-2.5 flex items-center justify-between text-xs">
+                          <div>
+                            <span class="font-bold text-slate-900">{{ rec.client_name }}</span>
+                            @if (rec.client_nickname) {
+                              <span class="text-emerald-700 text-[10.5px] font-semibold">({{ rec.client_nickname }})</span>
+                            }
+                            <span class="text-[10px] text-slate-400 block">{{ rec.phone }}</span>
+                          </div>
+
+                          <div>
+                            @if (rec.status === 'sent') {
+                              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700">
+                                Enviado
+                              </span>
+                            } @else if (rec.status === 'failed') {
+                              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700" [title]="rec.error_message || ''">
+                                Falló
+                              </span>
+                            } @else {
+                              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
+                                Pendiente
+                              </span>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      @if (!selectedCampaignDetail()!.recipients || selectedCampaignDetail()!.recipients!.length === 0) {
+                        <div class="p-4 text-center text-slate-400 text-xs">
+                          Sin lista de destinatarios registrados.
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Footer Modal -->
+                <div class="px-6 py-3 border-t border-slate-100 flex justify-end">
+                  <button 
+                    type="button" 
+                    (click)="closeCampaignDetail()"
+                    class="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 cursor-pointer"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          }
+
+        </div>

@@ -56,33 +56,53 @@ class TestWhatsAppNotificationCommand extends Command
                 $this->line("Enviando plantilla '{$template}'...");
                 $params = match ($template) {
                     'confirmacion_cita', 'reserva_confirmada' => [
-                        'Camila Morales',
-                        '1045',
+                        'Cami',
                         'Manicura Semipermanente',
                         now()->addDay()->format('d/m/Y') . ' a las 10:00 AM',
                         'https://labellenailsbog.com',
                     ],
                     'recordatorio_cita_24h' => [
-                        'Camila Morales',
+                        'Cami',
                         'Manicura Semipermanente',
                         now()->addDay()->format('d/m/Y') . ' a las 10:00 AM',
                         '$25.000 COP',
                         'https://labellenailsbog.com',
                     ],
                     'cita_reagendada' => [
-                        'Camila Morales',
-                        '1045',
+                        'Cami',
                         'Manicura Semipermanente',
                         now()->addDays(2)->format('d/m/Y') . ' a las 03:00 PM',
+                        now()->addDay()->format('d/m/Y') . ' a las 10:00 AM',
                         'https://labellenailsbog.com',
                     ],
                     'cita_cancelada' => [
-                        'Camila Morales',
-                        '1045',
+                        'Cami',
                         'Manicura Semipermanente',
                         now()->addDay()->format('d/m/Y') . ' a las 10:00 AM',
+                        'Cancelación solicitada por la clienta',
+                        'https://labellenailsbog.com',
                     ],
-                    default => ['Prueba', '1045', 'Servicio', 'Mañana', 'https://labellenailsbog.com'],
+                    'cita_confirmada_abono' => [
+                        'Cami',
+                        'Manicura Semipermanente',
+                        now()->addDay()->format('d/m/Y') . ' a las 10:00 AM',
+                        '$25.000 COP',
+                        'https://labellenailsbog.com',
+                    ],
+                    'novedad_comprobante_cita' => [
+                        'Cami',
+                        'Manicura Semipermanente',
+                        'El comprobante no es legible',
+                        'https://labellenailsbog.com',
+                    ],
+                    'cita_recibida' => [
+                        'Cami',
+                        'Manicura Semipermanente',
+                        now()->addDay()->format('d/m/Y') . ' a las 10:00 AM',
+                        '$30.000 COP',
+                        'https://labellenailsbog.com',
+                    ],
+                    default => ['Cami', 'Servicio', 'Mañana', 'https://labellenailsbog.com'],
                 };
                 $result = $this->whatsAppService->sendTemplateViaMetaWithDetails($phone, $template, $params, $this->option('lang'));
                 return $this->report($result);
