@@ -24,6 +24,14 @@ class ReminderSettingsPage extends Page
 
     protected string $view = 'filament.super-admin.pages.reminder-settings';
 
+    /**
+     * Acceso exclusivo para usuarios con rol SUPER_ADMIN
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->check() && auth()->user()->role === \App\Enums\UserRole::SUPER_ADMIN;
+    }
+
     public string $reminderTime = '10:00';
     public bool $isReminderEnabled = true;
     public string $timezone = 'America/Bogota';
