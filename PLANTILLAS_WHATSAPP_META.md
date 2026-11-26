@@ -53,7 +53,7 @@ Puedes consultar tu comprobante aquí: {{4}}
 Hola {{1}}, te recordamos que tienes una cita programada para {{2}} el día {{3}}.
 
 Saldo restante a pagar en el salón: {{4}}.
-Puedes ver los detalles y ubicación en tu comprobante: {{5}}
+👉 Por favor confirma tu asistencia ingresando a este enlace: {{5}}
 
 ¡Te esperamos puntualmente!
 ```
@@ -62,7 +62,7 @@ Puedes ver los detalles y ubicación en tu comprobante: {{5}}
   * `{{2}}`: `Manicura Semipermanente`
   * `{{3}}`: `Mañana Viernes a las 3:00 PM`
   * `{{4}}`: `$25.000 COP`
-  * `{{5}}`: `https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD`
+  * `{{5}}`: `https://labellenailsbog.com/reserva/confirmar/PA-261125-ABCD?token=xyz123`
 
 ---
 
