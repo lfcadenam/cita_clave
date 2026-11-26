@@ -225,7 +225,6 @@ class WhatsAppNotificationService
                 (string) ($appointment->client_phone ?: 'N/A'),
                 $serviceName,
                 "{$dateFormatted} a las {$startTime}",
-                "#{$appointment->appointment_number} ({$statusText})",
                 $adminUrl,
             ]
         );
@@ -581,7 +580,7 @@ class WhatsAppNotificationService
                             bodyParameters: $dynamicParams,
                             languageCode: $langCode,
                             tenant: $appointment->tenant,
-                            buttonParameters: [(string) ($appointment->appointment_number ?? '1')]
+                            buttonParameters: []
                         );
 
                         if ($tplRes['success']) {
@@ -619,7 +618,7 @@ class WhatsAppNotificationService
                     bodyParameters: $fallbackDynamic,
                     languageCode: 'es_CO',
                     tenant: $appointment->tenant,
-                    buttonParameters: [$apptNum]
+                    buttonParameters: []
                 );
 
                 if ($fallbackRes['success']) {
@@ -1043,6 +1042,19 @@ class WhatsAppNotificationService
                     $languageCode,
                     $tenant,
                     [$fallbackBtn]
+                );
+            }
+
+            // Si la plantilla NO tiene botones y se enviaron parámetros de botón por error (#100 Invalid parameter), auto-reintentar sin botones
+            if (!empty($buttonParameters) && ($response->status() === 400 && (str_contains($errorDetails, 'parameter') || str_contains($errorDetails, 'button') || str_contains($json['error']['message'] ?? '', '(#100)')))) {
+                Log::info("[WhatsApp Meta] Reintentando plantilla '{$templateName}' sin parámetros de botón...");
+                return $this->sendTemplateViaMetaWithDetails(
+                    $phone,
+                    $templateName,
+                    $bodyParameters,
+                    $languageCode,
+                    $tenant,
+                    []
                 );
             }
 

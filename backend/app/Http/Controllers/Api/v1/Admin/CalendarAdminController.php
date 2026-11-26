@@ -26,7 +26,7 @@ class CalendarAdminController extends Controller
             'service_id' => 'required|integer|exists:services,id',
             'date' => 'required|date_format:Y-m-d',
             'strict_anti_gaps' => 'nullable|boolean',
-            'duration_minutes' => 'nullable|integer|min:15',
+            'duration_minutes' => 'nullable|integer|min:1',
         ]);
 
         $service = Service::findOrFail($validated['service_id']);
