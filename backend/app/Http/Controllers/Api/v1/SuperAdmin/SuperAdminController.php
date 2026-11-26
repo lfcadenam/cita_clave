@@ -130,6 +130,15 @@ class SuperAdminController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
+        if (array_key_exists('email', $validated)) {
+            $email = ! empty($validated['email']) ? trim($validated['email']) : null;
+            if ($email === 'contacto@labellenailsbog.com') {
+                $email = null;
+            }
+            $tenant->email = $email;
+            unset($validated['email']);
+        }
+
         $tenant->update(array_filter($validated, fn ($val) => $val !== null));
 
         return response()->json([
@@ -287,11 +296,17 @@ class SuperAdminController extends Controller
             ->limit(10)
             ->get();
 
+        $dbMailEnabled = SystemSetting::get('mail_notifications_enabled');
+        $mailNotificationsEnabled = $dbMailEnabled !== null
+            ? filter_var($dbMailEnabled, FILTER_VALIDATE_BOOLEAN)
+            : (bool) config('mail.notifications_enabled', false);
+
         return response()->json([
             'success' => true,
             'data' => [
                 'reminder_time' => $reminderTime,
                 'is_enabled' => $isEnabled,
+                'mail_notifications_enabled' => $mailNotificationsEnabled,
                 'timezone' => $timezone,
                 'pending_tomorrow_count' => $pendingTomorrowCount,
                 'total_tomorrow_count' => $totalTomorrowCount,
@@ -301,7 +316,7 @@ class SuperAdminController extends Controller
     }
 
     /**
-     * Guardar nueva hora y estado de los recordatorios.
+     * Guardar nueva hora y estado de los recordatorios y canal de email.
      */
     public function updateReminderSettings(Request $request): JsonResponse
     {
@@ -310,6 +325,7 @@ class SuperAdminController extends Controller
         $validated = $request->validate([
             'reminder_time' => ['required', 'regex:/^(?:[01]\d|2[0-3]):[0-5]\d$/'],
             'is_enabled' => ['required', 'boolean'],
+            'mail_notifications_enabled' => ['nullable', 'boolean'],
         ], [
             'reminder_time.required' => 'Debes ingresar una hora de ejecución.',
             'reminder_time.regex' => 'El formato debe ser HH:mm (por ejemplo 10:00 o 08:30).',
@@ -318,12 +334,21 @@ class SuperAdminController extends Controller
         SystemSetting::set('appointment_reminder_time', $validated['reminder_time'], 'Hora diaria de recordatorios', 'scheduler');
         SystemSetting::set('appointment_reminder_enabled', $validated['is_enabled'] ? '1' : '0', 'Estado del cron de recordatorios', 'scheduler');
 
+        if (array_key_exists('mail_notifications_enabled', $validated)) {
+            SystemSetting::set('mail_notifications_enabled', $validated['mail_notifications_enabled'] ? '1' : '0', 'Notificaciones transaccionales por email', 'mail');
+        }
+
+        $mailEnabled = array_key_exists('mail_notifications_enabled', $validated)
+            ? (bool) $validated['mail_notifications_enabled']
+            : (bool) config('mail.notifications_enabled', false);
+
         return response()->json([
             'success' => true,
-            'message' => "Horario de recordatorios actualizado a las {$validated['reminder_time']} (Hora Colombia).",
+            'message' => "Configuración actualizada. Recordatorios a las {$validated['reminder_time']} (Hora Colombia).",
             'data' => [
                 'reminder_time' => $validated['reminder_time'],
                 'is_enabled' => (bool) $validated['is_enabled'],
+                'mail_notifications_enabled' => $mailEnabled,
             ],
         ]);
     }

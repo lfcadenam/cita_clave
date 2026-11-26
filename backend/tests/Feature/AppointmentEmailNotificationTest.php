@@ -250,5 +250,39 @@ class AppointmentEmailNotificationTest extends TestCase
         // Pero la cita sí se marcó como notificada vía WhatsApp
         $this->assertNotNull($appointment->fresh()->reminder_24h_sent_at);
     }
+
+    public function test_dummy_template_email_contacto_labellenailsbog_is_never_sent_to(): void
+    {
+        config(['mail.notifications_enabled' => true]);
+        Mail::fake();
+
+        // Si el tenant tiene configurado el correo dummy de plantilla
+        $this->tenant->update(['email' => 'contacto@labellenailsbog.com']);
+
+        $appointment = Appointment::create([
+            'tenant_id' => $this->tenant->id,
+            'service_id' => $this->service->id,
+            'client_name' => 'Test Client',
+            'client_phone' => '3100000000',
+            'client_email' => 'contacto@labellenailsbog.com', // cliente con el mismo correo dummy
+            'appointment_date' => now()->addDays(2)->toDateString(),
+            'start_time' => '10:00:00',
+            'end_time' => '11:00:00',
+            'total_amount' => 50000,
+            'deposit_amount' => 20000,
+            'deposit_paid' => 0,
+            'balance_due' => 50000,
+            'status' => AppointmentStatus::PENDING_VERIFICATION,
+            'payment_method' => PaymentMethod::NEQUI_TRANSFER,
+        ]);
+
+        // Verificamos que jamás se envió ningún correo a contacto@labellenailsbog.com
+        Mail::assertNotSent(AppointmentBookedAdminMail::class, function ($mail) {
+            return $mail->hasTo('contacto@labellenailsbog.com');
+        });
+        Mail::assertNotSent(AppointmentBookedClientMail::class, function ($mail) {
+            return $mail->hasTo('contacto@labellenailsbog.com');
+        });
+    }
 }
 

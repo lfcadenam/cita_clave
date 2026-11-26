@@ -36,6 +36,7 @@ export class AdminSuperAdminComponent implements OnInit {
   readonly reminderSettings = signal<ReminderSettingsData | null>(null);
   readonly reminderTime = signal<string>('10:00');
   readonly isReminderEnabled = signal<boolean>(true);
+  readonly isMailNotificationsEnabled = signal<boolean>(false);
   readonly isSavingReminder = signal<boolean>(false);
 
   // Disparo manual
@@ -45,6 +46,7 @@ export class AdminSuperAdminComponent implements OnInit {
   readonly manualOutput = signal<string | null>(null);
 
   readonly showTenantModal = signal<boolean>(false);
+  readonly editingTenant = signal<SuperTenant | null>(null);
   tenantForm = {
     name: '',
     slug: '',
@@ -112,6 +114,7 @@ export class AdminSuperAdminComponent implements OnInit {
   }
 
   openCreateTenantModal(): void {
+    this.editingTenant.set(null);
     this.tenantForm = {
       name: '',
       slug: '',
@@ -122,11 +125,45 @@ export class AdminSuperAdminComponent implements OnInit {
     this.showTenantModal.set(true);
   }
 
+  openEditTenantModal(tenant: SuperTenant): void {
+    this.editingTenant.set(tenant);
+    this.tenantForm = {
+      name: tenant.name,
+      slug: tenant.slug,
+      domain: tenant.domain || '',
+      phone: tenant.phone || '',
+      email: tenant.email || ''
+    };
+    this.showTenantModal.set(true);
+  }
+
   saveTenant(): void {
     if (!this.tenantForm.name.trim()) return;
+
+    if (this.editingTenant()) {
+      this.superAdminService.updateTenant(this.editingTenant()!.id, {
+        name: this.tenantForm.name,
+        domain: this.tenantForm.domain,
+        phone: this.tenantForm.phone,
+        email: this.tenantForm.email
+      }).subscribe({
+        next: () => {
+          this.showTenantModal.set(false);
+          this.editingTenant.set(null);
+          this.loadSuperAdminData();
+          this.nuvexNotify.success('Salón actualizado', 'Los datos del salón han sido actualizados exitosamente.');
+        },
+        error: (err) => {
+          this.nuvexNotify.error('Error', err?.error?.message || 'No fue posible actualizar el salón.');
+        }
+      });
+      return;
+    }
+
     this.superAdminService.createTenant(this.tenantForm).subscribe({
       next: () => {
         this.showTenantModal.set(false);
+        this.editingTenant.set(null);
         this.loadSuperAdminData();
         this.nuvexNotify.success('Salón registrado', 'El nuevo salón inquilino ha sido configurado en Nuvex.');
       },
@@ -266,6 +303,7 @@ export class AdminSuperAdminComponent implements OnInit {
         this.reminderSettings.set(res);
         this.reminderTime.set(res.reminder_time || '10:00');
         this.isReminderEnabled.set(res.is_enabled);
+        this.isMailNotificationsEnabled.set(!!res.mail_notifications_enabled);
       },
       error: (err) => console.error('Error al cargar configuración de recordatorios:', err)
     });
@@ -285,11 +323,12 @@ export class AdminSuperAdminComponent implements OnInit {
     this.isSavingReminder.set(true);
     this.superAdminService.updateReminderSettings({
       reminder_time: time,
-      is_enabled: this.isReminderEnabled()
+      is_enabled: this.isReminderEnabled(),
+      mail_notifications_enabled: this.isMailNotificationsEnabled()
     }).subscribe({
       next: (res) => {
         this.isSavingReminder.set(false);
-        this.nuvexNotify.success('Horario Actualizado', res.message || `El proceso se ejecutará diariamente a las ${time} (Hora Colombia).`);
+        this.nuvexNotify.success('Configuración Guardada', res.message || `Ajustes guardados exitosamente.`);
         this.loadReminderSettings();
       },
       error: (err) => {

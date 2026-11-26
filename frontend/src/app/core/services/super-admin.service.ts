@@ -109,7 +109,7 @@ export class SuperAdminService {
   /**
    * Actualizar horario y estado de recordatorios.
    */
-  updateReminderSettings(payload: { reminder_time: string; is_enabled: boolean }): Observable<{ success: boolean; message: string; data: any }> {
+  updateReminderSettings(payload: { reminder_time: string; is_enabled: boolean; mail_notifications_enabled?: boolean }): Observable<{ success: boolean; message: string; data: any }> {
     return this.http.put<{ success: boolean; message: string; data: any }>(`${this.apiUrl}/reminder-settings`, payload);
   }
 
@@ -137,6 +137,7 @@ export interface RecentReminderItem {
 export interface ReminderSettingsData {
   reminder_time: string;
   is_enabled: boolean;
+  mail_notifications_enabled?: boolean;
   timezone: string;
   pending_tomorrow_count: number;
   total_tomorrow_count: number;

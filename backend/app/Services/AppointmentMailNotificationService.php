@@ -19,7 +19,32 @@ class AppointmentMailNotificationService
      */
     public function isEnabled(): bool
     {
+        $dbSetting = \App\Models\SystemSetting::get('mail_notifications_enabled');
+        if ($dbSetting !== null) {
+            return filter_var($dbSetting, FILTER_VALIDATE_BOOLEAN);
+        }
+
         return (bool) config('mail.notifications_enabled', false);
+    }
+
+    /**
+     * Verifica si una dirección de correo corresponde a una plantilla, demo o dirección no operativa.
+     */
+    public function isIgnoredEmail(?string $email): bool
+    {
+        if (empty($email)) {
+            return true;
+        }
+
+        $normalized = strtolower(trim($email));
+        $ignored = [
+            'contacto@labellenailsbog.com',
+            'hello@example.com',
+            'admin@example.com',
+            'test@example.com',
+        ];
+
+        return in_array($normalized, $ignored, true);
     }
 
     /**
@@ -42,7 +67,7 @@ class AppointmentMailNotificationService
 
         // 1. Notificar a la dueña / administradora del salón
         $ownerEmail = $this->resolveOwnerEmail($appointment);
-        if ($ownerEmail) {
+        if ($ownerEmail && ! $this->isIgnoredEmail($ownerEmail)) {
             try {
                 Mail::to($ownerEmail)->send(new AppointmentBookedAdminMail($appointment));
                 $results['admin_sent'] = true;
@@ -50,10 +75,12 @@ class AppointmentMailNotificationService
             } catch (Throwable $e) {
                 Log::error("Error enviando correo a administradora ({$ownerEmail}): " . $e->getMessage());
             }
+        } elseif ($ownerEmail && $this->isIgnoredEmail($ownerEmail)) {
+            Log::info("Omitiendo envío de correo a dirección de plantilla o inexistente: {$ownerEmail}");
         }
 
         // 2. Notificar a la clienta
-        if (!empty($appointment->client_email)) {
+        if (!empty($appointment->client_email) && ! $this->isIgnoredEmail($appointment->client_email)) {
             try {
                 Mail::to($appointment->client_email)->send(new AppointmentBookedClientMail($appointment));
                 $results['client_sent'] = true;
@@ -78,8 +105,8 @@ class AppointmentMailNotificationService
             return false;
         }
 
-        if (empty($appointment->client_email)) {
-            Log::info("Cita #{$appointment->appointment_number} confirmada, pero no tiene correo de clienta registrado.");
+        if (empty($appointment->client_email) || $this->isIgnoredEmail($appointment->client_email)) {
+            Log::info("Cita #{$appointment->appointment_number} confirmada, pero no tiene correo de clienta válido registrado.");
             return false;
         }
 
@@ -105,8 +132,8 @@ class AppointmentMailNotificationService
             return false;
         }
 
-        if (empty($appointment->client_email)) {
-            Log::info("Recordatorio 24h omitido para cita #{$appointment->appointment_number}: no tiene correo.");
+        if (empty($appointment->client_email) || $this->isIgnoredEmail($appointment->client_email)) {
+            Log::info("Recordatorio 24h omitido para cita #{$appointment->appointment_number}: no tiene correo o es una dirección no operativa.");
             return false;
         }
 
@@ -133,7 +160,7 @@ class AppointmentMailNotificationService
     {
         $tenant = $appointment->tenant;
 
-        if ($tenant && !empty($tenant->email)) {
+        if ($tenant && !empty($tenant->email) && ! $this->isIgnoredEmail($tenant->email)) {
             return $tenant->email;
         }
 
@@ -141,13 +168,15 @@ class AppointmentMailNotificationService
             $adminUser = $tenant->users()
                 ->where('role', UserRole::ADMIN)
                 ->whereNotNull('email')
-                ->first();
+                ->get()
+                ->first(fn ($u) => ! $this->isIgnoredEmail($u->email));
 
             if ($adminUser && !empty($adminUser->email)) {
                 return $adminUser->email;
             }
         }
 
-        return config('mail.from.address');
+        $from = config('mail.from.address');
+        return ! $this->isIgnoredEmail($from) ? $from : null;
     }
 }
