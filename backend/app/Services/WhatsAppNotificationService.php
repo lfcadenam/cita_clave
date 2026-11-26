@@ -1528,9 +1528,22 @@ class WhatsAppNotificationService
             $metaResult = $this->createMetaTemplate($effectiveDef, $tenant);
         }
 
+        $metaMsg = "";
+        if ($metaResult) {
+            if ($metaResult['updated'] ?? false) {
+                $metaMsg = " Contenido actualizado exitosamente en Meta Cloud API.";
+            } elseif ($metaResult['already_exists'] ?? false) {
+                $metaMsg = " La plantilla ya está registrada y aprobada en Meta WhatsApp Manager.";
+            } elseif ($metaResult['success'] ?? false) {
+                $metaMsg = " Registrada con éxito en Meta Cloud API.";
+            } else {
+                $metaMsg = " (Nota Meta: " . ($metaResult['message'] ?? 'Pendiente de sincronización') . ")";
+            }
+        }
+
         return [
             'success' => true,
-            'message' => "Plantilla '{$defaults[$templateKey]['display_name']}' guardada correctamente." . ($metaResult ? " " . ($metaResult['message'] ?? '') : ""),
+            'message' => "Plantilla '{$defaults[$templateKey]['display_name']}' guardada correctamente." . $metaMsg,
             'meta_result' => $metaResult,
             'template' => $this->getEffectiveTemplateDefinition($templateKey, $tenant),
         ];
