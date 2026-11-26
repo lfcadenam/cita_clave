@@ -120,6 +120,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('/appointments/{id}/status', [AppointmentAdminController::class, 'updateStatus']);
         Route::post('/appointments/{id}/approve-nequi', [AppointmentAdminController::class, 'approveNequi']);
         Route::post('/appointments/{id}/reject-nequi', [AppointmentAdminController::class, 'rejectNequi']);
+        Route::post('/appointments/{id}/resend-whatsapp', [AppointmentAdminController::class, 'resendWhatsApp']);
 
         // Calendario y Disponibilidad Administrativa
         Route::get('/calendar/slots', [CalendarAdminController::class, 'slots']);

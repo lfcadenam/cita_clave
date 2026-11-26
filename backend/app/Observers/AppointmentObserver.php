@@ -24,11 +24,15 @@ class AppointmentObserver
     {
         // 1. Notificaciones por correo (desactivadas por defecto; canal oficial es WhatsApp)
         if ($this->mailService->isEnabled()) {
-            $this->mailService->sendAppointmentBookedEmails($appointment);
+            try {
+                $this->mailService->sendAppointmentBookedEmails($appointment);
 
-            // 2. Si la cita nace directamente en estado CONFIRMADO
-            if ($appointment->status === AppointmentStatus::CONFIRMED) {
-                $this->mailService->sendPaymentConfirmedEmail($appointment);
+                // 2. Si la cita nace directamente en estado CONFIRMADO
+                if ($appointment->status === AppointmentStatus::CONFIRMED) {
+                    $this->mailService->sendPaymentConfirmedEmail($appointment);
+                }
+            } catch (\Throwable $e) {
+                Log::warning("No se pudieron enviar correos de agendamiento para cita #{$appointment->appointment_number}: " . $e->getMessage());
             }
         }
 

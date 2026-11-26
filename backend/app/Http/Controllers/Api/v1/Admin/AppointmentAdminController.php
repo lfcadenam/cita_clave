@@ -532,6 +532,43 @@ class AppointmentAdminController extends Controller
     }
 
     /**
+     * Reenviar notificación de WhatsApp a la clienta según el estado actual de la cita.
+     */
+    public function resendWhatsApp(int $id): JsonResponse
+    {
+        $appointment = Appointment::with(['service', 'customer', 'tenant'])->findOrFail($id);
+
+        if (blank($appointment->client_phone)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La cita no tiene número de teléfono registrado.',
+            ], 422);
+        }
+
+        $whatsAppService = app(WhatsAppNotificationService::class);
+        $sent = false;
+
+        try {
+            if ($appointment->status === AppointmentStatus::CONFIRMED) {
+                $sent = $whatsAppService->sendBookingConfirmation($appointment);
+            } elseif ($appointment->status === AppointmentStatus::CANCELLED) {
+                $sent = $whatsAppService->sendAppointmentCancelled($appointment, $appointment->cancellation_reason);
+            } else {
+                $sent = $whatsAppService->sendBookingCreated($appointment);
+            }
+        } catch (\Throwable $e) {
+            Log::warning("Error reenviando WhatsApp para cita #{$appointment->appointment_number}: " . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => $sent,
+            'message' => $sent
+                ? "Notificación enviada exitosamente por WhatsApp a {$appointment->client_phone}."
+                : "No se pudo entregar la notificación a {$appointment->client_phone}. Revisa los logs o la conexión del canal WhatsApp.",
+        ], $sent ? 200 : 422);
+    }
+
+    /**
      * Estructura limpia y enriquecida para el Frontend.
      */
     protected function formatAppointment(Appointment $appointment, bool $detailed = false): array

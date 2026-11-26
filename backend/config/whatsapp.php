@@ -30,7 +30,7 @@ return [
         'verify_token' => env('WHATSAPP_VERIFY_TOKEN', 'nuvex_meta_verify_2026'),
         'app_secret' => env('WHATSAPP_APP_SECRET', ''),
         'language' => env('WHATSAPP_META_LANGUAGE', 'es'),
-        'use_templates' => (bool) env('WHATSAPP_META_USE_TEMPLATES', false),
+        'use_templates' => (bool) env('WHATSAPP_META_USE_TEMPLATES', true),
 
         // Nombres de plantillas aprobadas en Meta WhatsApp Manager (Categoría: UTILITY)
         'templates' => [

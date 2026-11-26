@@ -57,7 +57,7 @@ class WhatsAppNotificationService
         $token = ($resolvedTenant?->meta_access_token ?: ($this->metaConfig['access_token'] ?? ''));
         $verifyToken = ($resolvedTenant?->meta_verify_token ?: ($this->metaConfig['verify_token'] ?? 'nuvex_meta_verify_2026'));
         $language = $this->metaConfig['language'] ?? 'es';
-        $useTemplates = (bool) ($this->metaConfig['use_templates'] ?? false);
+        $useTemplates = (bool) ($this->metaConfig['use_templates'] ?? true);
         $templates = $this->metaConfig['templates'] ?? [];
 
         return [
@@ -612,17 +612,20 @@ class WhatsAppNotificationService
                     fallbackParams: $fallbackParams
                 );
 
-                $fallbackRes = $this->sendTemplateViaMetaWithDetails(
-                    phone: $sanitizedPhone,
-                    templateName: 'confirmacion_cita',
-                    bodyParameters: $fallbackDynamic,
-                    languageCode: 'es_CO',
-                    tenant: $appointment->tenant,
-                    buttonParameters: []
-                );
+                $fallbackLangs = array_values(array_unique([$metaCreds['language'], 'es_CO', 'es', 'es_ES']));
+                foreach ($fallbackLangs as $fallbackLang) {
+                    $fallbackRes = $this->sendTemplateViaMetaWithDetails(
+                        phone: $sanitizedPhone,
+                        templateName: 'confirmacion_cita',
+                        bodyParameters: $fallbackDynamic,
+                        languageCode: $fallbackLang,
+                        tenant: $appointment->tenant,
+                        buttonParameters: []
+                    );
 
-                if ($fallbackRes['success']) {
-                    return true;
+                    if ($fallbackRes['success']) {
+                        return true;
+                    }
                 }
 
                 // Estrategia 3: Enviar mensaje de texto enriquecido (si hay ventana de 24h abierta)
