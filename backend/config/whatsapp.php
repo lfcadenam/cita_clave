@@ -34,7 +34,7 @@ return [
 
         // Nombres de plantillas aprobadas en Meta WhatsApp Manager (Categoría: UTILITY)
         'templates' => [
-            'booking_created' => env('WHATSAPP_TEMPLATE_BOOKING_CREATED', 'cita_recibida'),
+            'booking_created' => env('WHATSAPP_TEMPLATE_BOOKING_CREATED', 'confirmacion_cita'),
             'admin_new_booking' => env('WHATSAPP_TEMPLATE_ADMIN_NEW_BOOKING', 'alerta_nueva_cita_admin'),
             'deposit_approved' => env('WHATSAPP_TEMPLATE_DEPOSIT_APPROVED', 'cita_confirmada_abono'),
             'deposit_rejected' => env('WHATSAPP_TEMPLATE_DEPOSIT_REJECTED', 'novedad_comprobante_cita'),

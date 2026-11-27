@@ -73,48 +73,11 @@ class WhatsAppNotificationService
     }
 
     /**
-     * 1. Solicitud de Cita Creada (Acuse de recibo y pendiente de abono Nequi).
+     * 1. Notificación de Cita Creada a la clienta (Usa la plantilla oficial preaprobada confirmacion_cita).
      */
     public function sendBookingCreated(Appointment $appointment): bool
     {
-        $clientPhone = $appointment->client_phone;
-        if (blank($clientPhone)) {
-            return false;
-        }
-
-        $appointment->loadMissing(['tenant', 'service', 'customer']);
-        $clientName = $appointment->getNotificationClientName();
-        $serviceName = $appointment->service?->name ?? 'Servicio';
-        $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
-        $startTime = substr($appointment->start_time, 0, 5);
-        $depositFormatted = number_format($appointment->deposit_amount, 0, ',', '.');
-        $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
-
-        $message = "✨ *¡Solicitud de Cita Recibida!* Hola {$clientName},\n\n"
-            . "Hemos recibido tu solicitud de cita para *{$serviceName}* el día *{$dateFormatted} a las {$startTime}*:\n\n"
-            . "💅 *Servicio:* {$serviceName}\n"
-            . "📅 *Fecha:* {$dateFormatted}\n"
-            . "⏰ *Hora:* {$startTime}\n"
-            . "💵 *Abono requerido:* \${$depositFormatted} COP\n\n"
-            . "📋 *Estado:* Pendiente de verificación de transferencia.\n"
-            . "Paola validará tu comprobante de abono y te confirmaremos tu cita por este medio.\n\n"
-            . "📄 *Consulta los detalles aquí:*\n"
-            . "{$voucherUrl}\n\n"
-            . "_¡Gracias por elegirnos!_";
-
-        return $this->dispatchAppointmentNotification(
-            appointment: $appointment,
-            phone: $clientPhone,
-            message: $message,
-            templateKey: 'booking_created',
-            templateParams: [
-                $clientName,
-                $serviceName,
-                "{$dateFormatted} a las {$startTime}",
-                "\${$depositFormatted} COP",
-                $voucherUrl,
-            ]
-        );
+        return $this->sendBookingConfirmation($appointment);
     }
 
     /**
@@ -1455,7 +1418,7 @@ class WhatsAppNotificationService
     public function resolveTemplateKey(string $key): string
     {
         $aliasMap = [
-            'booking_created' => 'cita_recibida',
+            'booking_created' => 'confirmacion_cita',
             'admin_new_booking' => 'alerta_nueva_cita_admin',
             'deposit_approved' => 'cita_confirmada_abono',
             'deposit_rejected' => 'novedad_comprobante_cita',

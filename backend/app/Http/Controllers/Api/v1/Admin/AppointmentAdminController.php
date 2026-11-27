@@ -271,14 +271,10 @@ class AppointmentAdminController extends Controller
             // Log de resiliencia
         }
 
-        // Notificar por WhatsApp a la clienta sobre su cita creada/confirmada desde el panel administrativo
+        // Notificar por WhatsApp a la clienta sobre su cita creada (plantilla oficial confirmacion_cita)
         try {
             $whatsAppService = app(WhatsAppNotificationService::class);
-            if ($appointment->status === AppointmentStatus::CONFIRMED) {
-                $whatsAppService->sendBookingConfirmation($appointment);
-            } else {
-                $whatsAppService->sendBookingCreated($appointment);
-            }
+            $whatsAppService->sendBookingConfirmation($appointment);
         } catch (\Throwable $e) {
             Log::warning("No se pudo enviar WhatsApp a la clienta para cita administrativa #{$appointment->appointment_number}: " . $e->getMessage());
         }

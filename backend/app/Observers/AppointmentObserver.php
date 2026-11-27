@@ -43,16 +43,12 @@ class AppointmentObserver
             Log::warning("No se pudo enviar WhatsApp de Nueva Cita Agendada al administrador para cita #{$appointment->appointment_number}: " . $e->getMessage());
         }
 
-        // 4. Notificación por WhatsApp a la clienta (si no fue despachada explícitamente por el controlador)
+        // 4. Notificación por WhatsApp a la clienta (plantilla confirmacion_cita)
         if (empty($appointment->skipObserverClientWhatsApp)) {
             try {
-                if ($appointment->status === AppointmentStatus::CONFIRMED) {
-                    $this->whatsAppService->sendBookingConfirmation($appointment);
-                } else {
-                    $this->whatsAppService->sendBookingCreated($appointment);
-                }
+                $this->whatsAppService->sendBookingConfirmation($appointment);
             } catch (\Throwable $e) {
-                Log::warning("No se pudo enviar WhatsApp de agendamiento a la clienta para cita #{$appointment->appointment_number}: " . $e->getMessage());
+                Log::warning("No se pudo enviar WhatsApp de confirmación a la clienta para cita #{$appointment->appointment_number}: " . $e->getMessage());
             }
         }
 
