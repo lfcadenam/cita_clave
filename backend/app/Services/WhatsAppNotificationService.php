@@ -1102,6 +1102,27 @@ class WhatsAppNotificationService
                         $bodyParameters[4] ?? url('/'),
                     ];
                     return $this->sendTemplateViaMetaWithDetails($phone, $templateName, $adapted, $languageCode, $tenant, $buttonParameters);
+                } elseif ($templateName === 'cita_recibida' && $expectedCount === 5 && count($adapted) === 6) {
+                    // Si Meta aún tiene la versión anterior de 5 parámetros (fecha y hora juntas)
+                    $adapted = [
+                        $bodyParameters[0] ?? 'Cliente',
+                        $bodyParameters[1] ?? 'Servicio',
+                        ($bodyParameters[2] ?? '') . ' a las ' . ($bodyParameters[3] ?? ''),
+                        $bodyParameters[4] ?? '$0 COP',
+                        $bodyParameters[5] ?? url('/'),
+                    ];
+                    return $this->sendTemplateViaMetaWithDetails($phone, $templateName, $adapted, $languageCode, $tenant, $buttonParameters);
+                } elseif ($templateName === 'cita_recibida' && $expectedCount === 6 && count($adapted) === 5) {
+                    // Si Meta ya aprobó la nueva versión de 6 parámetros (fecha y hora separadas)
+                    $adapted = [
+                        $bodyParameters[0] ?? 'Cliente',
+                        $bodyParameters[1] ?? 'Servicio',
+                        $bodyParameters[2] ?? 'Fecha',
+                        '09:00',
+                        $bodyParameters[3] ?? '$0 COP',
+                        $bodyParameters[4] ?? url('/'),
+                    ];
+                    return $this->sendTemplateViaMetaWithDetails($phone, $templateName, $adapted, $languageCode, $tenant, $buttonParameters);
                 } elseif ($expectedCount === 5 && count($adapted) === 4) {
                     array_splice($adapted, 1, 0, ['Cita']);
                     return $this->sendTemplateViaMetaWithDetails($phone, $templateName, $adapted, $languageCode, $tenant, $buttonParameters);
