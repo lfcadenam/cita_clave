@@ -1641,6 +1641,10 @@ class WhatsAppNotificationService
         $reason = $extraContext['reason'] ?? $appointment->cancellation_reason ?? 'Cancelación de cita';
         $prevDate = $extraContext['previous_date'] ?? '';
 
+        $salonName = $appointment->tenant?->name ?: 'La Belle Nails Bogotá • Paola Aguilera';
+        $salonCity = $appointment->tenant?->city ?: 'Bogotá';
+        $salonLocation = "{$salonName} ({$salonCity})";
+
         $dict = [
             'apodo' => $clientName,
             'cliente' => $clientName,
@@ -1649,6 +1653,8 @@ class WhatsAppNotificationService
             'fecha_hora' => $dateTime,
             'fecha' => $dateFormatted,
             'hora' => $timeFormatted,
+            'lugar' => $salonLocation,
+            'salon' => $salonName,
             'abono' => "\${$deposit} COP",
             'precio_total' => "\${$price} COP",
             'saldo_restante' => "\${$remaining} COP",
