@@ -24,6 +24,33 @@ class Appointment extends Model
     public bool $skipObserverConfirmWhatsApp = false;
     public bool $skipObserverCancelWhatsApp = false;
 
+    public function setAttribute($key, $value)
+    {
+        if (in_array($key, [
+            'skipObserverClientWhatsApp',
+            'skipObserverRescheduleWhatsApp',
+            'skipObserverConfirmWhatsApp',
+            'skipObserverCancelWhatsApp',
+        ], true)) {
+            $this->{$key} = (bool) $value;
+            return $this;
+        }
+
+        return parent::setAttribute($key, $value);
+    }
+
+    public function save(array $options = [])
+    {
+        unset(
+            $this->attributes['skipObserverClientWhatsApp'],
+            $this->attributes['skipObserverRescheduleWhatsApp'],
+            $this->attributes['skipObserverConfirmWhatsApp'],
+            $this->attributes['skipObserverCancelWhatsApp']
+        );
+
+        return parent::save($options);
+    }
+
     protected $fillable = [
         'tenant_id',
         'customer_id',
