@@ -29,17 +29,18 @@
 * **Idioma:** `Spanish (COL)`
 * **Texto del Cuerpo (Body):**
 ```text
-Hola {{1}}, te confirmamos que tu cita para {{2}} ha sido agendada con éxito para el día {{3}}.
+Hola {{1}}, te confirmamos que tu cita #{{2}} para {{3}} ha sido agendada con éxito para el día {{4}}.
 
-Puedes consultar tu comprobante aquí: {{4}}
+Puedes consultar tu comprobante aquí: {{5}}
 
 ¡Te esperamos puntualmente!
 ```
 * **Muestras de variables:**
   * `{{1}}`: `Cami`
-  * `{{2}}`: `Manicura Semipermanente`
-  * `{{3}}`: `Viernes 28 de Noviembre a las 3:00 PM`
-  * `{{4}}`: `https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD`
+  * `{{2}}`: `PA-261125-ABCD`
+  * `{{3}}`: `Manicura Semipermanente`
+  * `{{4}}`: `Viernes 28 de Noviembre a las 3:00 PM`
+  * `{{5}}`: `https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD`
 
 ---
 

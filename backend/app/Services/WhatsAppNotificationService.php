@@ -431,13 +431,14 @@ class WhatsAppNotificationService
         $salonName = $appointment->tenant?->name ?: 'Estudio Paola Aguilera';
         $salonCity = $appointment->tenant?->city ?: 'Bogotá';
         $clientName = $appointment->getNotificationClientName();
+        $appointmentNumber = (string) ($appointment->appointment_number ?? $appointment->id);
         $serviceName = $appointment->service?->name ?? 'Servicio';
         $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM');
         $startTime = substr($appointment->start_time, 0, 5);
-        $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
+        $voucherUrl = url("/reserva/confirmacion/{$appointmentNumber}");
 
         $message = "🌸 *¡Reserva Confirmada!* Hola {$clientName},\n\n"
-            . "Tu cita para *{$serviceName}* ha sido confirmada exitosamente:\n\n"
+            . "Tu cita #{$appointmentNumber} para *{$serviceName}* ha sido confirmada exitosamente:\n\n"
             . "💅 *Servicio:* {$serviceName}\n"
             . "📅 *Fecha:* {$dateFormatted}\n"
             . "⏰ *Hora:* {$startTime}\n"
@@ -453,6 +454,7 @@ class WhatsAppNotificationService
             templateKey: 'booking_confirmed',
             templateParams: [
                 $clientName,
+                $appointmentNumber,
                 $serviceName,
                 "{$dateFormatted} a las {$startTime}",
                 $voucherUrl,
@@ -484,6 +486,7 @@ class WhatsAppNotificationService
                 . "📄 *Tu comprobante digital:*\n{$voucherUrl}\n\n"
                 . "_¡Te esperamos puntualmente!_";
 
+            $apptNum = (string) ($appointment->appointment_number ?? $appointment->id);
             $sentClient = $this->dispatchAppointmentNotification(
                 appointment: $appointment,
                 phone: $appointment->client_phone,
@@ -491,6 +494,7 @@ class WhatsAppNotificationService
                 templateKey: 'attendance_confirmed',
                 templateParams: [
                     $clientName,
+                    $apptNum,
                     $serviceName,
                     "{$dateFormatted} a las {$startTime}",
                     $voucherUrl,
@@ -576,14 +580,15 @@ class WhatsAppNotificationService
 
                 // Estrategia 2: Fallback oficial a la plantilla pre-aprobada en Meta para producción (confirmacion_cita / reserva_confirmada)
                 $appointment->loadMissing(['service', 'customer']);
-                $apptNum = (string) $appointment->appointment_number;
+                $apptNum = (string) ($appointment->appointment_number ?? $appointment->id);
                 $clientName = $appointment->getNotificationClientName();
                 $serviceName = $appointment->service?->name ?? 'Servicio';
                 $dateFormatted = Carbon::parse($appointment->appointment_date)->locale('es')->isoFormat('dddd D [de] MMMM') . ' a las ' . substr((string) $appointment->start_time, 0, 5);
-                $voucherUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
+                $voucherUrl = url("/reserva/confirmacion/{$apptNum}");
 
                 $fallbackParams = [
                     $clientName,
+                    $apptNum,
                     $serviceName,
                     $dateFormatted,
                     $voucherUrl,
@@ -1061,6 +1066,24 @@ class WhatsAppNotificationService
                 );
             }
 
+            // Si el número de parámetros no coincide con la plantilla aprobada en Meta (error #132000), auto-adaptar
+            if (preg_match('/number of localizable_params \((\d+)\) does not match the expected number of params \((\d+)\)/', $errorDetails, $paramMatches)) {
+                $actualCount = (int) $paramMatches[1];
+                $expectedCount = (int) $paramMatches[2];
+                Log::info("[WhatsApp Meta] Auto-adaptando parámetros para '{$templateName}' (enviados: {$actualCount}, esperados por Meta: {$expectedCount})...");
+
+                $adapted = $bodyParameters;
+                if ($expectedCount === 5 && count($adapted) === 4) {
+                    // Meta espera 5 parámetros: insertar código de cita en posición 1
+                    array_splice($adapted, 1, 0, ['Cita']);
+                    return $this->sendTemplateViaMetaWithDetails($phone, $templateName, $adapted, $languageCode, $tenant, $buttonParameters);
+                } elseif ($expectedCount === 4 && count($adapted) === 5) {
+                    // Meta espera 4 parámetros: remover código de cita en posición 1
+                    array_splice($adapted, 1, 1);
+                    return $this->sendTemplateViaMetaWithDetails($phone, $templateName, $adapted, $languageCode, $tenant, $buttonParameters);
+                }
+            }
+
             $parsedError = $this->formatMetaError($response->status(), $json);
             Log::warning("[WhatsApp Meta] Error HTTP {$response->status()} enviando plantilla '{$templateName}' a +{$sanitizedPhone}: {$parsedError['message']}");
             return $parsedError;
@@ -1188,14 +1211,15 @@ class WhatsAppNotificationService
                 'description' => 'Notificación enviada cuando una cita queda agendada o confirmada en el sistema.',
                 'category' => 'UTILITY',
                 'language' => 'es_CO',
-                'body' => "Hola {{1}}, te confirmamos que tu cita para {{2}} ha sido agendada con éxito para el día {{3}}.\n\nPuedes consultar tu comprobante aquí: {{4}}\n\n¡Te esperamos puntualmente!",
+                'body' => "Hola {{1}}, te confirmamos que tu cita #{{2}} para {{3}} ha sido agendada con éxito para el día {{4}}.\n\nPuedes consultar tu comprobante aquí: {{5}}\n\n¡Te esperamos puntualmente!",
                 'samples' => [
                     'Cami',
+                    'PA-261125-ABCD',
                     'Manicura Semipermanente',
                     'Viernes 28 de Noviembre a las 3:00 PM',
                     'https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD',
                 ],
-                'variable_keys' => ['apodo', 'servicio', 'fecha_hora', 'link_comprobante'],
+                'variable_keys' => ['apodo', 'codigo_cita', 'servicio', 'fecha_hora', 'link_comprobante'],
                 'trigger' => 'Al reservar sin requerir abono o al confirmar manualmente una cita.',
             ],
             'cita_cancelada' => [
