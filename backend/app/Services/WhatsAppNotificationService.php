@@ -431,9 +431,9 @@ class WhatsAppNotificationService
             return false;
         }
 
-        $appointment->loadMissing(['tenant', 'service', 'customer']);
-        $salonName = $appointment->tenant?->name ?: 'Estudio Paola Aguilera';
+        $salonName = $appointment->tenant?->name ?: 'La Belle Nails Bogotá • Paola Aguilera';
         $salonCity = $appointment->tenant?->city ?: 'Bogotá';
+        $salonLocation = "{$salonName} ({$salonCity})";
         $clientName = $appointment->getNotificationClientName();
         $appointmentNumber = (string) ($appointment->appointment_number ?? $appointment->id);
         $serviceName = $appointment->service?->name ?? 'Servicio';
@@ -442,11 +442,11 @@ class WhatsAppNotificationService
         $voucherUrl = url("/reserva/confirmacion/{$appointmentNumber}");
 
         $message = "🌸 *¡Reserva Confirmada!* Hola {$clientName},\n\n"
-            . "Tu cita #{$appointmentNumber} para *{$serviceName}* ha sido confirmada exitosamente:\n\n"
+            . "Tu cita para *{$serviceName}* ha sido confirmada exitosamente:\n\n"
             . "💅 *Servicio:* {$serviceName}\n"
             . "📅 *Fecha:* {$dateFormatted}\n"
             . "⏰ *Hora:* {$startTime}\n"
-            . "📍 *Lugar:* {$salonName} ({$salonCity})\n\n"
+            . "📍 *Lugar:* {$salonLocation}\n\n"
             . "✅ *Confirma tu asistencia y consulta tu comprobante digital aquí:*\n"
             . "{$voucherUrl}\n\n"
             . "_¡Gracias por elegirnos! Recibirás un recordatorio 24h antes de tu cita._";
@@ -458,9 +458,11 @@ class WhatsAppNotificationService
             templateKey: 'booking_confirmed',
             templateParams: [
                 $clientName,
-                $appointmentNumber,
                 $serviceName,
-                "{$dateFormatted} a las {$startTime}",
+                $serviceName,
+                $dateFormatted,
+                $startTime,
+                $salonLocation,
                 $voucherUrl,
             ]
         );
