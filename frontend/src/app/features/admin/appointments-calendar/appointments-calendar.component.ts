@@ -2945,11 +2945,9 @@ export class AppointmentsCalendarComponent implements OnInit {
       },
       error: (err) => {
         this.isSavingAppointment.set(false);
-        if (err.status === 422 && err.error?.message) {
-          this.conflictError.set(err.error.message);
-        } else {
-          this.conflictError.set('No se pudo guardar la cita. Verifica que no haya un choque de horarios.');
-        }
+        const serverMsg = err.error?.message 
+          || (err.error?.errors ? Object.values(err.error.errors).flat().join(' ') : null);
+        this.conflictError.set(serverMsg || 'No se pudo guardar la cita. Revisa los datos o el horario.');
       }
     });
   }
