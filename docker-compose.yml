@@ -53,6 +53,9 @@ services:
         condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     networks:
       citaclave_net:
         aliases:
@@ -71,6 +74,9 @@ services:
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     env_file:
       - path: .env
         required: false
@@ -105,6 +111,9 @@ services:
     command: php artisan schedule:work
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     env_file:
       - path: .env
         required: false
@@ -149,6 +158,9 @@ services:
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       - app
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     networks:
       - citaclave_net
       - elan_default

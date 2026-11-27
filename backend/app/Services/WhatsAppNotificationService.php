@@ -877,6 +877,25 @@ class WhatsAppNotificationService
     }
 
     /**
+     * Cliente HTTP optimizado para Meta Graph API (fuerza IPv4 para evitar error cURL 7 en Docker Alpine).
+     */
+    protected function metaHttp(?string $token = null, int $timeout = 15): \Illuminate\Http\Client\PendingRequest
+    {
+        $request = Http::acceptJson()
+            ->timeout($timeout)
+            ->withOptions([
+                'ip_resolve' => 'v4',
+                'connect_timeout' => 8,
+            ]);
+
+        if (! empty($token)) {
+            $request->withToken($token);
+        }
+
+        return $request;
+    }
+
+    /**
      * Envío de mensaje de texto libre a través de Meta Cloud API con diagnóstico detallado.
      */
     public function sendViaMetaWithDetails(string $phone, string $message, ?Tenant $tenant = null): array
@@ -911,10 +930,7 @@ class WhatsAppNotificationService
         ];
 
         try {
-            $response = Http::withToken($token)
-                ->acceptJson()
-                ->timeout(12)
-                ->post($endpoint, $payload);
+            $response = $this->metaHttp($token, 12)->post($endpoint, $payload);
 
             $json = $response->json() ?? [];
 
@@ -1039,10 +1055,7 @@ class WhatsAppNotificationService
         ];
 
         try {
-            $response = Http::withToken($token)
-                ->acceptJson()
-                ->timeout(12)
-                ->post($endpoint, $payload);
+            $response = $this->metaHttp($token, 12)->post($endpoint, $payload);
 
             $json = $response->json() ?? [];
 
@@ -1117,12 +1130,9 @@ class WhatsAppNotificationService
         }
 
         try {
-            $response = Http::withToken($token)
-                ->acceptJson()
-                ->timeout(8)
-                ->get("{$apiUrl}/{$phoneId}", [
-                    'fields' => 'id,display_phone_number,verified_name,quality_rating,code_verification_status,name_status',
-                ]);
+            $response = $this->metaHttp($token, 8)->get("{$apiUrl}/{$phoneId}", [
+                'fields' => 'id,display_phone_number,verified_name,quality_rating,code_verification_status,name_status',
+            ]);
 
             $json = $response->json() ?? [];
 
@@ -1174,12 +1184,9 @@ class WhatsAppNotificationService
         }
 
         try {
-            $response = Http::withToken($token)
-                ->acceptJson()
-                ->timeout(10)
-                ->get("{$apiUrl}/{$wabaId}/message_templates", [
-                    'limit' => 50,
-                ]);
+            $response = $this->metaHttp($token, 10)->get("{$apiUrl}/{$wabaId}/message_templates", [
+                'limit' => 50,
+            ]);
 
             if ($response->successful()) {
                 $data = $response->json()['data'] ?? [];
@@ -1777,10 +1784,7 @@ class WhatsAppNotificationService
         $endpoint = "{$apiUrl}/{$wabaId}/message_templates";
 
         try {
-            $response = Http::withToken($token)
-                ->acceptJson()
-                ->timeout(15)
-                ->post($endpoint, $payload);
+            $response = $this->metaHttp($token, 15)->post($endpoint, $payload);
 
             $json = $response->json() ?? [];
 
@@ -1812,10 +1816,7 @@ class WhatsAppNotificationService
                     $matched = collect($existingList)->first(fn ($t) => strtolower($t['name'] ?? '') === strtolower($name));
                     if ($matched && !empty($matched['id'])) {
                         $templateId = $matched['id'];
-                        $updateRes = Http::withToken($token)
-                            ->acceptJson()
-                            ->timeout(15)
-                            ->post("{$apiUrl}/{$templateId}", [
+                        $updateRes = $this->metaHttp($token, 15)->post("{$apiUrl}/{$templateId}", [
                                 'components' => [
                                     $bodyComponent,
                                 ],
@@ -1986,13 +1987,10 @@ class WhatsAppNotificationService
         }
 
         try {
-            $response = Http::withToken($token)
-                ->acceptJson()
-                ->timeout(15)
-                ->post("{$apiUrl}/{$phoneId}/register", [
-                    'messaging_product' => 'whatsapp',
-                    'pin' => $pin,
-                ]);
+            $response = $this->metaHttp($token, 15)->post("{$apiUrl}/{$phoneId}/register", [
+                'messaging_product' => 'whatsapp',
+                'pin' => $pin,
+            ]);
 
             $json = $response->json() ?? [];
 
