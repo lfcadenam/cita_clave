@@ -381,18 +381,21 @@ class WhatsAppNotificationService
         $confirmationUrl = url("/reserva/confirmar/{$appointment->appointment_number}?token=" . $appointment->generateSecurityToken());
         $portalUrl = url("/reserva/confirmacion/{$appointment->appointment_number}");
 
-        $message = "✨ *¡Hola {$clientName}!* Te saludamos de *{$salonName}*.\n\n"
-            . "Te recordamos que tienes una cita programada para mañana:\n\n"
+        $message = "🌸 *¡Tu cita es mañana!*\n\n"
+            . "🫧Hola {$clientName}, 🤍\n\n"
+            . "✨Te recordamos que mañana te esperamos en La Belle Nails para tu cita:\n\n"
+            . "💅 *Servicio:* {$serviceName}\n"
             . "📅 *Fecha:* {$dateFormatted}\n"
             . "⏰ *Hora:* {$startTime}\n"
-            . "💆‍♀️ *Servicio:* {$serviceName}\n"
-            . "💵 *Saldo pendiente en local:* \${$balanceFormatted} COP\n\n"
-            . "¿Nos confirmas tu asistencia el día de mañana?\n\n"
-            . "👉 *Toca aquí para CONFIRMAR tu cita en 1 clic:*\n"
+            . "📍 *Lugar:* La Belle Nails Bogotá • Paola Aguilera (Bogotá)\n\n"
+            . "✨ *¿Nos confirmas tu asistencia? Entra al link y confirma:*\n"
             . "{$confirmationUrl}\n\n"
-            . "📄 *O consulta tu comprobante digital aquí:*\n"
-            . "{$portalUrl}\n\n"
-            . "_¡Te esperamos puntualmente para brindarte la mejor experiencia!_";
+            . "♥️ *Ten en cuenta nuestras políticas de agenda:*\n\n"
+            . "✨ Si necesitas modificar tu cita, te agradecemos solicitarlo con un mínimo de 48 horas de anticipación.\n\n"
+            . "✨ Una vez confirmada la cita, en caso de no asistir, el servicio será cobrado en su totalidad, ya que el espacio ha sido reservado exclusivamente para ti.\n\n"
+            . "✨ Contamos con un tiempo máximo de espera de 15 minutos.\n\n"
+            . "🤍 Gracias por ayudarnos a cuidar nuestra agenda y por valorar nuestro tiempo y trabajo.\n\n"
+            . "🫶🏻¡Te esperamos mañana!🫶🏻";
 
         $sent = $this->dispatchAppointmentNotification(
             appointment: $appointment,
@@ -402,8 +405,8 @@ class WhatsAppNotificationService
             templateParams: [
                 $clientName,
                 $serviceName,
-                "{$dateFormatted} a las {$startTime}",
-                "\${$balanceFormatted} COP",
+                $dateFormatted,
+                $startTime,
                 $confirmationUrl,
             ]
         );
@@ -1284,18 +1287,18 @@ class WhatsAppNotificationService
                 'key' => 'recordatorio_cita_24h',
                 'name' => 'recordatorio_cita_24h',
                 'display_name' => 'Recordatorio 24 Horas Antes',
-                'description' => 'Recordatorio preventivo enviado 24h antes del turno con enlace de confirmación en 1 clic.',
+                'description' => 'Recordatorio preventivo enviado 24h antes del turno con enlace de confirmación y políticas del salón.',
                 'category' => 'UTILITY',
                 'language' => 'es_CO',
-                'body' => "Hola {{1}}, te recordamos que tienes una cita programada para {{2}} el día {{3}}.\n\nSaldo restante a pagar en el salón: {{4}}.\n👉 Por favor confirma tu asistencia ingresando a este enlace: {{5}}\n\n¡Te esperamos puntualmente!",
+                'body' => "🌸 ¡Tu cita es mañana!\n\n🫧Hola {{1}}, 🤍\n\n✨Te recordamos que mañana te esperamos en La Belle Nails para tu cita:\n\n💅 Servicio: {{2}}\n📅 Fecha: {{3}}\n⏰ Hora: {{4}}\n📍 Lugar: La Belle Nails Bogotá • Paola Aguilera (Bogotá)\n\n✨ ¿Nos confirmas tu asistencia? Entra al link y confirma\n{{5}}\n\n♥️Ten en cuenta nuestras políticas de agenda:\n\n✨Si necesitas modificar tu cita, te agradecemos solicitarlo con un mínimo de 48 horas de anticipación.\n\n✨ Una vez confirmada la cita, en caso de no asistir, el servicio será cobrado en su totalidad, ya que el espacio ha sido reservado exclusivamente para ti.\n\n✨ Contamos con un tiempo máximo de espera de 15 minutos.\n\n🤍 Gracias por ayudarnos a cuidar nuestra agenda y por valorar nuestro tiempo y trabajo.\n\n🫶🏻¡Te esperamos mañana!🫶🏻",
                 'samples' => [
-                    'Cami',
+                    'Luisfer',
                     'Manicura Semipermanente',
-                    'Mañana Viernes a las 3:00 PM',
-                    '$25.000 COP',
+                    'domingo 29 de noviembre',
+                    '09:00',
                     'https://labellenailsbog.com/reserva/confirmar/PA-261125-ABCD?token=xyz123',
                 ],
-                'variable_keys' => ['apodo', 'servicio', 'fecha_hora', 'saldo_restante', 'link_comprobante'],
+                'variable_keys' => ['apodo', 'servicio', 'fecha', 'hora', 'link_comprobante'],
                 'trigger' => 'Envío automático por cron o comando diario a citas del día siguiente.',
             ],
             'cita_reagendada' => [
