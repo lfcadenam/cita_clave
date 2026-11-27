@@ -409,7 +409,8 @@ class WhatsAppNotificationService
                 $dateFormatted,
                 $startTime,
                 $confirmationUrl,
-            ]
+            ],
+            extraContext: ['confirmation_url' => $confirmationUrl]
         );
 
         if ($sent) {
@@ -1301,7 +1302,7 @@ class WhatsAppNotificationService
                     '09:00',
                     'https://labellenailsbog.com/reserva/confirmar/PA-261125-ABCD?token=xyz123',
                 ],
-                'variable_keys' => ['apodo', 'servicio', 'fecha', 'hora', 'link_comprobante'],
+                'variable_keys' => ['apodo', 'servicio', 'fecha', 'hora', 'link_confirmacion'],
                 'trigger' => 'Envío automático por cron o comando diario a citas del día siguiente.',
             ],
             'cita_reagendada' => [
@@ -1673,6 +1674,9 @@ class WhatsAppNotificationService
         $salonCity = $appointment->tenant?->city ?: 'Bogotá';
         $salonLocation = "{$salonName} ({$salonCity})";
 
+        $confirmationUrl = $extraContext['confirmation_url']
+            ?? url("/reserva/confirmar/{$apptNum}?token=" . $appointment->generateSecurityToken());
+
         $dict = [
             'apodo' => $clientName,
             'cliente' => $clientName,
@@ -1687,6 +1691,7 @@ class WhatsAppNotificationService
             'precio_total' => "\${$price} COP",
             'saldo_restante' => "\${$remaining} COP",
             'link_comprobante' => $voucherUrl,
+            'link_confirmacion' => $confirmationUrl,
             'link_portal' => url('/'),
             'motivo' => $reason,
             'horario_previo' => $prevDate,
