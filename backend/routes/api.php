@@ -161,6 +161,7 @@ Route::prefix('v1')->group(function () {
         // Canal WhatsApp (Meta Cloud API)
         Route::get('/settings/whatsapp', [WhatsAppAdminController::class, 'getSettings']);
         Route::get('/settings/whatsapp/status', [WhatsAppAdminController::class, 'checkStatus']);
+        Route::get('/settings/whatsapp/logs', [WhatsAppAdminController::class, 'getLogs']);
         Route::put('/settings/whatsapp', [WhatsAppAdminController::class, 'updateSettings']);
         Route::post('/settings/whatsapp/register-pin', [WhatsAppAdminController::class, 'registerPin']);
         Route::get('/settings/whatsapp/templates', [WhatsAppAdminController::class, 'syncTemplates']);

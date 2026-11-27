@@ -496,4 +496,37 @@ class WhatsAppAdminController extends Controller
             'account_status' => $status,
         ], $isSuccess ? 200 : 422);
     }
+
+    /**
+     * Consulta los registros recientes de eventos y errores de WhatsApp en el sistema.
+     */
+    public function getLogs(Request $request): JsonResponse
+    {
+        $logPath = storage_path('logs/laravel.log');
+        if (! file_exists($logPath)) {
+            return response()->json([
+                'success' => true,
+                'data' => [],
+                'message' => 'No hay registros de log generados aún.',
+            ]);
+        }
+
+        $lines = @file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+        $lines = array_slice($lines, -1500);
+        $matched = [];
+
+        foreach ($lines as $line) {
+            if (stripos($line, 'whatsapp') !== false || stripos($line, 'meta') !== false) {
+                $matched[] = $line;
+            }
+        }
+
+        $recent = array_slice($matched, -100);
+
+        return response()->json([
+            'success' => true,
+            'total' => count($recent),
+            'data' => array_reverse($recent),
+        ]);
+    }
 }
