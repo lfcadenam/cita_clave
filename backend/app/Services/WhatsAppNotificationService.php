@@ -1073,12 +1073,32 @@ class WhatsAppNotificationService
                 Log::info("[WhatsApp Meta] Auto-adaptando parámetros para '{$templateName}' (enviados: {$actualCount}, esperados por Meta: {$expectedCount})...");
 
                 $adapted = $bodyParameters;
-                if ($expectedCount === 5 && count($adapted) === 4) {
-                    // Meta espera 5 parámetros: insertar código de cita en posición 1
+                if ($expectedCount === 5 && count($adapted) === 7) {
+                    // Si Meta aún tiene la versión de 5 parámetros aprobada
+                    $adapted = [
+                        $bodyParameters[0] ?? 'Cliente',
+                        'Cita',
+                        $bodyParameters[1] ?? 'Servicio',
+                        ($bodyParameters[3] ?? '') . ' a las ' . ($bodyParameters[4] ?? ''),
+                        $bodyParameters[6] ?? url('/'),
+                    ];
+                    return $this->sendTemplateViaMetaWithDetails($phone, $templateName, $adapted, $languageCode, $tenant, $buttonParameters);
+                } elseif ($expectedCount === 7 && count($adapted) === 5) {
+                    // Si Meta ya aprobó la versión de 7 parámetros
+                    $adapted = [
+                        $bodyParameters[0] ?? 'Cliente',
+                        $bodyParameters[2] ?? 'Servicio',
+                        $bodyParameters[2] ?? 'Servicio',
+                        $bodyParameters[3] ?? 'Hoy',
+                        '09:00',
+                        'La Belle Nails Bogotá • Paola Aguilera',
+                        $bodyParameters[4] ?? url('/'),
+                    ];
+                    return $this->sendTemplateViaMetaWithDetails($phone, $templateName, $adapted, $languageCode, $tenant, $buttonParameters);
+                } elseif ($expectedCount === 5 && count($adapted) === 4) {
                     array_splice($adapted, 1, 0, ['Cita']);
                     return $this->sendTemplateViaMetaWithDetails($phone, $templateName, $adapted, $languageCode, $tenant, $buttonParameters);
                 } elseif ($expectedCount === 4 && count($adapted) === 5) {
-                    // Meta espera 4 parámetros: remover código de cita en posición 1
                     array_splice($adapted, 1, 1);
                     return $this->sendTemplateViaMetaWithDetails($phone, $templateName, $adapted, $languageCode, $tenant, $buttonParameters);
                 }
@@ -1211,15 +1231,17 @@ class WhatsAppNotificationService
                 'description' => 'Notificación enviada cuando una cita queda agendada o confirmada en el sistema.',
                 'category' => 'UTILITY',
                 'language' => 'es_CO',
-                'body' => "Hola {{1}}, te confirmamos que tu cita #{{2}} para {{3}} ha sido agendada con éxito para el día {{4}}.\n\nPuedes consultar tu comprobante aquí: {{5}}\n\n¡Te esperamos puntualmente!",
+                'body' => "🌸 ¡Reserva Confirmada!\nHola {{1}},\nTu cita para {{2}} ha sido confirmada exitosamente:\n\n💅 Servicio: {{3}}\n📅 Fecha: {{4}}\n⏰ Hora: {{5}}\n📍 Lugar: {{6}}\n✅ Confirma tu asistencia y consulta tu comprobante digital aquí:\n{{7}}\n¡Gracias por elegirnos! Recibirás un recordatorio 24h antes de tu cita.",
                 'samples' => [
-                    'Cami',
-                    'PA-261125-ABCD',
-                    'Manicura Semipermanente',
-                    'Viernes 28 de Noviembre a las 3:00 PM',
-                    'https://labellenailsbog.com/reserva/confirmacion/PA-261125-ABCD',
+                    'Luisfer',
+                    'Remiendo',
+                    'Remiendo',
+                    'domingo 29 de noviembre',
+                    '09:00',
+                    'La Belle Nails Bogotá • Paola Aguilera (Bogotá)',
+                    'https://labellenailsbog.com/reserva/confirmacion/PA-261126-8HZN',
                 ],
-                'variable_keys' => ['apodo', 'codigo_cita', 'servicio', 'fecha_hora', 'link_comprobante'],
+                'variable_keys' => ['apodo', 'servicio', 'servicio', 'fecha', 'hora', 'lugar', 'link_comprobante'],
                 'trigger' => 'Al reservar sin requerir abono o al confirmar manualmente una cita.',
             ],
             'cita_cancelada' => [
