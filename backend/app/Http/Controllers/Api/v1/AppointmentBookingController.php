@@ -291,6 +291,7 @@ class AppointmentBookingController extends Controller
                 $appointment->status = AppointmentStatus::PENDING_DEPOSIT;
             }
 
+            $appointment->skipObserverClientWhatsApp = true;
             $appointment->save();
 
             // Disparar notificaciones automáticas por WhatsApp a la clienta (la alerta a la admin se envía desde AppointmentObserver)

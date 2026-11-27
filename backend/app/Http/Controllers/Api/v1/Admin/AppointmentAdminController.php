@@ -257,6 +257,7 @@ class AppointmentAdminController extends Controller
             $appointment->verified_at = now();
         }
 
+        $appointment->skipObserverClientWhatsApp = true;
         $appointment->save();
 
         // Sincronizar ficha de cliente

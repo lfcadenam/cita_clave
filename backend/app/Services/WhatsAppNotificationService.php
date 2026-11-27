@@ -561,6 +561,9 @@ class WhatsAppNotificationService
             if ($activeDriver === 'meta') {
                 $metaCreds = $this->resolveMetaCredentials($appointment);
                 $templateName = $metaCreds['templates'][$templateKey] ?? null;
+                if (empty($templateName)) {
+                    $templateName = $this->resolveTemplateKey($templateKey);
+                }
 
                 // Resolver dinámicamente los parámetros para evitar error #100
                 $dynamicParams = $this->resolveDynamicTemplateParameters(
@@ -570,28 +573,45 @@ class WhatsAppNotificationService
                     extraContext: $extraContext
                 );
 
+                // Anti auto-envío (Meta Error #100): si el destinatario es el mismo teléfono comercial del salón
+                $businessPhoneClean = $this->sanitizePhoneNumber((string) ($appointment->tenant?->whatsapp_number ?: $this->resolveAdminPhone($appointment)));
+                if (!empty($businessPhoneClean) && $sanitizedPhone === $businessPhoneClean) {
+                    Log::warning("[WhatsApp Meta] Se omitió envío a +{$sanitizedPhone}: es el mismo número comercial del salón (Meta prohíbe auto-mensajes a su propia cuenta).");
+                    return false;
+                }
+
                 // Estrategia 1: Si use_templates está activo y existe nombre de plantilla, intentar en es_CO y es
                 if ($metaCreds['use_templates'] && !empty($templateName)) {
-                    $langsToTry = array_values(array_unique([$metaCreds['language'], 'es_CO', 'es', 'es_ES']));
-                    foreach ($langsToTry as $langCode) {
-                        $tplRes = $this->sendTemplateViaMetaWithDetails(
-                            phone: $sanitizedPhone,
-                            templateName: $templateName,
-                            bodyParameters: $dynamicParams,
-                            languageCode: $langCode,
-                            tenant: $appointment->tenant,
-                            buttonParameters: []
-                        );
+                    $candidateNames = [$templateName];
+                    if ($templateName === 'confirmacion_cita') {
+                        $candidateNames[] = 'reserva_confirmada';
+                    } elseif ($templateName === 'reserva_confirmada') {
+                        $candidateNames[] = 'confirmacion_cita';
+                    }
 
-                        if ($tplRes['success']) {
-                            return true;
+                    $langsToTry = array_values(array_unique([$metaCreds['language'], 'es_CO', 'es', 'es_ES']));
+                    foreach ($candidateNames as $candName) {
+                        foreach ($langsToTry as $langCode) {
+                            $tplRes = $this->sendTemplateViaMetaWithDetails(
+                                phone: $sanitizedPhone,
+                                templateName: $candName,
+                                bodyParameters: $dynamicParams,
+                                languageCode: $langCode,
+                                tenant: $appointment->tenant,
+                                buttonParameters: []
+                            );
+
+                            if ($tplRes['success']) {
+                                return true;
+                            }
                         }
                     }
 
-                    Log::warning("[WhatsApp Meta] Plantilla '{$templateName}' aún en revisión o no disponible ({$tplRes['message']}). Usando plantilla preaprobada de respaldo con link...");
+                    $tplErrMsg = $tplRes['message'] ?? 'falló';
+                    Log::warning("[WhatsApp Meta] Plantilla '{$templateName}' no entregada ({$tplErrMsg}). Intentando plantilla preaprobada de respaldo con link...");
                 }
 
-                // Estrategia 2: Fallback oficial a la plantilla aprobada en Meta para producción (confirmacion_cita)
+                // Estrategia 2: Fallback oficial a la plantilla pre-aprobada en Meta para producción (confirmacion_cita / reserva_confirmada)
                 $appointment->loadMissing(['service', 'customer']);
                 $apptNum = (string) $appointment->appointment_number;
                 $clientName = $appointment->getNotificationClientName();
@@ -612,19 +632,23 @@ class WhatsAppNotificationService
                     fallbackParams: $fallbackParams
                 );
 
+                $fallbackCandidateNames = ['confirmacion_cita', 'reserva_confirmada'];
                 $fallbackLangs = array_values(array_unique([$metaCreds['language'], 'es_CO', 'es', 'es_ES']));
-                foreach ($fallbackLangs as $fallbackLang) {
-                    $fallbackRes = $this->sendTemplateViaMetaWithDetails(
-                        phone: $sanitizedPhone,
-                        templateName: 'confirmacion_cita',
-                        bodyParameters: $fallbackDynamic,
-                        languageCode: $fallbackLang,
-                        tenant: $appointment->tenant,
-                        buttonParameters: []
-                    );
 
-                    if ($fallbackRes['success']) {
-                        return true;
+                foreach ($fallbackCandidateNames as $fbName) {
+                    foreach ($fallbackLangs as $fallbackLang) {
+                        $fallbackRes = $this->sendTemplateViaMetaWithDetails(
+                            phone: $sanitizedPhone,
+                            templateName: $fbName,
+                            bodyParameters: $fallbackDynamic,
+                            languageCode: $fallbackLang,
+                            tenant: $appointment->tenant,
+                            buttonParameters: []
+                        );
+
+                        if ($fallbackRes['success']) {
+                            return true;
+                        }
                     }
                 }
 
@@ -1419,24 +1443,45 @@ class WhatsAppNotificationService
     }
 
     /**
+     * Mapea alias de eventos a los nombres canónicos de las plantillas oficiales.
+     */
+    public function resolveTemplateKey(string $key): string
+    {
+        $aliasMap = [
+            'booking_created' => 'cita_recibida',
+            'admin_new_booking' => 'alerta_nueva_cita_admin',
+            'deposit_approved' => 'cita_confirmada_abono',
+            'deposit_rejected' => 'novedad_comprobante_cita',
+            'appointment_cancelled' => 'cita_cancelada',
+            'appointment_rescheduled' => 'cita_reagendada',
+            'reminder_24h' => 'recordatorio_cita_24h',
+            'booking_confirmed' => 'confirmacion_cita',
+            'attendance_confirmed' => 'confirmacion_cita',
+        ];
+
+        return $aliasMap[$key] ?? $key;
+    }
+
+    /**
      * Obtiene la definición efectiva de una plantilla (fusiona defaults con personalizaciones).
      */
     public function getEffectiveTemplateDefinition(string $templateKey, ?Tenant $tenant = null): ?array
     {
+        $canonicalKey = $this->resolveTemplateKey($templateKey);
         $defaults = $this->getDefaultTemplatesDefinitions();
-        $def = $defaults[$templateKey] ?? null;
+        $def = $defaults[$canonicalKey] ?? $defaults[$templateKey] ?? null;
         if (!$def) {
             return null;
         }
 
         $customs = $this->getTenantCustomTemplates($tenant);
-        if (!empty($customs[$templateKey])) {
-            $override = $customs[$templateKey];
+        $override = $customs[$canonicalKey] ?? $customs[$templateKey] ?? null;
+        if (!empty($override)) {
             $def['body'] = $override['body'] ?? $def['body'];
             $def['samples'] = $override['samples'] ?? $def['samples'];
             $def['variable_keys'] = $override['variable_keys'] ?? $def['variable_keys'];
             $def['is_customized'] = true;
-            $def['original_body'] = $defaults[$templateKey]['body'];
+            $def['original_body'] = $defaults[$canonicalKey]['body'] ?? $defaults[$templateKey]['body'] ?? $def['body'];
         } else {
             $def['is_customized'] = false;
             $def['original_body'] = $def['body'];
@@ -1451,8 +1496,9 @@ class WhatsAppNotificationService
      */
     public function saveTenantCustomTemplate(string $templateKey, array $data, ?Tenant $tenant = null): array
     {
+        $canonicalKey = $this->resolveTemplateKey($templateKey);
         $defaults = $this->getDefaultTemplatesDefinitions();
-        if (!isset($defaults[$templateKey])) {
+        if (!isset($defaults[$canonicalKey])) {
             return [
                 'success' => false,
                 'message' => "La plantilla '{$templateKey}' no forma parte del catálogo oficial.",
@@ -1621,12 +1667,20 @@ class WhatsAppNotificationService
             'link_admin' => url('/admin/appointments'),
         ];
 
-        $effectiveDef = $this->getEffectiveTemplateDefinition($templateKey, $appointment->tenant);
+        $canonicalKey = $this->resolveTemplateKey($templateKey);
+        $effectiveDef = $this->getEffectiveTemplateDefinition($canonicalKey, $appointment->tenant);
         $body = $effectiveDef['body'] ?? '';
         preg_match_all('/\{\{(\d+)\}\}/', $body, $matches);
         $varCount = count($matches[1] ?? []);
 
         if ($varCount === 0) {
+            if (!empty($fallbackParams)) {
+                return array_values(array_map(function ($val) {
+                    $clean = preg_replace('/[\r\n\t]+/', ' ', (string) $val);
+                    $clean = preg_replace('/\s{2,}/', ' ', trim($clean));
+                    return mb_substr($clean ?: '-', 0, 1024);
+                }, $fallbackParams));
+            }
             return [];
         }
 
