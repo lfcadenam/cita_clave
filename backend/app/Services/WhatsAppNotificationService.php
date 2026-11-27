@@ -293,12 +293,13 @@ class WhatsAppNotificationService
         $startTime = substr($appointment->start_time, 0, 5);
         $bookingUrl = url("/");
 
+        $reasonText = $reason ?: 'Cancelada por administración';
         $message = "🚫 *Cita Cancelada* Hola {$clientName},\n\n"
             . "Te informamos que tu cita para *{$serviceName}* programada para el *{$dateFormatted} a las {$startTime}* ha sido cancelada.\n\n"
-            . ($reason ? "📝 *Motivo:* {$reason}\n\n" : "")
+            . "📝 *Motivo:* {$reasonText}\n\n"
             . "Tu horario ha sido liberado. Si deseas agendar para otra ocasión, puedes hacerlo aquí:\n"
             . "{$bookingUrl}\n\n"
-            . "_¡Esperamos verte pronto!_";
+            . "¡Esperamos verte pronto!";
 
         return $this->dispatchAppointmentNotification(
             appointment: $appointment,
@@ -309,10 +310,10 @@ class WhatsAppNotificationService
                 $clientName,
                 $serviceName,
                 "{$dateFormatted} a las {$startTime}",
-                $reason ?: 'Cancelación registrada',
+                $reasonText,
                 $bookingUrl,
             ],
-            extraContext: ['reason' => $reason]
+            extraContext: ['reason' => $reasonText]
         );
     }
 
@@ -1254,15 +1255,15 @@ class WhatsAppNotificationService
                 'description' => 'Aviso oficial enviado a la clienta cuando una cita es cancelada por el salón o la clienta.',
                 'category' => 'UTILITY',
                 'language' => 'es_CO',
-                'body' => "Hola {{1}}, te informamos que tu cita para {{2}} programada para el día {{3}} ha sido cancelada.\n\nMotivo: {{4}}\n\nSi deseas programar un nuevo horario, puedes ingresar nuevamente aquí: {{5}}\n\n¡Esperamos atenderte pronto!",
+                'body' => "🚫 Cita Cancelada Hola {{1}},\n\nTe informamos que tu cita para {{2}} programada para el {{3}} ha sido cancelada.\n\n📝 Motivo: {{4}}\n\nTu horario ha sido liberado. Si deseas agendar para otra ocasión, puedes hacerlo aquí:\n{{5}}\n\n¡Esperamos verte pronto!",
                 'samples' => [
-                    'Cami',
-                    'Manicura Semipermanente',
-                    'Viernes 28 de Noviembre a las 3:00 PM',
-                    'Cancelación solicitada por la clienta',
+                    'Luisfer',
+                    'Limpieza Pedicura',
+                    'domingo 29 de noviembre a las 09:00',
+                    'Cancelada por administración',
                     'https://labellenailsbog.com',
                 ],
-                'variable_keys' => ['apodo', 'servicio', 'fecha_hora', 'motivo', 'link_comprobante'],
+                'variable_keys' => ['apodo', 'servicio', 'fecha_hora', 'motivo', 'link_portal'],
                 'trigger' => 'Al cancelar una cita desde el portal de la clienta o desde el panel administrativo.',
             ],
             'cita_confirmada_abono' => [
