@@ -254,8 +254,10 @@ export class AppointmentsCalendarComponent implements OnInit {
     }
   });
 
-  // Horas de la Grilla (08:00 a 18:00)
+  // Horas de la Grilla (06:00 a 23:00 - 6:00 AM a 11:00 PM)
   hours: CalendarHour[] = [
+    { hour24: '06:00', hour12: '06:00 AM', hourNum: 6 },
+    { hour24: '07:00', hour12: '07:00 AM', hourNum: 7 },
     { hour24: '08:00', hour12: '08:00 AM', hourNum: 8 },
     { hour24: '09:00', hour12: '09:00 AM', hourNum: 9 },
     { hour24: '10:00', hour12: '10:00 AM', hourNum: 10 },
@@ -266,10 +268,15 @@ export class AppointmentsCalendarComponent implements OnInit {
     { hour24: '15:00', hour12: '03:00 PM', hourNum: 15 },
     { hour24: '16:00', hour12: '04:00 PM', hourNum: 16 },
     { hour24: '17:00', hour12: '05:00 PM', hourNum: 17 },
-    { hour24: '18:00', hour12: '06:00 PM', hourNum: 18 }
+    { hour24: '18:00', hour12: '06:00 PM', hourNum: 18 },
+    { hour24: '19:00', hour12: '07:00 PM', hourNum: 19 },
+    { hour24: '20:00', hour12: '08:00 PM', hourNum: 20 },
+    { hour24: '21:00', hour12: '09:00 PM', hourNum: 21 },
+    { hour24: '22:00', hour12: '10:00 PM', hourNum: 22 },
+    { hour24: '23:00', hour12: '11:00 PM', hourNum: 23 }
   ];
 
-  readonly baseHour = 8;
+  readonly baseHour = 6;
   readonly slotHeightPx = 64;
 
   // Detalle y Edición de Cita Seleccionada
