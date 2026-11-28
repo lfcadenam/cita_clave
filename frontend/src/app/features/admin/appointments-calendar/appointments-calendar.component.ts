@@ -2655,6 +2655,42 @@ export class AppointmentsCalendarComponent implements OnInit {
     return `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
   }
 
+  findConflictingNonLunchBlock(dateStr: string, startTime: string, endTime: string): BlockedSlot | null {
+    const rawBlocks = this.blockedSlots().filter(slot => {
+      if (slot.title?.toLowerCase().includes('flexible')) return false;
+      if (slot.is_recurring) return true;
+      if (!slot.blocked_date) return false;
+      const sDate = slot.blocked_date.includes('T') ? slot.blocked_date.split('T')[0] : slot.blocked_date;
+      return sDate === dateStr;
+    });
+
+    const [sh, sm] = startTime.split(':').map(n => parseInt(n, 10) || 0);
+    const [eh, em] = endTime.split(':').map(n => parseInt(n, 10) || 0);
+    const startMin = sh * 60 + sm;
+    const endMin = eh * 60 + em;
+
+    for (const block of rawBlocks) {
+      const isLunch = block.title?.toLowerCase().includes('almuerzo') ||
+                      block.reason?.toLowerCase().includes('almuerzo') ||
+                      (block.is_recurring && (block.start_time || '').startsWith('13:'));
+
+      if (isLunch) {
+        continue; // El almuerzo sí se permite pisar (se ajusta dinámicamente)
+      }
+
+      const [bsh, bsm] = (block.start_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+      const [beh, bem] = (block.end_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+      const bStartMin = bsh * 60 + bsm;
+      const bEndMin = beh * 60 + bem;
+
+      if (startMin < bEndMin && endMin > bStartMin) {
+        return block;
+      }
+    }
+
+    return null;
+  }
+
   applyAppointmentMove(apt: AdminAppointment, newDate: string, newStartTime: string): void {
     const currentStartClean = apt.start_time?.substring(0, 5);
     const currentDateClean = apt.date;
@@ -2666,6 +2702,19 @@ export class AppointmentsCalendarComponent implements OnInit {
 
     const duration = this.calculateDurationMinutes(apt.start_time, apt.end_time, apt.service?.duration_minutes);
     const newEndTime = this.calculateEndTimeFromStart(newStartTime, duration);
+
+    // Los bloqueos que no sean de tipo almuerzo NO se deben mover: mostrar alerta si se sobrepone
+    const conflictingBlock = this.findConflictingNonLunchBlock(newDate, newStartTime, newEndTime);
+    if (conflictingBlock) {
+      this.draggedAppointment.set(null);
+      const range = `${conflictingBlock.start_time?.substring(0, 5)} – ${conflictingBlock.end_time?.substring(0, 5)}`;
+      this.nuvexNotify.error(
+        'Horario Bloqueado',
+        `No se puede mover la cita a este horario: coincide con el bloqueo "${conflictingBlock.title}" (${range}).`
+      );
+      this.loadAppointmentsForCurrentRange();
+      return;
+    }
 
     this.isMovingAppointment.set(true);
 
@@ -2812,6 +2861,14 @@ export class AppointmentsCalendarComponent implements OnInit {
     const finalEnd = this.roundTo15Minutes(this.editEndTime());
     this.editStartTime.set(finalStart);
     this.editEndTime.set(finalEnd);
+
+    // Los bloqueos que no sean de tipo almuerzo NO se deben mover: mostrar alerta si se sobrepone
+    const conflictingBlock = this.findConflictingNonLunchBlock(this.editAppointmentDate(), finalStart, finalEnd);
+    if (conflictingBlock) {
+      const range = `${conflictingBlock.start_time?.substring(0, 5)} – ${conflictingBlock.end_time?.substring(0, 5)}`;
+      this.editAppointmentError.set(`No se puede mover la cita a este horario: coincide con el bloqueo "${conflictingBlock.title}" (${range}).`);
+      return;
+    }
 
     const payload: Partial<CreateAppointmentPayload> = {
       client_name: this.editClientName().trim(),
@@ -3132,6 +3189,14 @@ export class AppointmentsCalendarComponent implements OnInit {
     const finalEnd = this.roundTo15Minutes(this.endTime());
     this.startTime.set(finalStart);
     this.endTime.set(finalEnd);
+
+    // Los bloqueos que no sean de tipo almuerzo NO se deben mover: mostrar alerta si se sobrepone
+    const conflictingBlock = this.findConflictingNonLunchBlock(this.newApptDate(), finalStart, finalEnd);
+    if (conflictingBlock) {
+      const range = `${conflictingBlock.start_time?.substring(0, 5)} – ${conflictingBlock.end_time?.substring(0, 5)}`;
+      this.conflictError.set(`No se puede agendar en este horario: coincide con el bloqueo "${conflictingBlock.title}" (${range}).`);
+      return;
+    }
 
     const payload = {
       service_id: Number(primaryService.id),

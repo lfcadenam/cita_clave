@@ -6,6 +6,7 @@ use App\Enums\AppointmentStatus;
 use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\BlockedSlot;
 use App\Models\Customer;
 use App\Models\Service;
 use App\Services\WhatsAppNotificationService;
@@ -172,7 +173,7 @@ class AppointmentAdminController extends Controller
                 ->format('H:i:s');
         }
 
-        // Validar conflicto de horario
+        // Validar conflicto de horario con otras citas activas
         $conflict = Appointment::findConflicting($date, $startTime, $endTime);
         if ($conflict) {
             return response()->json([
@@ -187,6 +188,17 @@ class AppointmentAdminController extends Controller
                     'end_time' => $conflict->end_time,
                     'status' => $conflict->status?->value,
                 ],
+            ], 422);
+        }
+
+        // Validar conflicto con bloqueos de horario (que no sean de tipo almuerzo)
+        $tenantId = $request->user()->tenant_id;
+        $blockConflict = BlockedSlot::findConflictingNonLunch($date, $startTime, $endTime, $tenantId);
+        if ($blockConflict) {
+            $range = substr($blockConflict->start_time, 0, 5) . ' a ' . substr($blockConflict->end_time, 0, 5);
+            return response()->json([
+                'success' => false,
+                'message' => "No se puede agendar la cita: coincide con el horario bloqueado '{$blockConflict->title}' ({$range}).",
             ], 422);
         }
 
@@ -364,6 +376,17 @@ class AppointmentAdminController extends Controller
                         'start_time' => $conflict->start_time,
                         'end_time' => $conflict->end_time,
                     ],
+                ], 422);
+            }
+
+            // Validar conflicto con bloqueos de horario (que no sean de tipo almuerzo)
+            $tenantId = $request->user()->tenant_id;
+            $blockConflict = BlockedSlot::findConflictingNonLunch($date, $startTime, $endTime, $tenantId);
+            if ($blockConflict) {
+                $range = substr($blockConflict->start_time, 0, 5) . ' a ' . substr($blockConflict->end_time, 0, 5);
+                return response()->json([
+                    'success' => false,
+                    'message' => "No se puede mover la cita: coincide con el horario bloqueado '{$blockConflict->title}' ({$range}).",
                 ], 422);
             }
         }
