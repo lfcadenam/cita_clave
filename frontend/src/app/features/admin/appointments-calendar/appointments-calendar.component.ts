@@ -753,13 +753,16 @@ export class AppointmentsCalendarComponent implements OnInit {
       const sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 6);
 
-      const mStart = months[monday.getMonth()].substring(0, 3);
-      const mEnd = months[sunday.getMonth()].substring(0, 3);
+      const mStart = months[monday.getMonth()];
+      const mEnd = months[sunday.getMonth()];
 
       if (monday.getMonth() === sunday.getMonth()) {
         return `${monday.getDate()} – ${sunday.getDate()} ${mStart}, ${monday.getFullYear()}`;
       }
-      return `${monday.getDate()} ${mStart} – ${sunday.getDate()} ${mEnd}, ${sunday.getFullYear()}`;
+      if (monday.getFullYear() === sunday.getFullYear()) {
+        return `${monday.getDate()} ${mStart} – ${sunday.getDate()} ${mEnd}, ${sunday.getFullYear()}`;
+      }
+      return `${monday.getDate()} ${mStart} ${monday.getFullYear()} – ${sunday.getDate()} ${mEnd} ${sunday.getFullYear()}`;
     }
 
     const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
