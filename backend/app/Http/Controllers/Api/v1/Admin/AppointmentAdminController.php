@@ -156,15 +156,32 @@ class AppointmentAdminController extends Controller
             ], 422);
         }
 
-        // Servicio principal
         $primaryService = $services->firstWhere('id', $serviceIds[0]) ?: $services->first();
         $date = $validated['appointment_date'];
+
+        // Validar que no se agende en fechas pasadas
+        $apptDate = Carbon::parse($date)->startOfDay();
+        if ($apptDate->lt(Carbon::today())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede agendar una cita en una fecha anterior a hoy.',
+            ], 422);
+        }
 
         // Duración acumulada de todos los servicios seleccionados
         $totalDurationMinutes = $services->sum('duration_minutes');
 
         // Normalización y cálculo de horas
         $startTime = Carbon::parse($validated['start_time'])->format('H:i:s');
+        if ($apptDate->isToday()) {
+            $apptDateTime = Carbon::parse($date . ' ' . $startTime);
+            if ($apptDateTime->isPast()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede agendar una cita en un horario que ya pasó.',
+                ], 422);
+            }
+        }
         if (! empty($validated['end_time'])) {
             $endTime = Carbon::parse($validated['end_time'])->format('H:i:s');
         } else {
@@ -361,8 +378,26 @@ class AppointmentAdminController extends Controller
             $endTime = $appointment->end_time;
         }
 
-        // Si cambian fecha u horas, verificar solapamiento excluyendo la cita actual
+        // Si cambian fecha u horas, verificar que no sea una fecha pasada ni un horario que ya transcurrió
         if ($date !== $appointment->appointment_date->toDateString() || $startTime !== $appointment->start_time || $endTime !== $appointment->end_time) {
+            $apptDate = Carbon::parse($date)->startOfDay();
+            if ($apptDate->lt(Carbon::today())) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede mover la cita a una fecha anterior a hoy.',
+                ], 422);
+            }
+
+            if ($apptDate->isToday()) {
+                $apptDateTime = Carbon::parse($date . ' ' . $startTime);
+                if ($apptDateTime->isPast()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No se puede mover la cita a un horario que ya pasó.',
+                    ], 422);
+                }
+            }
+
             $conflict = Appointment::findConflicting($date, $startTime, $endTime, $appointment->id);
             if ($conflict) {
                 return response()->json([

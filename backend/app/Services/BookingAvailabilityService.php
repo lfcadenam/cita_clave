@@ -37,8 +37,8 @@ class BookingAvailabilityService
     {
         $targetDate = is_string($date) ? Carbon::parse($date)->startOfDay() : $date->copy()->startOfDay();
 
-        // Past dates cannot be booked (for client bookings)
-        if (! $forAdmin && $targetDate->lt(Carbon::today())) {
+        // Past dates cannot be booked
+        if ($targetDate->lt(Carbon::today())) {
             return [];
         }
 
@@ -54,6 +54,18 @@ class BookingAvailabilityService
             // El horario de turnos sugeridos para el administrador es a partir de las 6:00 AM hasta las 11:00 PM (23:00)
             $openDateTime = Carbon::parse($targetDate->toDateString() . ' 06:00:00');
             $closeDateTime = Carbon::parse($targetDate->toDateString() . ' 23:00:00');
+
+            // Si es hoy, no permitir sugerir horas que ya pasaron
+            $now = Carbon::now();
+            if ($targetDate->isToday() && $now->gt($openDateTime)) {
+                $minBookingTime = $now->copy()->ceilMinutes(15);
+                if ($minBookingTime->gte($closeDateTime)) {
+                    return [];
+                }
+                if ($minBookingTime->gt($openDateTime)) {
+                    $openDateTime = $minBookingTime;
+                }
+            }
         } else {
             $openDateTime = Carbon::parse($targetDate->toDateString() . ' ' . $schedule->open_time);
             $closeDateTime = Carbon::parse($targetDate->toDateString() . ' ' . $schedule->close_time);

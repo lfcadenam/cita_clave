@@ -104,6 +104,16 @@ class AppointmentBookingController extends Controller
         $date = Carbon::parse($validated['date']);
         $startTime = $validated['start_time'];
 
+        if ($date->isToday()) {
+            $slotDateTime = Carbon::parse($date->toDateString() . ' ' . $startTime);
+            if ($slotDateTime->isPast()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El horario seleccionado ya no se encuentra disponible por haber transcurrido.',
+                ], 422);
+            }
+        }
+
         return DB::transaction(function () use ($service, $date, $startTime, $validated) {
             // Lock and verify slot is available
             $isAvailable = $this->availabilityService->isSlotAvailable($service, $date, $startTime);
@@ -562,6 +572,17 @@ class AppointmentBookingController extends Controller
         $service = $appointment->service;
         $newDate = Carbon::parse($request->input('new_date'));
         $newStartTime = $request->input('new_time');
+
+        if ($newDate->isToday()) {
+            $slotDateTime = Carbon::parse($newDate->toDateString() . ' ' . $newStartTime);
+            if ($slotDateTime->isPast()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No es posible reagendar a un horario que ya pasó.',
+                ], 422);
+            }
+        }
+
         $newEndTime = Carbon::parse($newDate->toDateString() . ' ' . $newStartTime)
             ->addMinutes($service->duration_minutes)
             ->format('H:i:s');

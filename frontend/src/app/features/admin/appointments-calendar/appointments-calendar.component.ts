@@ -2530,6 +2530,14 @@ export class AppointmentsCalendarComponent implements OnInit {
   // =========================================================================
 
   onEmptyCellClicked(dateStr: string, hour24: string): void {
+    const [h] = (hour24 || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+    if (this.isPastHour(dateStr, h)) {
+      const msg = this.isPastDate(dateStr)
+        ? 'No se puede agendar en fechas pasadas.'
+        : 'No se puede agendar en horarios que ya pasaron.';
+      this.nuvexNotify.warning('Horario Pasado', msg);
+      return;
+    }
     this.selectedDateStr.set(dateStr);
     this.openNewAppointmentModal(dateStr, hour24);
   }
@@ -2560,8 +2568,9 @@ export class AppointmentsCalendarComponent implements OnInit {
   onColumnDragOver(event: DragEvent, dayDate: string): void {
     if (!this.draggedAppointment()) return;
     event.preventDefault();
+    const isPast = this.isPastDate(dayDate);
     if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move';
+      event.dataTransfer.dropEffect = isPast ? 'none' : 'move';
     }
     this.dragOverDayDate.set(dayDate);
 
@@ -2603,8 +2612,10 @@ export class AppointmentsCalendarComponent implements OnInit {
   onDayViewHourDragOver(event: DragEvent, hour24: string): void {
     if (!this.draggedAppointment()) return;
     event.preventDefault();
+    const [h] = (hour24 || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+    const isPast = this.isPastHour(this.selectedDateStr(), h);
     if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move';
+      event.dataTransfer.dropEffect = isPast ? 'none' : 'move';
     }
     this.dragOverDayHour.set(hour24);
   }
@@ -2620,6 +2631,16 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.dragOverDayHour.set(null);
     const apt = this.draggedAppointment();
     if (!apt) return;
+
+    if (this.isPastDateTime(this.selectedDateStr(), hour24)) {
+      this.draggedAppointment.set(null);
+      const msg = this.isPastDate(this.selectedDateStr())
+        ? 'No se puede mover la cita a una fecha anterior a hoy.'
+        : `No se puede mover la cita a las ${hour24}: ese horario ya pasó.`;
+      this.nuvexNotify.error('Horario no disponible', msg);
+      this.loadAppointmentsForCurrentRange();
+      return;
+    }
 
     this.applyAppointmentMove(apt, this.selectedDateStr(), hour24);
   }
@@ -2669,6 +2690,74 @@ export class AppointmentsCalendarComponent implements OnInit {
     return String(val).substring(0, 10);
   }
 
+  isPastDate(dateStr: string): boolean {
+    if (!dateStr) return false;
+    const target = this.normalizeDateStr(dateStr);
+    return target < this.todayStr;
+  }
+
+  isPastDateTime(dateStr: string, timeStr?: string): boolean {
+    if (!dateStr) return false;
+    const targetDate = this.normalizeDateStr(dateStr);
+    if (targetDate < this.todayStr) return true;
+    if (targetDate > this.todayStr) return false;
+
+    if (!timeStr || !timeStr.includes(':')) return false;
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const [h, m] = timeStr.split(':').map(n => parseInt(n, 10) || 0);
+    const targetMinutes = h * 60 + m;
+
+    return targetMinutes <= currentMinutes;
+  }
+
+  isPastHour(dateStr: string, hourNum: number): boolean {
+    if (this.isPastDate(dateStr)) return true;
+    if (this.normalizeDateStr(dateStr) === this.todayStr) {
+      const currentH = new Date().getHours();
+      return hourNum < currentH;
+    }
+    return false;
+  }
+
+  getEarliestValidTimeToday(): string {
+    const now = new Date();
+    let m = Math.ceil((now.getMinutes() + 5) / 15) * 15;
+    let h = now.getHours();
+    if (m >= 60) {
+      h += Math.floor(m / 60);
+      m = m % 60;
+    }
+    h = Math.min(23, Math.max(this.baseHour, h));
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  }
+
+  onNewApptDateChange(newDate: string): void {
+    if (this.isPastDate(newDate)) {
+      this.newApptDate.set(this.todayStr);
+      this.nuvexNotify.warning('Fecha no disponible', 'No se puede seleccionar una fecha anterior a hoy.');
+    } else {
+      this.newApptDate.set(newDate);
+    }
+    if (this.newApptDate() === this.todayStr && this.isPastDateTime(this.todayStr, this.startTime())) {
+      this.startTime.set(this.getEarliestValidTimeToday());
+      this.recalculateEndTime(this.startTime(), this.totalDurationMinutes() || 50);
+    }
+    this.fetchSlotsForModal();
+  }
+
+  onEditAppointmentDateChange(newDate: string): void {
+    if (this.isPastDate(newDate)) {
+      this.editAppointmentDate.set(this.todayStr);
+      this.nuvexNotify.warning('Fecha no disponible', 'No se puede seleccionar una fecha anterior a hoy.');
+    } else {
+      this.editAppointmentDate.set(newDate);
+    }
+    if (this.editAppointmentDate() === this.todayStr && this.isPastDateTime(this.todayStr, this.editStartTime())) {
+      this.editStartTime.set(this.getEarliestValidTimeToday());
+    }
+  }
+
   isLunchBlock(slot: { title?: string | null; reason?: string | null }): boolean {
     const title = (slot.title || '').toLowerCase();
     const reason = (slot.reason || '').toLowerCase();
@@ -2711,6 +2800,16 @@ export class AppointmentsCalendarComponent implements OnInit {
 
     if (currentDateClean === newDate && currentStartClean === newStartTime) {
       this.draggedAppointment.set(null);
+      return;
+    }
+
+    if (this.isPastDateTime(newDate, newStartTime)) {
+      this.draggedAppointment.set(null);
+      const msg = this.isPastDate(newDate)
+        ? 'No se puede mover la cita a una fecha anterior a hoy.'
+        : `No se puede mover la cita a las ${newStartTime}: ese horario ya pasó.`;
+      this.nuvexNotify.error('Horario no disponible', msg);
+      this.loadAppointmentsForCurrentRange();
       return;
     }
 
@@ -2876,6 +2975,18 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.editStartTime.set(finalStart);
     this.editEndTime.set(finalEnd);
 
+    if (this.isPastDate(this.editAppointmentDate())) {
+      this.isSavingAppointmentEdit.set(false);
+      this.editAppointmentError.set('No se puede mover la cita a una fecha anterior a hoy.');
+      return;
+    }
+
+    if (this.isPastDateTime(this.editAppointmentDate(), finalStart)) {
+      this.isSavingAppointmentEdit.set(false);
+      this.editAppointmentError.set(`No se puede mover la cita a las ${finalStart}: ese horario ya pasó. Por favor selecciona una hora posterior.`);
+      return;
+    }
+
     // Los bloqueos que no sean de tipo almuerzo NO se deben mover: mostrar alerta si se sobrepone
     const conflictingBlock = this.findConflictingNonLunchBlock(this.editAppointmentDate(), finalStart, finalEnd);
     if (conflictingBlock) {
@@ -2926,8 +3037,17 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.conflictError.set(null);
     this.isSavingAppointment.set(false);
 
-    this.newApptDate.set(prefillDate || this.selectedDateStr() || this.todayStr);
-    this.startTime.set(this.roundTo15Minutes(prefillTime || '09:00'));
+    let targetDate = prefillDate || this.selectedDateStr() || this.todayStr;
+    if (this.isPastDate(targetDate)) {
+      targetDate = this.todayStr;
+    }
+    this.newApptDate.set(targetDate);
+
+    let targetTime = this.roundTo15Minutes(prefillTime || '09:00');
+    if (targetDate === this.todayStr && this.isPastDateTime(targetDate, targetTime)) {
+      targetTime = this.getEarliestValidTimeToday();
+    }
+    this.startTime.set(targetTime);
 
     this.clientName.set('');
     this.clientPhone.set('');
@@ -3204,6 +3324,18 @@ export class AppointmentsCalendarComponent implements OnInit {
     const finalEnd = this.roundTo15Minutes(this.endTime());
     this.startTime.set(finalStart);
     this.endTime.set(finalEnd);
+
+    if (this.isPastDate(this.newApptDate())) {
+      this.isSavingAppointment.set(false);
+      this.conflictError.set('No se puede agendar una cita en una fecha anterior a hoy.');
+      return;
+    }
+
+    if (this.isPastDateTime(this.newApptDate(), finalStart)) {
+      this.isSavingAppointment.set(false);
+      this.conflictError.set(`No se puede agendar a las ${finalStart}: ese horario ya pasó. Por favor selecciona una hora posterior.`);
+      return;
+    }
 
     // Los bloqueos que no sean de tipo almuerzo NO se deben mover: mostrar alerta si se sobrepone
     const conflictingBlock = this.findConflictingNonLunchBlock(this.newApptDate(), finalStart, finalEnd);
