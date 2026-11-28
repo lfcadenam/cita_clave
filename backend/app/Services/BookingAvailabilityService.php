@@ -524,108 +524,28 @@ class BookingAvailabilityService
 
     /**
      * Adjust lunch slot for an appointment if it overlaps with the normal lunch window.
-     * Moves lunch to start immediately after the appointment ends for that day only.
+     * IMPORTANT: No se deben crear registros nuevos de bloqueo en la base de datos (blocked_slots).
+     * El ajuste y renderizado dinámico se calcula al vuelo sin ensuciar la base de datos.
      */
     public function adjustLunchForAppointment(Appointment $appointment): ?BlockedSlot
     {
-        if (in_array($appointment->status, [AppointmentStatus::CANCELLED, AppointmentStatus::NO_SHOW])) {
-            $this->recalculateLunchForDate($appointment->appointment_date, $appointment->tenant_id);
-            return null;
-        }
-
-        $lunch = $this->getDefaultLunchSlot($appointment->tenant_id);
-        if (! $lunch) {
-            return null;
-        }
-
-        $apptStart = substr($appointment->start_time, 0, 5);
-        $apptEnd = substr($appointment->end_time, 0, 5);
-        $lunchStart = substr($lunch->start_time, 0, 5);
-        $lunchEnd = substr($lunch->end_time, 0, 5);
-
-        // Does the appointment start before lunch end and end after lunch start?
-        $overlapsLunch = ($apptStart < $lunchEnd && $apptEnd > $lunchStart);
-
-        if (! $overlapsLunch) {
-            return null;
-        }
-
-        $lunchDuration = (int) Carbon::parse($lunch->start_time)->diffInMinutes(Carbon::parse($lunch->end_time));
-        if ($lunchDuration <= 0) {
-            $lunchDuration = 60;
-        }
-
-        $dateStr = $appointment->appointment_date instanceof Carbon
-            ? $appointment->appointment_date->toDateString()
-            : Carbon::parse($appointment->appointment_date)->toDateString();
-
-        $newStart = $apptEnd . (strlen($apptEnd) === 5 ? ':00' : '');
-        $newEnd = Carbon::parse($dateStr . ' ' . $apptEnd)->addMinutes($lunchDuration)->format('H:i:s');
-
-        return BlockedSlot::updateOrCreate(
-            [
-                'tenant_id' => $appointment->tenant_id,
-                'blocked_date' => $dateStr,
-                'is_recurring' => false,
-                'title' => 'Almuerzo & Descanso (Flexible)',
-            ],
-            [
-                'start_time' => $newStart,
-                'end_time' => $newEnd,
-                'reason' => "Almuerzo reprogramado automáticamente de {$newStart} a {$newEnd} por cita #{$appointment->appointment_number}",
-            ]
-        );
+        return null;
     }
 
     /**
      * Recalculate or restore lunch when an appointment is updated, cancelled or deleted.
+     * Limpia registros antiguos de almuerzos flexibles que hayan podido ser autogenerados en la BD.
      */
     public function recalculateLunchForDate(Carbon|string $date, ?int $tenantId = null): void
     {
         $dateStr = $date instanceof Carbon ? $date->toDateString() : Carbon::parse($date)->toDateString();
-        $lunch = $this->getDefaultLunchSlot($tenantId);
 
-        if (! $lunch) {
-            return;
-        }
-
-        $lunchStart = substr($lunch->start_time, 0, 5);
-        $lunchEnd = substr($lunch->end_time, 0, 5);
-        $lunchDuration = (int) Carbon::parse($lunch->start_time)->diffInMinutes(Carbon::parse($lunch->end_time)) ?: 60;
-
-        // Check remaining active appointments on this date overlapping lunch
-        $overlappingApt = Appointment::query()
-            ->whereDate('appointment_date', $dateStr)
-            ->whereNotIn('status', [AppointmentStatus::CANCELLED->value, AppointmentStatus::NO_SHOW->value])
-            ->where('start_time', '<', $lunchEnd)
-            ->where('end_time', '>', $lunchStart)
-            ->orderBy('end_time', 'desc')
-            ->first();
-
-        if ($overlappingApt) {
-            $apptEnd = substr($overlappingApt->end_time, 0, 5);
-            $newStart = $apptEnd . (strlen($apptEnd) === 5 ? ':00' : '');
-            $newEnd = Carbon::parse($dateStr . ' ' . $apptEnd)->addMinutes($lunchDuration)->format('H:i:s');
-
-            BlockedSlot::updateOrCreate(
-                [
-                    'tenant_id' => $tenantId ?? $overlappingApt->tenant_id,
-                    'blocked_date' => $dateStr,
-                    'is_recurring' => false,
-                    'title' => 'Almuerzo & Descanso (Flexible)',
-                ],
-                [
-                    'start_time' => $newStart,
-                    'end_time' => $newEnd,
-                    'reason' => "Almuerzo reprogramado automáticamente de {$newStart} a {$newEnd} por cita #{$overlappingApt->appointment_number}",
-                ]
-            );
-        } else {
-            // Revert back: remove specific flexible lunch block
-            BlockedSlot::whereDate('blocked_date', $dateStr)
-                ->where('is_recurring', false)
-                ->where('title', 'Almuerzo & Descanso (Flexible)')
-                ->delete();
-        }
+        BlockedSlot::whereDate('blocked_date', $dateStr)
+            ->where('is_recurring', false)
+            ->where(function ($q) {
+                $q->where('title', 'LIKE', '%Almuerzo%Flexible%')
+                    ->orWhere('reason', 'LIKE', '%Almuerzo reprogramado automáticamente%');
+            })
+            ->delete();
     }
 }

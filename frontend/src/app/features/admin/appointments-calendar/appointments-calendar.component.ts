@@ -3358,12 +3358,120 @@ export class AppointmentsCalendarComponent implements OnInit {
   // =========================================================================
 
   getBlockedSlotsForDate(dateStr: string): BlockedSlot[] {
-    return this.blockedSlots().filter(slot => {
+    const rawList = this.blockedSlots().filter(slot => {
+      // Ignorar bloqueos flexibles duplicados que hayan quedado previamente en la base de datos
+      if (slot.title?.toLowerCase().includes('flexible') || slot.reason?.includes('Almuerzo reprogramado automáticamente')) {
+        return false;
+      }
       if (slot.is_recurring) return true;
       if (!slot.blocked_date) return false;
       const slotDate = slot.blocked_date.includes('T') ? slot.blocked_date.split('T')[0] : slot.blocked_date;
       return slotDate === dateStr;
     });
+
+    const dayAppointments = this.filteredAppointments().filter(a => a.date === dateStr && a.status !== 'CANCELLED');
+    if (!dayAppointments.length) {
+      return rawList;
+    }
+
+    const adjusted: BlockedSlot[] = [];
+
+    for (const slot of rawList) {
+      const isLunch = slot.title?.toLowerCase().includes('almuerzo') ||
+                      slot.reason?.toLowerCase().includes('almuerzo') ||
+                      (slot.is_recurring && (slot.start_time || '').startsWith('13:'));
+
+      if (!isLunch) {
+        adjusted.push(slot);
+        continue;
+      }
+
+      // Horario base original del bloqueo de almuerzo
+      const [origStartH, origStartM] = (slot.start_time || '13:00').split(':').map(n => parseInt(n, 10) || 0);
+      const [origEndH, origEndM] = (slot.end_time || '14:00').split(':').map(n => parseInt(n, 10) || 0);
+      const origStartMin = origStartH * 60 + origStartM;
+      const origEndMin = origEndH * 60 + origEndM;
+      const origDuration = Math.max(15, origEndMin - origStartMin);
+
+      // Citas que se traslapan con el horario original del almuerzo
+      const overlappingAppts = dayAppointments.filter(apt => {
+        const [aStartH, aStartM] = (apt.start_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+        const [aEndH, aEndM] = (apt.end_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+        const aStartMin = aStartH * 60 + aStartM;
+        const aEndMin = aEndH * 60 + aEndM;
+        return aStartMin < origEndMin && aEndMin > origStartMin;
+      });
+
+      if (!overlappingAppts.length) {
+        adjusted.push(slot);
+        continue;
+      }
+
+      // 1. La cita pisa el inicio del almuerzo: el almuerzo inicia donde termina la cita
+      const maxApptEndMin = Math.max(...overlappingAppts.map(apt => {
+        const [aEndH, aEndM] = (apt.end_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+        return aEndH * 60 + aEndM;
+      }));
+
+      const newStartMin = Math.max(origStartMin, maxApptEndMin);
+
+      // 2. Verificar si hay citas o bloqueos luego de la finalización del bloqueo original (o en/después de newStartMin)
+      const otherAppointmentsStartingAfter = dayAppointments
+        .filter(a => !overlappingAppts.includes(a))
+        .map(a => {
+          const [aStartH, aStartM] = (a.start_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+          return aStartH * 60 + aStartM;
+        });
+
+      const otherBlocksStartingAfter = rawList
+        .filter(b => b.id !== slot.id)
+        .map(b => {
+          const [bStartH, bStartM] = (b.start_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+          return bStartH * 60 + bStartM;
+        });
+
+      const nextEvents = [...otherAppointmentsStartingAfter, ...otherBlocksStartingAfter]
+        .filter(min => min >= newStartMin && min >= origEndMin);
+
+      let newEndMin: number;
+
+      if (nextEvents.length > 0) {
+        const earliestNextEvent = Math.min(...nextEvents);
+        if (earliestNextEvent <= origEndMin) {
+          // Tenemos una cita/bloqueo justo al finalizar el bloqueo (ej. Cita médica 14:00)
+          // -> Solo se reduce el tiempo del bloqueo por el tiempo que se pisó
+          newEndMin = Math.max(newStartMin, earliestNextEvent);
+        } else if (earliestNextEvent < newStartMin + origDuration) {
+          // Hay una cita que empieza antes de completar la duración original
+          newEndMin = earliestNextEvent;
+        } else {
+          // Hay espacio suficiente para mover el tiempo pisado
+          newEndMin = newStartMin + origDuration;
+        }
+      } else {
+        // No hay citas luego de la finalización -> se mueve el tiempo que se pisó (mantiene duración)
+        newEndMin = newStartMin + origDuration;
+      }
+
+      // Si el tiempo pisado consumió todo el almuerzo y no queda franja útil
+      if (newEndMin <= newStartMin) {
+        continue;
+      }
+
+      const resStartH = Math.floor(newStartMin / 60).toString().padStart(2, '0');
+      const resStartM = (newStartMin % 60).toString().padStart(2, '0');
+      const resEndH = Math.floor(newEndMin / 60).toString().padStart(2, '0');
+      const resEndM = (newEndMin % 60).toString().padStart(2, '0');
+
+      adjusted.push({
+        ...slot,
+        start_time: `${resStartH}:${resStartM}:00`,
+        end_time: `${resEndH}:${resEndM}:00`,
+        time_range: `${resStartH}:${resStartM} – ${resEndH}:${resEndM}`
+      });
+    }
+
+    return adjusted;
   }
 
   // Mapeo reactivo memoizado de bloqueos posicionados para la vista semanal
