@@ -239,6 +239,22 @@ export class AppointmentsCalendarComponent implements OnInit {
   tableCitasSearch = signal<string>('');
   isLoadingTableCitas = signal<boolean>(false);
 
+  // Drag & Drop de Citas en el Calendario (Cursor)
+  draggedAppointment = signal<AdminAppointment | null>(null);
+  dragOverDayDate = signal<string | null>(null);
+  dragOverTimePreview = signal<string | null>(null);
+  dragOverDayHour = signal<string | null>(null);
+  isMovingAppointment = signal<boolean>(false);
+  private wasDragging = false;
+
+  dragOverTopPx = computed<number>(() => {
+    const timeStr = this.dragOverTimePreview();
+    if (!timeStr || !timeStr.includes(':')) return 0;
+    const [h, m] = timeStr.split(':').map(n => parseInt(n, 10) || 0);
+    const totalMinutes = (h - this.baseHour) * 60 + m;
+    return Math.max(0, (totalMinutes / 60) * this.slotHeightPx);
+  });
+
   // Resumen / KPIs
   kpis = signal<CalendarKPIs>({
     total_appointments: 0,
@@ -2518,7 +2534,175 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.openNewAppointmentModal(dateStr, hour24);
   }
 
+  // =========================================================================
+  // DRAG & DROP DE CITAS ENTRE HORARIOS Y DÍAS (CON EL CURSOR)
+  // =========================================================================
+
+  onAppointmentDragStart(event: DragEvent, apt: AdminAppointment): void {
+    this.wasDragging = true;
+    this.draggedAppointment.set(apt);
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(apt.id));
+    }
+  }
+
+  onAppointmentDragEnd(_event: DragEvent): void {
+    this.dragOverDayDate.set(null);
+    this.dragOverTimePreview.set(null);
+    this.dragOverDayHour.set(null);
+    this.draggedAppointment.set(null);
+    setTimeout(() => {
+      this.wasDragging = false;
+    }, 150);
+  }
+
+  onColumnDragOver(event: DragEvent, dayDate: string): void {
+    if (!this.draggedAppointment()) return;
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    this.dragOverDayDate.set(dayDate);
+
+    const colEl = event.currentTarget as HTMLElement;
+    const rect = colEl.getBoundingClientRect();
+    const relativeY = event.clientY - rect.top;
+    const timePreview = this.calculateSnappedTimeFromY(relativeY);
+    this.dragOverTimePreview.set(timePreview);
+  }
+
+  onColumnDragLeave(event: DragEvent, dayDate: string): void {
+    const related = event.relatedTarget as Node | null;
+    const current = event.currentTarget as HTMLElement;
+    if (current && related && current.contains(related)) {
+      return;
+    }
+    if (this.dragOverDayDate() === dayDate) {
+      this.dragOverDayDate.set(null);
+      this.dragOverTimePreview.set(null);
+    }
+  }
+
+  onColumnDrop(event: DragEvent, dayDate: string): void {
+    event.preventDefault();
+    this.dragOverDayDate.set(null);
+    this.dragOverTimePreview.set(null);
+
+    const apt = this.draggedAppointment();
+    if (!apt) return;
+
+    const colEl = event.currentTarget as HTMLElement;
+    const rect = colEl.getBoundingClientRect();
+    const relativeY = event.clientY - rect.top;
+    const newStartTime = this.calculateSnappedTimeFromY(relativeY);
+
+    this.applyAppointmentMove(apt, dayDate, newStartTime);
+  }
+
+  onDayViewHourDragOver(event: DragEvent, hour24: string): void {
+    if (!this.draggedAppointment()) return;
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    this.dragOverDayHour.set(hour24);
+  }
+
+  onDayViewHourDragLeave(_event: DragEvent, hour24: string): void {
+    if (this.dragOverDayHour() === hour24) {
+      this.dragOverDayHour.set(null);
+    }
+  }
+
+  onDayViewHourDrop(event: DragEvent, hour24: string): void {
+    event.preventDefault();
+    this.dragOverDayHour.set(null);
+    const apt = this.draggedAppointment();
+    if (!apt) return;
+
+    this.applyAppointmentMove(apt, this.selectedDateStr(), hour24);
+  }
+
+  calculateSnappedTimeFromY(relativeY: number): string {
+    const totalMinutes = (relativeY / this.slotHeightPx) * 60;
+    let snappedMinutes = Math.round(totalMinutes / 15) * 15;
+    const maxMinutes = (this.hours.length - 1) * 60 + 45;
+    snappedMinutes = Math.max(0, Math.min(snappedMinutes, maxMinutes));
+
+    const hoursOffset = Math.floor(snappedMinutes / 60);
+    const minute = snappedMinutes % 60;
+    const hour = this.baseHour + hoursOffset;
+
+    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  }
+
+  private calculateDurationMinutes(start: string, end?: string, serviceDuration?: number): number {
+    if (end && end.includes(':') && start && start.includes(':')) {
+      const [sh, sm] = start.split(':').map(n => parseInt(n, 10) || 0);
+      const [eh, em] = end.split(':').map(n => parseInt(n, 10) || 0);
+      const diff = (eh * 60 + em) - (sh * 60 + sm);
+      if (diff > 0) return diff;
+    }
+    return serviceDuration || 45;
+  }
+
+  private calculateEndTimeFromStart(start: string, durationMinutes: number): string {
+    const [h, m] = start.split(':').map(n => parseInt(n, 10) || 0);
+    const totalMinutes = h * 60 + m + durationMinutes;
+    const endH = Math.floor(totalMinutes / 60) % 24;
+    const endM = totalMinutes % 60;
+    return `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+  }
+
+  applyAppointmentMove(apt: AdminAppointment, newDate: string, newStartTime: string): void {
+    const currentStartClean = apt.start_time?.substring(0, 5);
+    const currentDateClean = apt.date;
+
+    if (currentDateClean === newDate && currentStartClean === newStartTime) {
+      this.draggedAppointment.set(null);
+      return;
+    }
+
+    const duration = this.calculateDurationMinutes(apt.start_time, apt.end_time, apt.service?.duration_minutes);
+    const newEndTime = this.calculateEndTimeFromStart(newStartTime, duration);
+
+    this.isMovingAppointment.set(true);
+
+    const payload: Partial<CreateAppointmentPayload> = {
+      appointment_date: newDate,
+      start_time: newStartTime,
+      end_time: newEndTime,
+      service_id: apt.service?.id
+    };
+
+    this.appointmentService.updateAppointment(apt.id, payload).subscribe({
+      next: () => {
+        this.isMovingAppointment.set(false);
+        this.draggedAppointment.set(null);
+        this.nuvexNotify.success(
+          'Cita Reubicada',
+          `La cita de ${apt.client?.name || 'la clienta'} se movió a las ${newStartTime} (${newDate}).`
+        );
+        this.loadAppointmentsForCurrentRange();
+        this.loadDailySummary();
+        this.loadTableAppointments(this.tableCitasPage());
+      },
+      error: (err) => {
+        this.isMovingAppointment.set(false);
+        this.draggedAppointment.set(null);
+        const errMsg = err?.error?.message || 'No se pudo mover la cita al horario seleccionado por conflicto de agenda.';
+        this.nuvexNotify.error('Conflicto de Horario', errMsg);
+        this.loadAppointmentsForCurrentRange();
+      }
+    });
+  }
+
   onAppointmentCardClicked(apt: AdminAppointment, event: MouseEvent): void {
+    if (this.wasDragging) {
+      event.stopPropagation();
+      return;
+    }
     event.stopPropagation();
     this.selectedAppointment.set(apt);
   }

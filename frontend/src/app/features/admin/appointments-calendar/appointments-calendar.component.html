@@ -1265,7 +1265,13 @@
 
                     <!-- 7 Columnas de Días -->
                     @for (day of weekDays(); track day.dateStr) {
-                      <div class="relative flex flex-col">
+                      <div 
+                        class="relative flex flex-col transition-colors duration-150"
+                        [ngClass]="dragOverDayDate() === day.dateStr ? 'bg-emerald-50/25' : ''"
+                        (dragover)="onColumnDragOver($event, day.dateStr)"
+                        (dragleave)="onColumnDragLeave($event, day.dateStr)"
+                        (drop)="onColumnDrop($event, day.dateStr)"
+                      >
                         
                         <!-- Celdas vacías clickeables -->
                         @for (hr of hours; track hr.hour24) {
@@ -1274,6 +1280,19 @@
                             title="Clic para agendar a las {{ hr.hour12 }}"
                             class="h-16 border-b border-slate-100 hover:bg-emerald-50/30 transition-colors cursor-pointer"
                           ></div>
+                        }
+
+                        <!-- Línea de Guía Magnética al Arrastrar Cita con el Cursor -->
+                        @if (dragOverDayDate() === day.dateStr && dragOverTimePreview()) {
+                          <div 
+                            [style.top.px]="dragOverTopPx()"
+                            class="absolute left-0 right-0 z-30 pointer-events-none flex items-center"
+                          >
+                            <div class="w-full border-t-2 border-dashed border-[#00C975] shadow-sm"></div>
+                            <span class="absolute right-1 -top-3.5 px-2 py-0.5 rounded-full bg-[#00C975] text-white text-[10px] font-bold shadow-md tracking-wide">
+                              {{ dragOverTimePreview() }}
+                            </span>
+                          </div>
                         }
 
                         <!-- Bloqueos de Horario (Almuerzos, Pausas y Bloqueos Puntuales) -->
@@ -1312,14 +1331,20 @@
                         <!-- Tarjetas de Citas con Distribución de Subcolumnas Anti-Colisión (Estilo Google Calendar) -->
                         @for (item of getPositionedAppointmentsForDate(day.dateStr); track item.appointment.id) {
                           <div 
+                            draggable="true"
+                            (dragstart)="onAppointmentDragStart($event, item.appointment)"
+                            (dragend)="onAppointmentDragEnd($event)"
                             (click)="onAppointmentCardClicked(item.appointment, $event)"
                             [style.top.px]="item.topPx"
                             [style.height.px]="item.heightPx"
                             [style.left.%]="item.leftPercent"
                             [style.width.%]="item.widthPercent"
-                            [ngClass]="item.statusClass"
-                            class="absolute rounded-lg p-1 sm:p-1.5 shadow-2xs border cursor-pointer overflow-hidden transition-all z-20 flex flex-col justify-between"
-                            [title]="item.appointment.client.name + ' • ' + item.appointment.service.name + ' (' + item.appointment.start_time + ' - ' + item.appointment.end_time + ') • ' + formatCurrency(item.appointment.financials.total_amount)"
+                            [ngClass]="[
+                              item.statusClass,
+                              draggedAppointment()?.id === item.appointment.id ? 'opacity-40 scale-[0.98] ring-2 ring-[#00C975] shadow-md' : ''
+                            ]"
+                            class="absolute rounded-lg p-1 sm:p-1.5 shadow-2xs border cursor-grab active:cursor-grabbing overflow-hidden transition-all z-20 flex flex-col justify-between"
+                            [title]="'Arrastra con el cursor para mover de horario • ' + item.appointment.client.name + ' • ' + item.appointment.service.name + ' (' + item.appointment.start_time + ' - ' + item.appointment.end_time + ')'"
                           >
                             @if (item.isMicro) {
                               <div class="flex items-center justify-between text-[10px] font-bold leading-tight truncate">
@@ -1429,14 +1454,27 @@
 
                 <div class="flex flex-col divide-y divide-slate-100">
                   @for (hr of hours; track hr.hour24) {
-                    <div class="py-2.5 flex items-start gap-4 hover:bg-slate-50 px-2 rounded-xl transition-colors">
+                    <div 
+                      (dragover)="onDayViewHourDragOver($event, hr.hour24)"
+                      (dragleave)="onDayViewHourDragLeave($event, hr.hour24)"
+                      (drop)="onDayViewHourDrop($event, hr.hour24)"
+                      [ngClass]="dragOverDayHour() === hr.hour24 ? 'bg-emerald-50/70 ring-2 ring-[#00C975] rounded-xl' : 'hover:bg-slate-50'"
+                      class="py-2.5 flex items-start gap-4 px-2 rounded-xl transition-colors"
+                    >
                       <span class="w-20 text-xs font-bold text-slate-400 pt-1">{{ hr.hour12 }}</span>
                       <div class="flex-1 flex flex-wrap gap-2">
                         @for (apt of getAppointmentsForDateAndHour(selectedDateStr(), hr.hourNum); track apt.id) {
                           <div 
+                            draggable="true"
+                            (dragstart)="onAppointmentDragStart($event, apt)"
+                            (dragend)="onAppointmentDragEnd($event)"
                             (click)="onAppointmentCardClicked(apt, $event)"
-                            class="p-3 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500 shadow-2xs hover:shadow-xs cursor-pointer flex items-center justify-between gap-4 min-w-[280px] transition-all"
-                            [ngClass]="apt.status === 'CONFIRMED' ? 'border-l-4 border-l-emerald-500' : (apt.status === 'PENDING_VERIFICATION' ? 'border-l-4 border-l-amber-500' : (apt.status === 'COMPLETED' ? 'border-l-4 border-l-purple-500' : 'border-l-4 border-l-slate-400'))"
+                            class="p-3 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500 shadow-2xs hover:shadow-xs cursor-grab active:cursor-grabbing flex items-center justify-between gap-4 min-w-[280px] transition-all"
+                            [ngClass]="[
+                              apt.status === 'CONFIRMED' ? 'border-l-4 border-l-emerald-500' : (apt.status === 'PENDING_VERIFICATION' ? 'border-l-4 border-l-amber-500' : (apt.status === 'COMPLETED' ? 'border-l-4 border-l-purple-500' : 'border-l-4 border-l-slate-400')),
+                              draggedAppointment()?.id === apt.id ? 'opacity-40 scale-[0.98] ring-2 ring-[#00C975]' : ''
+                            ]"
+                            title="Arrastra con el cursor para mover a otra hora"
                           >
                             <div>
                               <div class="flex items-center gap-2">
