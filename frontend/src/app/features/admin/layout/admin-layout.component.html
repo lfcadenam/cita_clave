@@ -1,5 +1,5 @@
 <div class="nuvex-admin-layout min-h-screen bg-[#F8FAFC] text-slate-800 p-3 sm:p-5 lg:p-6 font-sans antialiased">
-  
+
   <div class="max-w-[1800px] mx-auto flex flex-col lg:flex-row gap-6 items-start">
 
     <!-- ========================================================================= -->
@@ -8,19 +8,19 @@
 
     <!-- Backdrop Móvil -->
     @if (nav.sidebarOpen()) {
-      <div 
-        (click)="closeSidebar()" 
+      <div
+        (click)="closeSidebar()"
         class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 lg:hidden animate-in fade-in duration-150"
       ></div>
     }
 
     <!-- Sidebar Container (Nuvex Modern Curve - Dark Slate con Iconos Monoline Exactos) -->
-    <aside 
+    <aside
       [ngClass]="nav.sidebarOpen() ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
       class="fixed lg:sticky top-0 lg:top-6 left-0 bottom-0 z-50 lg:z-10 w-72 lg:w-64 xl:w-72 h-screen lg:h-[calc(100vh-3rem)] bg-[#1E293B] rounded-none lg:rounded-[32px] border-r lg:border border-slate-700/60 shadow-2xl flex flex-col justify-between p-4 sm:p-5 transition-transform duration-200 ease-in-out shrink-0 overflow-y-auto custom-scrollbar text-white"
     >
       <div class="flex flex-col gap-4">
-        
+
         <!-- Header Móvil: Botón Cerrar -->
         <div class="flex items-center justify-between lg:hidden pb-3 border-b border-slate-700/60">
           <span class="font-bold text-xs uppercase tracking-wider text-slate-300">Menú de Navegación</span>
@@ -50,7 +50,7 @@
           </p>
 
           <!-- Botón de Acción 'Mi Perfil' -->
-          <button 
+          <button
             type="button"
             (click)="openProfile()"
             class="mt-3.5 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-slate-800/90 hover:bg-slate-700/90 border border-slate-600/60 text-slate-200 text-xs font-semibold shadow-xs transition-all cursor-pointer hover:border-slate-500 hover:text-white"
@@ -71,7 +71,7 @@
           <!-- ========================================================================= -->
 
           <!-- Botón Superior: DASHBOARD NUVEX SAAS -->
-          <a 
+          <a
             routerLink="/admin/superadmin"
             [queryParams]="{ tab: 'all' }"
             (click)="closeSidebar()"
@@ -87,7 +87,7 @@
 
           <!-- Navegación por Grupos Estructurados SuperAdmin -->
           <nav class="flex flex-col gap-4 pt-1">
-            
+
             <!-- ================= GRUPO: EMPRESAS & SALONES ================= -->
             <div class="flex flex-col gap-1">
               <div class="flex items-center justify-between px-3 pt-1 pb-1 text-[11px] font-black uppercase tracking-wider text-purple-400 select-none">
@@ -98,7 +98,7 @@
               </div>
 
               <!-- Salones Inquilinos -->
-              <a 
+              <a
                 routerLink="/admin/superadmin"
                 [queryParams]="{ tab: 'tenants' }"
                 (click)="closeSidebar()"
@@ -121,7 +121,7 @@
               </div>
 
               <!-- Usuarios & Cuentas -->
-              <a 
+              <a
                 routerLink="/admin/superadmin"
                 [queryParams]="{ tab: 'users' }"
                 (click)="closeSidebar()"
@@ -134,7 +134,7 @@
               </a>
 
               <!-- Horario de Recordatorios (Automatizaciones) -->
-              <a 
+              <a
                 routerLink="/admin/superadmin"
                 [queryParams]="{ tab: 'reminders' }"
                 (click)="closeSidebar()"
@@ -154,7 +154,7 @@
           <!-- 2. MENÚ SALÓN / ADMINISTRADORA (AGENDA, CITAS, SERVICIOS, HORARIOS)       -->
           <!-- ========================================================================= -->
 <!-- 1. Botón Superior: ESCRITORIO (Píldora con Contorno) -->
-        <a 
+        <a
           routerLink="/admin/escritorio"
           (click)="closeSidebar()"
           routerLinkActive="bg-white/15 border-white/30 text-white font-bold shadow-xs"
@@ -169,7 +169,7 @@
 
         <!-- Navegación por Grupos Estructurados -->
         <nav class="flex flex-col gap-4 pt-1">
-          
+
           <!-- ================= GRUPO: AGENDA & CITAS ================= -->
           <div class="flex flex-col gap-1">
             <div class="flex items-center justify-between px-3 pt-1 pb-1 text-[11px] font-black uppercase tracking-wider text-slate-400 select-none">
@@ -180,7 +180,7 @@
             </div>
 
             <!-- Calendario de Citas -->
-            <a 
+            <a
               routerLink="/admin/calendario"
               (click)="closeSidebar()"
               routerLinkActive="bg-white/15 text-white font-bold shadow-xs"
@@ -193,7 +193,7 @@
             </a>
 
             <!-- Citas & Reservas -->
-            <a 
+            <a
               routerLink="/admin/citas"
               (click)="closeSidebar()"
               routerLinkActive="bg-white/15 text-white font-bold shadow-xs"
@@ -213,7 +213,7 @@
             </a>
 
             <!-- Clientes (CRM) -->
-            <a 
+            <a
               routerLink="/admin/clientes"
               (click)="closeSidebar()"
               routerLinkActive="bg-white/15 text-white font-bold shadow-xs"
@@ -231,7 +231,7 @@
             </a>
 
             <!-- Lista De Espera -->
-            <a 
+            <a
               routerLink="/admin/espera"
               (click)="closeSidebar()"
               routerLinkActive="bg-white/15 text-white font-bold shadow-xs"
@@ -254,7 +254,7 @@
             </div>
 
             <!-- Servicios -->
-            <a 
+            <a
               routerLink="/admin/servicios"
               (click)="closeSidebar()"
               routerLinkActive="bg-white/15 text-white font-bold shadow-xs"
@@ -282,7 +282,7 @@
             </div>
 
             <!-- Horarios Semanales -->
-            <a 
+            <a
               routerLink="/admin/horarios"
               (click)="closeSidebar()"
               routerLinkActive="bg-white/15 text-white font-bold shadow-xs"
@@ -295,7 +295,7 @@
             </a>
 
             <!-- Bloqueos De Horario -->
-            <a 
+            <a
               routerLink="/admin/bloqueos"
               (click)="closeSidebar()"
               routerLinkActive="bg-white/15 text-white font-bold shadow-xs"
@@ -318,7 +318,7 @@
             </div>
 
             <!-- Conexión WhatsApp -->
-            <a 
+            <a
               routerLink="/admin/whatsapp"
               (click)="closeSidebar()"
               routerLinkActive="bg-white/15 text-white font-bold shadow-xs"
@@ -331,7 +331,7 @@
             </a>
 
             <!-- Plantillas WhatsApp (Nuevo Menú Dedicado) -->
-            <a 
+            <a
               routerLink="/admin/plantillas"
               (click)="closeSidebar()"
               routerLinkActive="bg-white/15 text-white font-bold shadow-xs"
@@ -349,7 +349,7 @@
             </a>
 
             <!-- Listas de Difusión (Campañas Masivas) -->
-            <a 
+            <a
               routerLink="/admin/difusion"
               (click)="closeSidebar()"
               routerLinkActive="bg-white/15 text-white font-bold shadow-xs"
@@ -367,7 +367,7 @@
             </a>
           </div>
 
-          
+
         </nav>
         }
 
@@ -381,9 +381,9 @@
           </div>
           <span class="truncate font-semibold text-slate-300">{{ currentUser()?.name || 'Administrador' }}</span>
         </div>
-        <button 
-          (click)="logout()" 
-          title="Cerrar sesión" 
+        <button
+          (click)="logout()"
+          title="Cerrar sesión"
           class="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-colors"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -398,19 +398,19 @@
     <!-- 2. CONTENIDO PRINCIPAL A LA DERECHA CON ROUTER-OUTLET                     -->
     <!-- ========================================================================= -->
     <main class="flex-1 min-w-0 w-full flex flex-col gap-5">
-      
+
       <!-- ========================================================================= -->
       <!-- BARRA SUPERIOR ELEVADA (TOPBAR PÍLDORA CITACLAVE) - FIJA CON DESPLAZAMIENTO -->
       <!-- ========================================================================= -->
       <div class="sticky top-0 z-40 -mt-3 sm:-mt-5 lg:-mt-6 pt-3 sm:pt-5 lg:pt-6 pb-2 bg-[#F8FAFC]/90 backdrop-blur-md transition-all">
         <header class="w-full bg-white/95 backdrop-blur-md rounded-[28px] lg:rounded-[32px] border border-slate-200/90 shadow-sm px-5 sm:px-6 py-3 flex items-center justify-between gap-4 relative z-40">
-        
+
         <!-- Izquierda: Botón Menú Móvil + Logo Oficial CitaClave -->
         <div class="flex items-center gap-3.5">
           <!-- Botón Hamburguesa en Móvil -->
-          <button 
+          <button
             type="button"
-            (click)="toggleSidebar()" 
+            (click)="toggleSidebar()"
             class="lg:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
             title="Abrir menú de navegación"
           >
@@ -421,21 +421,21 @@
 
           <!-- Logo CitaClave Oficial -->
           <div class="flex items-center select-none">
-            <img 
-              src="/assets/brand/citaclave-logo.png" 
-              alt="CitaClave" 
-              class="h-8 sm:h-9 w-auto object-contain" 
+            <img
+              src="/assets/brand/citaclave-logo.png"
+              alt="CitaClave"
+              class="h-8 sm:h-9 w-auto object-contain"
             />
           </div>
         </div>
 
         <!-- Derecha: Botón Rápido + Cita y Avatar con Menú Desplegable -->
         <div class="flex items-center gap-3">
-          
+
           @if (!isSuperAdmin()) {
-          <button 
+          <button
             type="button"
-            (click)="openNewAppointment()" 
+            (click)="openNewAppointment()"
             class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
           >
             <span>+ Cita</span>
@@ -444,7 +444,7 @@
 
           <!-- Avatar de Usuario con Menú Desplegable -->
           <div class="relative">
-            <button 
+            <button
               type="button"
               (click)="toggleUserMenu()"
               class="w-10 h-10 rounded-full bg-[#0B132B] text-white font-bold text-xs flex items-center justify-center ring-2 ring-[#00C975] shadow-xs cursor-pointer hover:scale-105 active:scale-95 transition-all select-none"
@@ -455,8 +455,8 @@
 
             <!-- Dropdown Menú de Usuario -->
             @if (nav.userMenuOpen()) {
-              <div 
-                (click)="closeUserMenu()" 
+              <div
+                (click)="closeUserMenu()"
                 class="fixed inset-0 z-40 bg-transparent"
               ></div>
 
@@ -467,8 +467,8 @@
                 </div>
 
                 <div class="pt-1">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     (click)="openProfile()"
                     class="w-full px-4 py-2.5 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
                   >
@@ -480,8 +480,8 @@
 
                   <div class="h-px bg-slate-100 my-1"></div>
 
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     (click)="closeUserMenu(); logout()"
                     class="w-full px-4 py-2.5 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition-colors cursor-pointer"
                   >
@@ -514,14 +514,14 @@
         <div class="flex items-center gap-2">
           <span class="font-bold text-slate-700 tracking-tight">CitaClave</span>
           <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[10px] font-bold tracking-wide">
-            v1.0.0-stable
+            v1.0.0
           </span>
           <span class="text-slate-300">•</span>
           <span>Plataforma de Gestión y Agendamiento</span>
         </div>
         <div class="flex items-center gap-1.5 text-slate-500">
           <span>© 2026</span>
-          <strong class="font-bold text-slate-800">Nuvex Tecnología</strong>
+          <strong class="font-bold text-slate-800"><a href="https://nuvex-tecnologia.com/" target="_blank">Nuvex Tecnología</a></strong>
           <span class="text-slate-400">· Todos los derechos reservados</span>
         </div>
       </footer>
@@ -536,7 +536,7 @@
   @if (nav.showProfileModal()) {
     <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-[28px] border border-slate-200/90 shadow-2xl w-full max-w-md p-6 flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-150">
-        
+
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-[#0B132B] text-white font-bold text-sm flex items-center justify-center ring-2 ring-[#00C975]">
@@ -586,17 +586,17 @@
         </div>
 
         <div class="flex items-center justify-between pt-3 border-t border-slate-100">
-          <button 
-            type="button" 
+          <button
+            type="button"
             (click)="closeProfile(); logout()"
             class="px-3.5 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <span>Cerrar Sesión</span>
           </button>
-          
-          <button 
-            type="button" 
-            (click)="closeProfile()" 
+
+          <button
+            type="button"
+            (click)="closeProfile()"
             class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors cursor-pointer"
           >
             Cerrar
