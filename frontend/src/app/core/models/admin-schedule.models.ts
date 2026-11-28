@@ -16,6 +16,5 @@ export interface BlockedSlot {
   end_time: string;
   time_range: string;
   is_recurring: boolean;
-  is_specific?: boolean;
   reason?: string | null;
 }

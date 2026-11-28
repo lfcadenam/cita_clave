@@ -151,13 +151,6 @@
           <label for="blockRec" class="text-xs font-semibold text-slate-700 cursor-pointer select-none">Recurrente todos los días (ej: almuerzo)</label>
         </div>
 
-        <div class="flex items-center gap-2">
-          <input type="checkbox" id="blockSpecific" [(ngModel)]="blockForm.is_specific" class="rounded text-[#00C975] focus:ring-[#00C975] cursor-pointer" />
-          <label for="blockSpecific" class="text-xs font-semibold text-slate-700 cursor-pointer select-none">
-            Bloqueo específico <span class="text-slate-400 font-normal">(Inamovible: no se permite mover)</span>
-          </label>
-        </div>
-
         @if (!blockForm.is_recurring) {
           <div>
             <label class="block text-xs font-semibold mb-1">Fecha Específica</label>

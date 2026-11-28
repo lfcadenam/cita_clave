@@ -30,7 +30,6 @@ export class AdminSchedulesComponent implements OnInit {
     start_time: '13:00',
     end_time: '14:00',
     is_recurring: true,
-    is_specific: true,
     reason: 'Pausa para almuerzo'
   };
 
@@ -85,7 +84,6 @@ export class AdminSchedulesComponent implements OnInit {
       start_time: '13:00',
       end_time: '14:00',
       is_recurring: false,
-      is_specific: true,
       reason: ''
     };
     this.showBlockModal.set(true);
@@ -93,15 +91,12 @@ export class AdminSchedulesComponent implements OnInit {
 
   openEditBlockModal(slot: BlockedSlot): void {
     this.editingBlockId.set(slot.id);
-    const isLunch = slot.title?.toLowerCase().includes('almuerzo') || slot.reason?.toLowerCase().includes('almuerzo');
-    const isSpecific = slot.is_specific !== undefined ? !!slot.is_specific : !isLunch;
     this.blockForm = {
       title: slot.title || '',
       blocked_date: slot.blocked_date || new Date().toISOString().split('T')[0],
       start_time: slot.start_time?.substring(0, 5) || '13:00',
       end_time: slot.end_time?.substring(0, 5) || '14:00',
       is_recurring: !!slot.is_recurring,
-      is_specific: isSpecific,
       reason: slot.reason || ''
     };
     this.showBlockModal.set(true);
@@ -116,7 +111,6 @@ export class AdminSchedulesComponent implements OnInit {
       start_time: this.blockForm.start_time,
       end_time: this.blockForm.end_time,
       is_recurring: this.blockForm.is_recurring,
-      is_specific: !!this.blockForm.is_specific,
       reason: this.blockForm.reason?.trim() || null
     };
 

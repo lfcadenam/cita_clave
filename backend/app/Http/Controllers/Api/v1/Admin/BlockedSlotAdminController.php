@@ -36,7 +36,6 @@ class BlockedSlotAdminController extends Controller
                     'end_time' => substr($slot->end_time, 0, 5),
                     'time_range' => substr($slot->start_time, 0, 5) . ' – ' . substr($slot->end_time, 0, 5),
                     'is_recurring' => (bool) $slot->is_recurring,
-                    'is_specific' => (bool) ($slot->is_specific ?? !str_contains(strtolower($slot->title ?? ''), 'almuerzo')),
                     'reason' => $slot->reason,
                 ];
             }),
@@ -54,7 +53,6 @@ class BlockedSlotAdminController extends Controller
             'start_time' => 'required|string',
             'end_time' => 'required|string',
             'is_recurring' => 'nullable|boolean',
-            'is_specific' => 'nullable|boolean',
             'reason' => 'nullable|string|max:500',
         ]);
 
@@ -64,7 +62,6 @@ class BlockedSlotAdminController extends Controller
             'start_time' => $validated['start_time'],
             'end_time' => $validated['end_time'],
             'is_recurring' => $validated['is_recurring'] ?? false,
-            'is_specific' => $validated['is_specific'] ?? false,
             'reason' => $validated['reason'] ?? null,
         ]);
 
@@ -79,7 +76,6 @@ class BlockedSlotAdminController extends Controller
                 'end_time' => substr($slot->end_time, 0, 5),
                 'time_range' => substr($slot->start_time, 0, 5) . ' – ' . substr($slot->end_time, 0, 5),
                 'is_recurring' => (bool) $slot->is_recurring,
-                'is_specific' => (bool) $slot->is_specific,
                 'reason' => $slot->reason,
             ],
         ], 201);
@@ -98,7 +94,6 @@ class BlockedSlotAdminController extends Controller
             'start_time' => 'required|string',
             'end_time' => 'required|string',
             'is_recurring' => 'nullable|boolean',
-            'is_specific' => 'nullable|boolean',
             'reason' => 'nullable|string|max:500',
         ]);
 
@@ -108,7 +103,6 @@ class BlockedSlotAdminController extends Controller
             'start_time' => $validated['start_time'],
             'end_time' => $validated['end_time'],
             'is_recurring' => $validated['is_recurring'] ?? false,
-            'is_specific' => $validated['is_specific'] ?? false,
             'reason' => $validated['reason'] ?? null,
         ]);
 
@@ -123,7 +117,6 @@ class BlockedSlotAdminController extends Controller
                 'end_time' => substr($slot->end_time, 0, 5),
                 'time_range' => substr($slot->start_time, 0, 5) . ' – ' . substr($slot->end_time, 0, 5),
                 'is_recurring' => (bool) $slot->is_recurring,
-                'is_specific' => (bool) $slot->is_specific,
                 'reason' => $slot->reason,
             ],
         ]);

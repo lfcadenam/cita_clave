@@ -19,7 +19,6 @@ class BlockedSlot extends Model
         'start_time',
         'end_time',
         'is_recurring',
-        'is_specific',
         'reason',
     ];
 
@@ -28,12 +27,13 @@ class BlockedSlot extends Model
         return [
             'blocked_date' => 'date',
             'is_recurring' => 'boolean',
-            'is_specific' => 'boolean',
         ];
     }
 
     /**
-     * Buscar si existe un bloqueo (que NO sea de almuerzo / bloqueo específico) que colisione con el intervalo horario dado.
+     * Buscar si existe un bloqueo no recurrente (puntual / inamovible) que colisione con el intervalo horario dado.
+     * Si is_recurring es true -> se permite mover.
+     * Si is_recurring es false -> NO se permite mover.
      */
     public static function findConflictingNonLunch(
         string $date,
@@ -46,25 +46,8 @@ class BlockedSlot extends Model
         $dateFormatted = Carbon::parse($date)->toDateString();
 
         $query = static::query()
-            ->where(function ($q) use ($dateFormatted) {
-                $q->where('is_recurring', true)
-                  ->orWhereDate('blocked_date', $dateFormatted);
-            })
-            ->where(function ($q) {
-                if (Schema::hasColumn('blocked_slots', 'is_specific')) {
-                    $q->where('is_specific', true)
-                      ->orWhere(function ($sub) {
-                          $sub->whereNull('is_specific')
-                              ->whereRaw("LOWER(title) NOT LIKE '%almuerzo%'")
-                              ->whereRaw("LOWER(title) NOT LIKE '%lunch%'");
-                      });
-                } else {
-                    $q->whereRaw("LOWER(title) NOT LIKE '%almuerzo%'")
-                      ->whereRaw("LOWER(title) NOT LIKE '%lunch%'")
-                      ->whereRaw("LOWER(COALESCE(reason, '')) NOT LIKE '%almuerzo%'")
-                      ->whereRaw("LOWER(COALESCE(reason, '')) NOT LIKE '%lunch%'");
-                }
-            })
+            ->where('is_recurring', false)
+            ->whereDate('blocked_date', $dateFormatted)
             ->where('start_time', '<', $endFormatted)
             ->where('end_time', '>', $startFormatted);
 

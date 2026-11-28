@@ -590,7 +590,6 @@ export class AppointmentsCalendarComponent implements OnInit {
     start_time: '13:00',
     end_time: '14:00',
     is_recurring: true,
-    is_specific: true,
     reason: 'Pausa para almuerzo'
   };
 
@@ -1632,7 +1631,6 @@ export class AppointmentsCalendarComponent implements OnInit {
       start_time: startTime,
       end_time: endTime,
       is_recurring: !defaultDate,
-      is_specific: true,
       reason: 'Horario reservado / no disponible'
     };
     this.showBlockModal.set(true);
@@ -1640,17 +1638,12 @@ export class AppointmentsCalendarComponent implements OnInit {
 
   openEditBlockModal(slot: BlockedSlot): void {
     this.editingBlockId.set(slot.id);
-    const isSpecific = slot.is_specific !== undefined
-      ? !!slot.is_specific
-      : !this.isLunchBlock(slot);
-
     this.blockForm = {
       title: slot.title || '',
       blocked_date: slot.blocked_date || this.selectedDateStr() || new Date().toISOString().split('T')[0],
       start_time: slot.start_time?.substring(0, 5) || '13:00',
       end_time: slot.end_time?.substring(0, 5) || '14:00',
       is_recurring: !!slot.is_recurring,
-      is_specific: isSpecific,
       reason: slot.reason || ''
     };
     this.showBlockModal.set(true);
@@ -1665,7 +1658,6 @@ export class AppointmentsCalendarComponent implements OnInit {
       start_time: this.blockForm.start_time,
       end_time: this.blockForm.end_time,
       is_recurring: this.blockForm.is_recurring,
-      is_specific: !!this.blockForm.is_specific,
       reason: this.blockForm.reason?.trim() || null
     };
 
@@ -2677,10 +2669,7 @@ export class AppointmentsCalendarComponent implements OnInit {
     return String(val).substring(0, 10);
   }
 
-  isLunchBlock(slot: { title?: string | null; reason?: string | null; is_specific?: boolean }): boolean {
-    if (slot.is_specific === true) {
-      return false; // Marcado como bloqueo específico: INAMOVIBLE
-    }
+  isLunchBlock(slot: { title?: string | null; reason?: string | null }): boolean {
     const title = (slot.title || '').toLowerCase();
     const reason = (slot.reason || '').toLowerCase();
     return title.includes('almuerzo') || title.includes('lunch') ||
@@ -2689,9 +2678,10 @@ export class AppointmentsCalendarComponent implements OnInit {
 
   findConflictingNonLunchBlock(dateStr: string, startTime: string, endTime: string): BlockedSlot | null {
     const normTargetDate = this.normalizeDateStr(dateStr);
+    // Bandera: si no está marcado como recurrente (!is_recurring), es un bloqueo puntual inamovible
     const rawBlocks = this.blockedSlots().filter(slot => {
       if (slot.title?.toLowerCase().includes('flexible')) return false;
-      if (slot.is_recurring) return true;
+      if (slot.is_recurring) return false; // Recurrente -> se permite mover
       if (!slot.blocked_date) return false;
       return this.normalizeDateStr(slot.blocked_date) === normTargetDate;
     });
@@ -2702,10 +2692,6 @@ export class AppointmentsCalendarComponent implements OnInit {
     const endMin = eh * 60 + em;
 
     for (const block of rawBlocks) {
-      if (this.isLunchBlock(block)) {
-        continue; // El almuerzo sí se permite pisar (se ajusta dinámicamente)
-      }
-
       const [bsh, bsm] = (block.start_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
       const [beh, bem] = (block.end_time || '00:00').split(':').map(n => parseInt(n, 10) || 0);
       const bStartMin = bsh * 60 + bsm;
@@ -3472,10 +3458,9 @@ export class AppointmentsCalendarComponent implements OnInit {
     const adjusted: BlockedSlot[] = [];
 
     for (const slot of rawList) {
-      const isLunch = this.isLunchBlock(slot);
-
-      if (!isLunch) {
-        // Los bloqueos que no sean de tipo almuerzo NO se deben mover bajo ninguna circunstancia
+      // Regla de bandera: si is_recurring está marcado, se permite mover; si NO está marcado, NO se permite mover.
+      if (!slot.is_recurring) {
+        // Bloqueo puntual: inamovible
         adjusted.push(slot);
         continue;
       }
