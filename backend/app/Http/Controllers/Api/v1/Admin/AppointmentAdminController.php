@@ -192,7 +192,7 @@ class AppointmentAdminController extends Controller
         }
 
         // Validar conflicto con bloqueos de horario (que no sean de tipo almuerzo)
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = $request->user()?->tenant_id;
         $blockConflict = BlockedSlot::findConflictingNonLunch($date, $startTime, $endTime, $tenantId);
         if ($blockConflict) {
             $range = substr($blockConflict->start_time, 0, 5) . ' a ' . substr($blockConflict->end_time, 0, 5);
@@ -380,7 +380,7 @@ class AppointmentAdminController extends Controller
             }
 
             // Validar conflicto con bloqueos de horario (que no sean de tipo almuerzo)
-            $tenantId = $request->user()->tenant_id;
+            $tenantId = $appointment->tenant_id ?? $request->user()?->tenant_id;
             $blockConflict = BlockedSlot::findConflictingNonLunch($date, $startTime, $endTime, $tenantId);
             if ($blockConflict) {
                 $range = substr($blockConflict->start_time, 0, 5) . ' a ' . substr($blockConflict->end_time, 0, 5);

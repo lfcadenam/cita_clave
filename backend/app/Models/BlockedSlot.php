@@ -49,13 +49,17 @@ class BlockedSlot extends Model
             })
             ->where(function ($q) {
                 $q->whereRaw("LOWER(title) NOT LIKE '%almuerzo%'")
-                  ->whereRaw("LOWER(COALESCE(reason, '')) NOT LIKE '%almuerzo%'");
+                  ->whereRaw("LOWER(title) NOT LIKE '%lunch%'")
+                  ->whereRaw("LOWER(COALESCE(reason, '')) NOT LIKE '%almuerzo%'")
+                  ->whereRaw("LOWER(COALESCE(reason, '')) NOT LIKE '%lunch%'");
             })
             ->where('start_time', '<', $endFormatted)
             ->where('end_time', '>', $startFormatted);
 
         if ($tenantId) {
-            $query->where('tenant_id', $tenantId);
+            $query->where(function ($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId)->orWhereNull('tenant_id');
+            });
         }
 
         return $query->first();

@@ -68,7 +68,16 @@ class BlockedSlotAdminController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Franja bloqueada creada exitosamente.',
-            'data' => $slot,
+            'data' => [
+                'id' => $slot->id,
+                'title' => $slot->title,
+                'blocked_date' => $slot->blocked_date?->toDateString(),
+                'start_time' => substr($slot->start_time, 0, 5),
+                'end_time' => substr($slot->end_time, 0, 5),
+                'time_range' => substr($slot->start_time, 0, 5) . ' – ' . substr($slot->end_time, 0, 5),
+                'is_recurring' => (bool) $slot->is_recurring,
+                'reason' => $slot->reason,
+            ],
         ], 201);
     }
 

@@ -2655,26 +2655,43 @@ export class AppointmentsCalendarComponent implements OnInit {
     return `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
   }
 
+  normalizeDateStr(val: any): string {
+    if (!val) return '';
+    if (typeof val === 'string') {
+      return val.substring(0, 10);
+    }
+    if (val instanceof Date) {
+      const y = val.getFullYear();
+      const m = (val.getMonth() + 1).toString().padStart(2, '0');
+      const d = val.getDate().toString().padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+    return String(val).substring(0, 10);
+  }
+
+  isLunchBlock(slot: { title?: string | null; reason?: string | null }): boolean {
+    const title = (slot.title || '').toLowerCase();
+    const reason = (slot.reason || '').toLowerCase();
+    return title.includes('almuerzo') || title.includes('lunch') ||
+           reason.includes('almuerzo') || reason.includes('lunch');
+  }
+
   findConflictingNonLunchBlock(dateStr: string, startTime: string, endTime: string): BlockedSlot | null {
+    const normTargetDate = this.normalizeDateStr(dateStr);
     const rawBlocks = this.blockedSlots().filter(slot => {
       if (slot.title?.toLowerCase().includes('flexible')) return false;
       if (slot.is_recurring) return true;
       if (!slot.blocked_date) return false;
-      const sDate = slot.blocked_date.includes('T') ? slot.blocked_date.split('T')[0] : slot.blocked_date;
-      return sDate === dateStr;
+      return this.normalizeDateStr(slot.blocked_date) === normTargetDate;
     });
 
-    const [sh, sm] = startTime.split(':').map(n => parseInt(n, 10) || 0);
-    const [eh, em] = endTime.split(':').map(n => parseInt(n, 10) || 0);
+    const [sh, sm] = (startTime || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+    const [eh, em] = (endTime || '00:00').split(':').map(n => parseInt(n, 10) || 0);
     const startMin = sh * 60 + sm;
     const endMin = eh * 60 + em;
 
     for (const block of rawBlocks) {
-      const isLunch = block.title?.toLowerCase().includes('almuerzo') ||
-                      block.reason?.toLowerCase().includes('almuerzo') ||
-                      (block.is_recurring && (block.start_time || '').startsWith('13:'));
-
-      if (isLunch) {
+      if (this.isLunchBlock(block)) {
         continue; // El almuerzo sí se permite pisar (se ajusta dinámicamente)
       }
 
@@ -2865,6 +2882,7 @@ export class AppointmentsCalendarComponent implements OnInit {
     // Los bloqueos que no sean de tipo almuerzo NO se deben mover: mostrar alerta si se sobrepone
     const conflictingBlock = this.findConflictingNonLunchBlock(this.editAppointmentDate(), finalStart, finalEnd);
     if (conflictingBlock) {
+      this.isSavingAppointmentEdit.set(false);
       const range = `${conflictingBlock.start_time?.substring(0, 5)} – ${conflictingBlock.end_time?.substring(0, 5)}`;
       this.editAppointmentError.set(`No se puede mover la cita a este horario: coincide con el bloqueo "${conflictingBlock.title}" (${range}).`);
       return;
@@ -3193,6 +3211,7 @@ export class AppointmentsCalendarComponent implements OnInit {
     // Los bloqueos que no sean de tipo almuerzo NO se deben mover: mostrar alerta si se sobrepone
     const conflictingBlock = this.findConflictingNonLunchBlock(this.newApptDate(), finalStart, finalEnd);
     if (conflictingBlock) {
+      this.isSavingAppointment.set(false);
       const range = `${conflictingBlock.start_time?.substring(0, 5)} – ${conflictingBlock.end_time?.substring(0, 5)}`;
       this.conflictError.set(`No se puede agendar en este horario: coincide con el bloqueo "${conflictingBlock.title}" (${range}).`);
       return;
@@ -3423,6 +3442,7 @@ export class AppointmentsCalendarComponent implements OnInit {
   // =========================================================================
 
   getBlockedSlotsForDate(dateStr: string): BlockedSlot[] {
+    const normTargetDate = this.normalizeDateStr(dateStr);
     const rawList = this.blockedSlots().filter(slot => {
       // Ignorar bloqueos flexibles duplicados que hayan quedado previamente en la base de datos
       if (slot.title?.toLowerCase().includes('flexible') || slot.reason?.includes('Almuerzo reprogramado automáticamente')) {
@@ -3430,11 +3450,10 @@ export class AppointmentsCalendarComponent implements OnInit {
       }
       if (slot.is_recurring) return true;
       if (!slot.blocked_date) return false;
-      const slotDate = slot.blocked_date.includes('T') ? slot.blocked_date.split('T')[0] : slot.blocked_date;
-      return slotDate === dateStr;
+      return this.normalizeDateStr(slot.blocked_date) === normTargetDate;
     });
 
-    const dayAppointments = this.filteredAppointments().filter(a => a.date === dateStr && a.status !== 'CANCELLED');
+    const dayAppointments = this.filteredAppointments().filter(a => this.normalizeDateStr(a.date) === normTargetDate && a.status !== 'CANCELLED');
     if (!dayAppointments.length) {
       return rawList;
     }
@@ -3442,11 +3461,10 @@ export class AppointmentsCalendarComponent implements OnInit {
     const adjusted: BlockedSlot[] = [];
 
     for (const slot of rawList) {
-      const isLunch = slot.title?.toLowerCase().includes('almuerzo') ||
-                      slot.reason?.toLowerCase().includes('almuerzo') ||
-                      (slot.is_recurring && (slot.start_time || '').startsWith('13:'));
+      const isLunch = this.isLunchBlock(slot);
 
       if (!isLunch) {
+        // Los bloqueos que no sean de tipo almuerzo NO se deben mover bajo ninguna circunstancia
         adjusted.push(slot);
         continue;
       }
