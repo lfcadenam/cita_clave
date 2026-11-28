@@ -6,6 +6,7 @@ use App\Traits\BelongsToTenant;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class BlockedSlot extends Model
 {
@@ -18,6 +19,7 @@ class BlockedSlot extends Model
         'start_time',
         'end_time',
         'is_recurring',
+        'is_specific',
         'reason',
     ];
 
@@ -26,11 +28,12 @@ class BlockedSlot extends Model
         return [
             'blocked_date' => 'date',
             'is_recurring' => 'boolean',
+            'is_specific' => 'boolean',
         ];
     }
 
     /**
-     * Buscar si existe un bloqueo (que NO sea de almuerzo) que colisione con el intervalo horario dado.
+     * Buscar si existe un bloqueo (que NO sea de almuerzo / bloqueo específico) que colisione con el intervalo horario dado.
      */
     public static function findConflictingNonLunch(
         string $date,
@@ -48,10 +51,19 @@ class BlockedSlot extends Model
                   ->orWhereDate('blocked_date', $dateFormatted);
             })
             ->where(function ($q) {
-                $q->whereRaw("LOWER(title) NOT LIKE '%almuerzo%'")
-                  ->whereRaw("LOWER(title) NOT LIKE '%lunch%'")
-                  ->whereRaw("LOWER(COALESCE(reason, '')) NOT LIKE '%almuerzo%'")
-                  ->whereRaw("LOWER(COALESCE(reason, '')) NOT LIKE '%lunch%'");
+                if (Schema::hasColumn('blocked_slots', 'is_specific')) {
+                    $q->where('is_specific', true)
+                      ->orWhere(function ($sub) {
+                          $sub->whereNull('is_specific')
+                              ->whereRaw("LOWER(title) NOT LIKE '%almuerzo%'")
+                              ->whereRaw("LOWER(title) NOT LIKE '%lunch%'");
+                      });
+                } else {
+                    $q->whereRaw("LOWER(title) NOT LIKE '%almuerzo%'")
+                      ->whereRaw("LOWER(title) NOT LIKE '%lunch%'")
+                      ->whereRaw("LOWER(COALESCE(reason, '')) NOT LIKE '%almuerzo%'")
+                      ->whereRaw("LOWER(COALESCE(reason, '')) NOT LIKE '%lunch%'");
+                }
             })
             ->where('start_time', '<', $endFormatted)
             ->where('end_time', '>', $startFormatted);

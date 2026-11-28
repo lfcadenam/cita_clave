@@ -1316,9 +1316,16 @@
                             </div>
                             @if (block.heightPx >= 42) {
                               <div class="flex items-center justify-between text-[8px] mt-0.5 pt-0.5">
-                                <span class="font-semibold px-1 py-0.2 rounded bg-slate-200/90 text-slate-600">
-                                  {{ block.slot.is_recurring ? 'Recurrente' : 'Puntual' }}
-                                </span>
+                                <div class="flex items-center gap-1">
+                                  <span class="font-semibold px-1 py-0.2 rounded bg-slate-200/90 text-slate-600">
+                                    {{ block.slot.is_recurring ? 'Recurrente' : 'Puntual' }}
+                                  </span>
+                                  @if (block.slot.is_specific) {
+                                    <span class="font-semibold px-1 py-0.2 rounded bg-rose-50 text-rose-600 border border-rose-200/60" title="Bloqueo específico (Inamovible)">
+                                      Específico
+                                    </span>
+                                  }
+                                </div>
                                 <div class="flex items-center gap-1.5">
                                   <span (click)="openEditBlockModal(block.slot); $event.stopPropagation()" class="text-slate-600 hover:text-slate-900 font-semibold underline cursor-pointer" title="Editar bloqueo">Editar</span>
                                   <span (click)="deleteBlockedSlot(block.slot.id); $event.stopPropagation()" class="text-slate-400 hover:text-rose-600 font-semibold underline cursor-pointer" title="Eliminar bloqueo">Eliminar</span>
@@ -1519,6 +1526,11 @@
                               <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-slate-200 text-slate-600">
                                 {{ slot.is_recurring ? 'Recurrente' : 'Puntual' }}
                               </span>
+                              @if (slot.is_specific) {
+                                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200/60" title="Bloqueo específico (Inamovible)">
+                                  Específico
+                                </span>
+                              }
                               <button type="button" (click)="openEditBlockModal(slot); $event.stopPropagation()" class="px-2 py-0.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-[10px] font-semibold text-slate-700 cursor-pointer transition-colors" title="Editar bloqueo">
                                 Editar
                               </button>
@@ -5354,8 +5366,15 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <input type="checkbox" id="blockRec" [(ngModel)]="blockForm.is_recurring" class="rounded text-teal-600" />
-          <label for="blockRec" class="text-xs font-semibold">Recurrente todos los días (ej: almuerzo)</label>
+          <input type="checkbox" id="blockRec" [(ngModel)]="blockForm.is_recurring" class="rounded text-[#00C975] focus:ring-[#00C975] cursor-pointer" />
+          <label for="blockRec" class="text-xs font-semibold text-slate-700 cursor-pointer select-none">Recurrente todos los días (ej: almuerzo)</label>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="blockSpecific" [(ngModel)]="blockForm.is_specific" class="rounded text-[#00C975] focus:ring-[#00C975] cursor-pointer" />
+          <label for="blockSpecific" class="text-xs font-semibold text-slate-700 cursor-pointer select-none">
+            Bloqueo específico <span class="text-slate-400 font-normal">(Inamovible: no se permite mover)</span>
+          </label>
         </div>
 
         @if (!blockForm.is_recurring) {

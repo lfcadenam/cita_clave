@@ -590,6 +590,7 @@ export class AppointmentsCalendarComponent implements OnInit {
     start_time: '13:00',
     end_time: '14:00',
     is_recurring: true,
+    is_specific: true,
     reason: 'Pausa para almuerzo'
   };
 
@@ -1631,6 +1632,7 @@ export class AppointmentsCalendarComponent implements OnInit {
       start_time: startTime,
       end_time: endTime,
       is_recurring: !defaultDate,
+      is_specific: true,
       reason: 'Horario reservado / no disponible'
     };
     this.showBlockModal.set(true);
@@ -1638,12 +1640,17 @@ export class AppointmentsCalendarComponent implements OnInit {
 
   openEditBlockModal(slot: BlockedSlot): void {
     this.editingBlockId.set(slot.id);
+    const isSpecific = slot.is_specific !== undefined
+      ? !!slot.is_specific
+      : !this.isLunchBlock(slot);
+
     this.blockForm = {
       title: slot.title || '',
       blocked_date: slot.blocked_date || this.selectedDateStr() || new Date().toISOString().split('T')[0],
       start_time: slot.start_time?.substring(0, 5) || '13:00',
       end_time: slot.end_time?.substring(0, 5) || '14:00',
       is_recurring: !!slot.is_recurring,
+      is_specific: isSpecific,
       reason: slot.reason || ''
     };
     this.showBlockModal.set(true);
@@ -1658,6 +1665,7 @@ export class AppointmentsCalendarComponent implements OnInit {
       start_time: this.blockForm.start_time,
       end_time: this.blockForm.end_time,
       is_recurring: this.blockForm.is_recurring,
+      is_specific: !!this.blockForm.is_specific,
       reason: this.blockForm.reason?.trim() || null
     };
 
@@ -2669,7 +2677,10 @@ export class AppointmentsCalendarComponent implements OnInit {
     return String(val).substring(0, 10);
   }
 
-  isLunchBlock(slot: { title?: string | null; reason?: string | null }): boolean {
+  isLunchBlock(slot: { title?: string | null; reason?: string | null; is_specific?: boolean }): boolean {
+    if (slot.is_specific === true) {
+      return false; // Marcado como bloqueo específico: INAMOVIBLE
+    }
     const title = (slot.title || '').toLowerCase();
     const reason = (slot.reason || '').toLowerCase();
     return title.includes('almuerzo') || title.includes('lunch') ||
