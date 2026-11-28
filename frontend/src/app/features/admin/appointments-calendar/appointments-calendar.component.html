@@ -1302,28 +1302,43 @@
                             [style.top.px]="block.topPx"
                             [style.height.px]="block.heightPx"
                             style="background-image: repeating-linear-gradient(135deg, rgba(203, 213, 225, 0.4), rgba(203, 213, 225, 0.4) 8px, transparent 8px, transparent 16px);"
-                            class="absolute left-0.5 right-0.5 rounded-xl p-1.5 shadow-2xs border border-dashed border-slate-300 bg-slate-100/90 text-slate-700 z-10 flex flex-col justify-between overflow-hidden cursor-pointer hover:border-slate-400 hover:bg-slate-200/80 transition-all select-none"
+                            [ngClass]="block.heightPx <= 20 
+                              ? 'rounded-md px-1.5 py-0 justify-center' 
+                              : (block.heightPx <= 36 ? 'rounded-lg px-2 py-0.5 justify-center' : 'rounded-xl p-1.5 justify-between')"
+                            class="absolute left-0.5 right-0.5 shadow-2xs border border-dashed border-slate-300 bg-slate-100/90 text-slate-700 z-10 flex flex-col overflow-hidden cursor-pointer hover:border-slate-400 hover:bg-slate-200/80 transition-all select-none"
                             [title]="'🔒 ' + block.slot.title + ' (' + block.timeRange + ')' + (block.slot.reason ? ' - ' + block.slot.reason : '') + ' • Clic para gestionar o eliminar'"
                           >
-                            <div class="flex items-center justify-between text-[10px] font-bold leading-tight truncate">
-                              <span class="truncate flex items-center gap-1">
-                                <svg class="w-2.5 h-2.5 shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                </svg>
-                                {{ block.slot.title }}
-                              </span>
-                              <span class="text-[9px] font-mono opacity-75 shrink-0 ml-1">{{ block.timeRange }}</span>
-                            </div>
-                            @if (block.heightPx >= 42) {
-                              <div class="flex items-center justify-between text-[8px] mt-0.5 pt-0.5">
-                                <span class="font-semibold px-1 py-0.2 rounded bg-slate-200/90 text-slate-600">
-                                  {{ block.slot.is_recurring ? 'Recurrente' : 'Puntual' }}
+                            @if (block.heightPx <= 20) {
+                              <div class="flex items-center justify-between text-[9px] font-bold leading-none truncate w-full">
+                                <span class="truncate flex items-center gap-1">
+                                  <svg class="w-2.5 h-2.5 shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                  </svg>
+                                  {{ block.slot.title }}
                                 </span>
-                                <div class="flex items-center gap-1.5">
-                                  <span (click)="openEditBlockModal(block.slot); $event.stopPropagation()" class="text-slate-600 hover:text-slate-900 font-semibold underline cursor-pointer" title="Editar bloqueo">Editar</span>
-                                  <span (click)="deleteBlockedSlot(block.slot.id); $event.stopPropagation()" class="text-slate-400 hover:text-rose-600 font-semibold underline cursor-pointer" title="Eliminar bloqueo">Eliminar</span>
-                                </div>
+                                <span class="text-[8.5px] font-mono opacity-80 shrink-0 ml-1">{{ block.timeRange }}</span>
                               </div>
+                            } @else {
+                              <div class="flex items-center justify-between text-[10px] font-bold leading-tight truncate">
+                                <span class="truncate flex items-center gap-1">
+                                  <svg class="w-2.5 h-2.5 shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                  </svg>
+                                  {{ block.slot.title }}
+                                </span>
+                                <span class="text-[9px] font-mono opacity-75 shrink-0 ml-1">{{ block.timeRange }}</span>
+                              </div>
+                              @if (block.heightPx >= 42) {
+                                <div class="flex items-center justify-between text-[8px] mt-0.5 pt-0.5">
+                                  <span class="font-semibold px-1 py-0.2 rounded bg-slate-200/90 text-slate-600">
+                                    {{ block.slot.is_recurring ? 'Recurrente' : 'Puntual' }}
+                                  </span>
+                                  <div class="flex items-center gap-1.5">
+                                    <span (click)="openEditBlockModal(block.slot); $event.stopPropagation()" class="text-slate-600 hover:text-slate-900 font-semibold underline cursor-pointer" title="Editar bloqueo">Editar</span>
+                                    <span (click)="deleteBlockedSlot(block.slot.id); $event.stopPropagation()" class="text-slate-400 hover:text-rose-600 font-semibold underline cursor-pointer" title="Eliminar bloqueo">Eliminar</span>
+                                  </div>
+                                </div>
+                              }
                             }
                           </div>
                         }
@@ -1341,15 +1356,16 @@
                             [style.width.%]="item.widthPercent"
                             [ngClass]="[
                               item.statusClass,
-                              draggedAppointment()?.id === item.appointment.id ? 'opacity-40 scale-[0.98] ring-2 ring-[#00C975] shadow-md' : ''
+                              draggedAppointment()?.id === item.appointment.id ? 'opacity-40 scale-[0.98] ring-2 ring-[#00C975] shadow-md' : '',
+                              item.isMicro ? 'rounded-md px-1.5 py-0 justify-center' : (item.isCompact ? 'rounded-lg p-1 justify-center' : 'rounded-lg p-1 sm:p-1.5 justify-between')
                             ]"
-                            class="absolute rounded-lg p-1 sm:p-1.5 shadow-2xs border cursor-grab active:cursor-grabbing overflow-hidden transition-all z-20 flex flex-col justify-between"
+                            class="absolute shadow-2xs border cursor-grab active:cursor-grabbing overflow-hidden transition-all z-20 flex flex-col"
                             [title]="'Arrastra con el cursor para mover de horario • ' + item.appointment.client.name + ' • ' + item.appointment.service.name + ' (' + item.appointment.start_time + ' - ' + item.appointment.end_time + ')'"
                           >
                             @if (item.isMicro) {
-                              <div class="flex items-center justify-between text-[10px] font-bold leading-tight truncate">
+                              <div class="flex items-center justify-between text-[9px] font-bold leading-none truncate w-full">
                                 <span class="truncate">{{ item.appointment.client.name }}</span>
-                                <span class="text-[9px] font-mono opacity-80 shrink-0 ml-1">{{ item.appointment.start_time }}</span>
+                                <span class="text-[8.5px] font-mono opacity-80 shrink-0 ml-1">{{ item.appointment.start_time }}</span>
                               </div>
                             } @else if (item.isCompact) {
                               <div class="flex items-center justify-between text-[10px] font-bold leading-tight truncate">

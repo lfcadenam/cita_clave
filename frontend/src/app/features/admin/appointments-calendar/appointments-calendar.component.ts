@@ -3334,9 +3334,10 @@ export class AppointmentsCalendarComponent implements OnInit {
       }
 
       const topPx = Math.max(0, (startMinutes / 60) * this.slotHeightPx);
-      // Altura mínima visual de 26px para legibilidad y evitar corte de texto
-      const heightPx = Math.max(26, ((durationMinutes / 60) * this.slotHeightPx) - 2);
-      const visualEndPx = topPx + heightPx;
+      const exactHeightPx = (durationMinutes / 60) * this.slotHeightPx;
+      // Altura visual exacta dejando 2px de margen inferior para separación nítida con el siguiente bloque
+      const heightPx = Math.max(14, exactHeightPx - 2);
+      const visualEndPx = topPx + exactHeightPx;
 
       return {
         appointment: apt,
@@ -3406,8 +3407,8 @@ export class AppointmentsCalendarComponent implements OnInit {
         const leftPercent = p.col * colWidthPercent;
         const widthPercent = numCols > 1 ? (colWidthPercent - 1.2) : 98;
         const h = p.evt.heightPx;
-        const isMicro = h < 34;
-        const isCompact = h >= 34 && h < 54;
+        const isMicro = h <= 20;
+        const isCompact = h > 20 && h <= 36;
 
         let statusClass = 'bg-emerald-50/95 border-emerald-300 text-emerald-950 border-l-[3px] border-l-emerald-500 hover:bg-emerald-100/90';
         if (p.evt.appointment.status === 'PENDING_VERIFICATION') {
@@ -3580,7 +3581,9 @@ export class AppointmentsCalendarComponent implements OnInit {
       const duration = Math.max(15, endMinutes - startMinutes);
 
       const topPx = Math.max(0, (startMinutes / 60) * this.slotHeightPx);
-      const heightPx = Math.max(26, (duration / 60) * this.slotHeightPx);
+      const exactHeightPx = (duration / 60) * this.slotHeightPx;
+      // Altura visual exacta dejando 2px de margen inferior para separación limpia
+      const heightPx = Math.max(14, exactHeightPx - 2);
 
       const startFormatted = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
       const endFormatted = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
