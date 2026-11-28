@@ -336,10 +336,8 @@
     <main [ngClass]="isEmbeddedInLayout() ? 'w-full flex flex-col gap-5' : 'flex-1 min-w-0 w-full flex flex-col gap-5'">
       
       @if (!isEmbeddedInLayout()) {
-        <!-- ========================================================================= -->
-        <!-- BARRA SUPERIOR ELEVADA (TOPBAR PÍLDORA CITACLAVE)                         -->
-        <!-- ========================================================================= -->
-        <header class="w-full bg-white rounded-[28px] lg:rounded-[32px] border border-slate-200/80 shadow-xs px-5 sm:px-6 py-3 flex items-center justify-between gap-4 relative z-30">
+        <div class="sticky top-0 z-40 -mt-3 sm:-mt-5 lg:-mt-6 pt-3 sm:pt-5 lg:pt-6 pb-2 bg-[#F8FAFC]/90 backdrop-blur-md transition-all">
+          <header class="w-full bg-white/95 backdrop-blur-md rounded-[28px] lg:rounded-[32px] border border-slate-200/90 shadow-sm px-5 sm:px-6 py-3 flex items-center justify-between gap-4 relative z-40">
           
           <!-- Izquierda: Botón Menú Móvil + Logo Oficial CitaClave -->
           <div class="flex items-center gap-3.5">
@@ -433,6 +431,7 @@
           </div>
 
         </header>
+      </div>
       }
 
       <!-- ========================================================================= -->
