@@ -114,9 +114,14 @@
                           </span>
                         </td>
                         <td class="p-3.5 text-right">
-                          <button (click)="deleteBlockedSlot(slot.id)" class="px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold cursor-pointer">
-                            Eliminar
-                          </button>
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button (click)="openEditBlockModal(slot)" class="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-semibold cursor-pointer transition-colors" title="Editar bloqueo">
+                              Editar
+                            </button>
+                            <button (click)="deleteBlockedSlot(slot.id)" class="px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold cursor-pointer transition-colors" title="Eliminar bloqueo">
+                              Eliminar
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     }
@@ -134,10 +139,10 @@
   @if (showBlockModal()) {
     <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3">
       <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md p-6 flex flex-col gap-4">
-        <h3 class="font-bold text-base text-slate-900">Añadir Pausa o Bloqueo</h3>
+        <h3 class="font-bold text-base text-slate-900">{{ editingBlockId() ? 'Editar Pausa o Bloqueo' : 'Añadir Pausa o Bloqueo' }}</h3>
 
         <div>
-          <label class="block text-xs font-semibold mb-1">Título de la Pausa</label>
+          <label class="block text-xs font-semibold mb-1">Título de la Pausa / Bloqueo</label>
           <input type="text" [(ngModel)]="blockForm.title" placeholder="Ej: Almuerzo del Equipo" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200" />
         </div>
 
@@ -164,9 +169,25 @@
           </div>
         </div>
 
-        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-          <button (click)="showBlockModal.set(false)" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer">Cancelar</button>
-          <button (click)="saveBlockedSlot()" class="px-4 py-2 rounded-xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-md cursor-pointer">Guardar Bloqueo</button>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Motivo / Observación (Opcional)</label>
+          <input type="text" [(ngModel)]="blockForm.reason" placeholder="Ej: Pausa para almuerzo o capacitación" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200" />
+        </div>
+
+        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+          <div>
+            @if (editingBlockId()) {
+              <button (click)="deleteBlockedSlotFromModal()" class="px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors">
+                Eliminar Bloqueo
+              </button>
+            }
+          </div>
+          <div class="flex items-center gap-2">
+            <button (click)="showBlockModal.set(false)" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer">Cancelar</button>
+            <button (click)="saveBlockedSlot()" class="px-4 py-2 rounded-xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-md cursor-pointer transition-colors">
+              {{ editingBlockId() ? 'Actualizar Bloqueo' : 'Guardar Bloqueo' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -73,6 +73,47 @@ class BlockedSlotAdminController extends Controller
     }
 
     /**
+     * Actualizar una franja bloqueada existente.
+     */
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $slot = BlockedSlot::query()->findOrFail($id);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'blocked_date' => 'nullable|date_format:Y-m-d',
+            'start_time' => 'required|string',
+            'end_time' => 'required|string',
+            'is_recurring' => 'nullable|boolean',
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        $slot->update([
+            'title' => trim($validated['title']),
+            'blocked_date' => !empty($validated['is_recurring']) ? null : ($validated['blocked_date'] ?? null),
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'],
+            'is_recurring' => $validated['is_recurring'] ?? false,
+            'reason' => $validated['reason'] ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Franja bloqueada actualizada exitosamente.',
+            'data' => [
+                'id' => $slot->id,
+                'title' => $slot->title,
+                'blocked_date' => $slot->blocked_date?->toDateString(),
+                'start_time' => substr($slot->start_time, 0, 5),
+                'end_time' => substr($slot->end_time, 0, 5),
+                'time_range' => substr($slot->start_time, 0, 5) . ' – ' . substr($slot->end_time, 0, 5),
+                'is_recurring' => (bool) $slot->is_recurring,
+                'reason' => $slot->reason,
+            ],
+        ]);
+    }
+
+    /**
      * Eliminar un bloqueo existente.
      */
     public function destroy(int $id): JsonResponse

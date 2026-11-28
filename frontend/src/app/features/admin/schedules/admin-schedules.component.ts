@@ -22,6 +22,7 @@ export class AdminSchedulesComponent implements OnInit {
   readonly blockedSlots = signal<BlockedSlot[]>([]);
   readonly isSavingSchedules = signal<boolean>(false);
   readonly showBlockModal = signal<boolean>(false);
+  readonly editingBlockId = signal<number | null>(null);
 
   blockForm = {
     title: '',
@@ -76,6 +77,7 @@ export class AdminSchedulesComponent implements OnInit {
   }
 
   openCreateBlockModal(dateStr?: string): void {
+    this.editingBlockId.set(null);
     this.blockForm = {
       title: '',
       blocked_date: dateStr || new Date().toISOString().split('T')[0],
@@ -87,25 +89,56 @@ export class AdminSchedulesComponent implements OnInit {
     this.showBlockModal.set(true);
   }
 
+  openEditBlockModal(slot: BlockedSlot): void {
+    this.editingBlockId.set(slot.id);
+    this.blockForm = {
+      title: slot.title || '',
+      blocked_date: slot.blocked_date || new Date().toISOString().split('T')[0],
+      start_time: slot.start_time?.substring(0, 5) || '13:00',
+      end_time: slot.end_time?.substring(0, 5) || '14:00',
+      is_recurring: !!slot.is_recurring,
+      reason: slot.reason || ''
+    };
+    this.showBlockModal.set(true);
+  }
+
   saveBlockedSlot(): void {
     if (!this.blockForm.title.trim()) return;
-    this.scheduleService.createBlockedSlot({
-      title: this.blockForm.title,
+
+    const payload: Partial<BlockedSlot> = {
+      title: this.blockForm.title.trim(),
       blocked_date: this.blockForm.is_recurring ? null : this.blockForm.blocked_date,
       start_time: this.blockForm.start_time,
       end_time: this.blockForm.end_time,
       is_recurring: this.blockForm.is_recurring,
-      reason: this.blockForm.reason
-    }).subscribe({
-      next: () => {
-        this.showBlockModal.set(false);
-        this.nuvexNotify.success('Horario bloqueado', 'La franja seleccionada ha quedado reservada.');
-        this.loadBlockedSlots();
-      },
-      error: (err) => {
-        this.nuvexNotify.error('Error al bloquear', err?.error?.message || 'No fue posible guardar el bloqueo de horario.');
-      }
-    });
+      reason: this.blockForm.reason?.trim() || null
+    };
+
+    const editId = this.editingBlockId();
+    if (editId) {
+      this.scheduleService.updateBlockedSlot(editId, payload).subscribe({
+        next: () => {
+          this.showBlockModal.set(false);
+          this.editingBlockId.set(null);
+          this.nuvexNotify.success('Bloqueo actualizado', 'El bloqueo de horario ha sido modificado exitosamente.');
+          this.loadBlockedSlots();
+        },
+        error: (err) => {
+          this.nuvexNotify.error('Error al actualizar', err?.error?.message || 'No fue posible actualizar el bloqueo.');
+        }
+      });
+    } else {
+      this.scheduleService.createBlockedSlot(payload).subscribe({
+        next: () => {
+          this.showBlockModal.set(false);
+          this.nuvexNotify.success('Horario bloqueado', 'La franja seleccionada ha quedado reservada.');
+          this.loadBlockedSlots();
+        },
+        error: (err) => {
+          this.nuvexNotify.error('Error al bloquear', err?.error?.message || 'No fue posible guardar el bloqueo de horario.');
+        }
+      });
+    }
   }
 
   async deleteBlockedSlot(id: number): Promise<void> {
@@ -128,5 +161,12 @@ export class AdminSchedulesComponent implements OnInit {
         this.nuvexNotify.error('Error al eliminar bloqueo', err?.error?.message || 'No se pudo retirar el bloqueo.');
       }
     });
+  }
+
+  async deleteBlockedSlotFromModal(): Promise<void> {
+    const id = this.editingBlockId();
+    if (!id) return;
+    this.showBlockModal.set(false);
+    await this.deleteBlockedSlot(id);
   }
 }

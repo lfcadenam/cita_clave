@@ -567,6 +567,7 @@ export class AppointmentsCalendarComponent implements OnInit {
   blockedSlots = signal<BlockedSlot[]>([]);
   isSavingSchedules = signal<boolean>(false);
   showBlockModal = signal<boolean>(false);
+  editingBlockId = signal<number | null>(null);
   blockForm = {
     title: '',
     blocked_date: '',
@@ -830,21 +831,9 @@ export class AppointmentsCalendarComponent implements OnInit {
   });
 
   filteredAppointments = computed<AdminAppointment[]>(() => {
-    let list = this.appointments();
-    const status = this.filterStatus();
-    const svcId = this.selectedServiceFilter();
+    // En el calendario se muestran todas las citas a excepción de las canceladas
+    let list = this.appointments().filter(a => a.status !== 'CANCELLED');
     const q = this.searchQuery().toLowerCase().trim();
-
-    if (status !== 'all') {
-      list = list.filter(a => a.status === status);
-    } else {
-      // Las citas canceladas nunca deben aparecer en el calendario ni en la vista general
-      list = list.filter(a => a.status !== 'CANCELLED');
-    }
-
-    if (svcId) {
-      list = list.filter(a => a.service?.id === svcId);
-    }
 
     if (q) {
       list = list.filter(a =>
@@ -1612,6 +1601,7 @@ export class AppointmentsCalendarComponent implements OnInit {
   }
 
   openCreateBlockModal(defaultDate?: string, defaultHour?: string): void {
+    this.editingBlockId.set(null);
     const startTime = defaultHour ? `${defaultHour}:00` : '13:00';
     const endH = defaultHour ? (parseInt(defaultHour, 10) + 1).toString().padStart(2, '0') : '14';
     const endTime = `${endH}:00`;
@@ -1627,27 +1617,67 @@ export class AppointmentsCalendarComponent implements OnInit {
     this.showBlockModal.set(true);
   }
 
+  openEditBlockModal(slot: BlockedSlot): void {
+    this.editingBlockId.set(slot.id);
+    this.blockForm = {
+      title: slot.title || '',
+      blocked_date: slot.blocked_date || this.selectedDateStr() || new Date().toISOString().split('T')[0],
+      start_time: slot.start_time?.substring(0, 5) || '13:00',
+      end_time: slot.end_time?.substring(0, 5) || '14:00',
+      is_recurring: !!slot.is_recurring,
+      reason: slot.reason || ''
+    };
+    this.showBlockModal.set(true);
+  }
+
   saveBlockedSlot(): void {
     if (!this.blockForm.title.trim()) return;
-    this.scheduleService.createBlockedSlot({
-      title: this.blockForm.title,
+
+    const payload: Partial<BlockedSlot> = {
+      title: this.blockForm.title.trim(),
       blocked_date: this.blockForm.is_recurring ? null : this.blockForm.blocked_date,
       start_time: this.blockForm.start_time,
       end_time: this.blockForm.end_time,
       is_recurring: this.blockForm.is_recurring,
-      reason: this.blockForm.reason
-    }).subscribe({
-      next: () => {
-        this.showBlockModal.set(false);
-        this.nuvexNotify.success('Horario bloqueado', 'La franja seleccionada ha quedado reservada.');
-        this.loadBlockedSlots();
-        this.loadAppointmentsForCurrentRange();
-      },
-      error: (err) => {
-        console.error('Error al crear bloqueo:', err);
-        this.nuvexNotify.error('Error al bloquear', err?.error?.message || 'No fue posible registrar el bloqueo.');
-      }
-    });
+      reason: this.blockForm.reason?.trim() || null
+    };
+
+    const editId = this.editingBlockId();
+    if (editId) {
+      this.scheduleService.updateBlockedSlot(editId, payload).subscribe({
+        next: () => {
+          this.showBlockModal.set(false);
+          this.editingBlockId.set(null);
+          this.nuvexNotify.success('Bloqueo actualizado', 'El bloqueo de horario ha sido modificado exitosamente.');
+          this.loadBlockedSlots();
+          this.loadAppointmentsForCurrentRange();
+        },
+        error: (err) => {
+          console.error('Error al actualizar bloqueo:', err);
+          this.nuvexNotify.error('Error al actualizar', err?.error?.message || 'No fue posible modificar el bloqueo.');
+        }
+      });
+    } else {
+      this.scheduleService.createBlockedSlot(payload).subscribe({
+        next: () => {
+          this.showBlockModal.set(false);
+          this.nuvexNotify.success('Horario bloqueado', 'La franja seleccionada ha quedado reservada.');
+          this.loadBlockedSlots();
+          this.loadAppointmentsForCurrentRange();
+        },
+        error: (err) => {
+          console.error('Error al crear bloqueo:', err);
+          this.nuvexNotify.error('Error al bloquear', err?.error?.message || 'No fue posible registrar el bloqueo.');
+        }
+      });
+    }
+  }
+
+  async deleteBlockedSlotFromModal(): Promise<void> {
+    const id = this.editingBlockId();
+    if (!id) return;
+    this.showBlockModal.set(false);
+    await this.deleteBlockedSlot(id);
   }
 
   async deleteBlockedSlot(id: number, skipConfirm: boolean = false): Promise<void> {
@@ -3226,32 +3256,7 @@ export class AppointmentsCalendarComponent implements OnInit {
 
   async onBlockedSlotClicked(slot: BlockedSlot, event: MouseEvent): Promise<void> {
     event.stopPropagation();
-    const typeStr = slot.is_recurring ? 'Recurrente Diario' : `Fecha puntual (${slot.blocked_date})`;
-    const range = slot.time_range || `${slot.start_time?.substring(0, 5)} – ${slot.end_time?.substring(0, 5)}`;
-
-    const details = [
-      { label: 'Título', value: slot.title },
-      { label: 'Horario', value: range },
-      { label: 'Tipo', value: typeStr }
-    ];
-    if (slot.reason) {
-      details.push({ label: 'Motivo', value: slot.reason });
-    }
-
-    const ok = await this.nuvexNotify.confirm({
-      title: 'Horario Bloqueado',
-      subtitle: '¿Deseas eliminar este bloqueo para habilitar el horario en el calendario?',
-      message: `El intervalo de ${range} volverá a estar disponible para reservas de clientas.`,
-      variant: 'danger',
-      icon: 'lock',
-      details,
-      confirmText: 'Sí, Eliminar Bloqueo',
-      cancelText: 'Conservar'
-    });
-
-    if (ok) {
-      this.deleteBlockedSlot(slot.id, true);
-    }
+    this.openEditBlockModal(slot);
   }
 
   calculateEventTop(startTime: string): number {

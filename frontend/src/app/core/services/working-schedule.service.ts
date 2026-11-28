@@ -61,6 +61,15 @@ export class WorkingScheduleService {
   }
 
   /**
+   * Actualizar bloqueo de horario existente.
+   */
+  updateBlockedSlot(id: number, payload: Partial<BlockedSlot>): Observable<BlockedSlot> {
+    return this.http.put<{ success: boolean; data: BlockedSlot }>(`${this.blockedUrl}/${id}`, payload).pipe(
+      map(res => res.data)
+    );
+  }
+
+  /**
    * Eliminar bloqueo de horario.
    */
   deleteBlockedSlot(id: number): Observable<void> {

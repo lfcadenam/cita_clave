@@ -100,7 +100,55 @@ class BlockedSlotsTest extends TestCase
     }
 
     /**
-     * 3. El bloqueo elimina inmediatamente los turnos disponibles en el motor de disponibilidad.
+     * 3. Actualizar un bloqueo existente.
+     */
+    public function test_admin_can_update_blocked_slot(): void
+    {
+        $slot = BlockedSlot::create([
+            'tenant_id' => $this->tenant->id,
+            'title' => 'Capacitación Antigua',
+            'blocked_date' => Carbon::now()->addDays(2)->format('Y-m-d'),
+            'start_time' => '09:00:00',
+            'end_time' => '11:00:00',
+            'is_recurring' => false,
+            'reason' => 'Motivo inicial',
+        ]);
+
+        $newDate = Carbon::now()->addDays(4)->format('Y-m-d');
+
+        $response = $this->putJson("/api/v1/admin/blocked-slots/{$slot->id}", [
+            'title' => 'Capacitación Actualizada',
+            'blocked_date' => $newDate,
+            'start_time' => '14:00',
+            'end_time' => '16:00',
+            'is_recurring' => false,
+            'reason' => 'Motivo actualizado',
+        ], $this->authHeaders());
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Franja bloqueada actualizada exitosamente.',
+                'data' => [
+                    'id' => $slot->id,
+                    'title' => 'Capacitación Actualizada',
+                    'start_time' => '14:00',
+                    'end_time' => '16:00',
+                    'reason' => 'Motivo actualizado',
+                ],
+            ]);
+
+        $this->assertDatabaseHas('blocked_slots', [
+            'id' => $slot->id,
+            'title' => 'Capacitación Actualizada',
+            'start_time' => '14:00',
+            'end_time' => '16:00',
+            'reason' => 'Motivo actualizado',
+        ]);
+    }
+
+    /**
+     * 4. El bloqueo elimina inmediatamente los turnos disponibles en el motor de disponibilidad.
      */
     public function test_blocked_slot_removes_slots_from_availability_engine(): void
     {

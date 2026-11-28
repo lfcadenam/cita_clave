@@ -151,6 +151,7 @@ Route::prefix('v1')->group(function () {
         // Bloqueos de Horario (Almuerzo / Vacaciones)
         Route::get('/blocked-slots', [BlockedSlotAdminController::class, 'index']);
         Route::post('/blocked-slots', [BlockedSlotAdminController::class, 'store']);
+        Route::put('/blocked-slots/{id}', [BlockedSlotAdminController::class, 'update']);
         Route::delete('/blocked-slots/{id}', [BlockedSlotAdminController::class, 'destroy']);
 
         // Lista de Espera

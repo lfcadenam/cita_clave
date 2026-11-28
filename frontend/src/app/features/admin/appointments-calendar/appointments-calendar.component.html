@@ -1178,63 +1178,8 @@
               </h2>
             </div>
 
-            <!-- Filtros: Tratamiento + Filtro de Estados en Píldoras Rápidas -->
-            <div class="flex flex-wrap items-center gap-3">
-              
-              <!-- Dropdown de Tratamiento -->
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Tratamiento:</span>
-                <select 
-                  [ngModel]="selectedServiceFilter()"
-                  (ngModelChange)="selectedServiceFilter.set($event)"
-                  class="px-3 py-1.5 rounded-xl text-xs bg-slate-50 border border-slate-200 text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-[#00C975]"
-                >
-                  <option [ngValue]="null">Todos los tratamientos</option>
-                  @for (svc of servicesList(); track svc.id) {
-                    <option [ngValue]="svc.id">{{ svc.is_favorite ? '★ ' : '' }}{{ svc.name }}</option>
-                  }
-                </select>
-              </div>
-
-              <!-- Filtro de Estado en Cápsulas -->
-              <div class="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200 overflow-x-auto">
-                <button 
-                  type="button" 
-                  (click)="filterStatus.set('all')"
-                  [ngClass]="filterStatus() === 'all' ? 'bg-white text-emerald-700 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
-                  class="px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
-                >
-                  <span>Todas</span>
-                  <span class="text-[10px] opacity-75">({{ statusCounts().all }})</span>
-                </button>
-                <button 
-                  type="button" 
-                  (click)="filterStatus.set('CONFIRMED')"
-                  [ngClass]="filterStatus() === 'CONFIRMED' ? 'bg-white text-emerald-700 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
-                  class="px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
-                >
-                  <span>Confirmadas</span>
-                  <span class="text-[10px] opacity-75">({{ statusCounts().confirmed }})</span>
-                </button>
-                <button 
-                  type="button" 
-                  (click)="filterStatus.set('PENDING_VERIFICATION')"
-                  [ngClass]="filterStatus() === 'PENDING_VERIFICATION' ? 'bg-white text-amber-700 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
-                  class="px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
-                >
-                  <span>Por Validar</span>
-                  <span class="text-[10px] opacity-75">({{ statusCounts().pendingVerification }})</span>
-                </button>
-                <button 
-                  type="button" 
-                  (click)="filterStatus.set('COMPLETED')"
-                  [ngClass]="filterStatus() === 'COMPLETED' ? 'bg-white text-purple-700 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 font-medium'"
-                  class="px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
-                >
-                  <span>Completadas</span>
-                  <span class="text-[10px] opacity-75">({{ statusCounts().completed }})</span>
-                </button>
-              </div>
+            <!-- Controles de Vista y Bloquear Horario -->
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
 
               <!-- Selector de Vista: Mes | Semana | Día -->
               <div class="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200">
@@ -1355,7 +1300,10 @@
                                 <span class="font-semibold px-1 py-0.2 rounded bg-slate-200/90 text-slate-600">
                                   {{ block.slot.is_recurring ? 'Recurrente' : 'Puntual' }}
                                 </span>
-                                <span class="text-slate-400 hover:text-rose-600 font-semibold underline">Eliminar</span>
+                                <div class="flex items-center gap-1.5">
+                                  <span (click)="openEditBlockModal(block.slot); $event.stopPropagation()" class="text-slate-600 hover:text-slate-900 font-semibold underline cursor-pointer" title="Editar bloqueo">Editar</span>
+                                  <span (click)="deleteBlockedSlot(block.slot.id); $event.stopPropagation()" class="text-slate-400 hover:text-rose-600 font-semibold underline cursor-pointer" title="Eliminar bloqueo">Eliminar</span>
+                                </div>
                               </div>
                             }
                           </div>
@@ -1533,7 +1481,10 @@
                               <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-slate-200 text-slate-600">
                                 {{ slot.is_recurring ? 'Recurrente' : 'Puntual' }}
                               </span>
-                              <span class="text-xs text-rose-500 hover:text-rose-700 font-semibold" title="Eliminar bloqueo">✕</span>
+                              <button type="button" (click)="openEditBlockModal(slot); $event.stopPropagation()" class="px-2 py-0.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-[10px] font-semibold text-slate-700 cursor-pointer transition-colors" title="Editar bloqueo">
+                                Editar
+                              </button>
+                              <span (click)="deleteBlockedSlot(slot.id); $event.stopPropagation()" class="text-xs text-rose-500 hover:text-rose-700 font-semibold cursor-pointer p-0.5" title="Eliminar bloqueo">✕</span>
                             </div>
                           </div>
                         }
@@ -2191,9 +2142,14 @@
                           </span>
                         </td>
                         <td class="p-3.5 text-right">
-                          <button (click)="deleteBlockedSlot(slot.id)" class="px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold cursor-pointer">
-                            Eliminar
-                          </button>
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button (click)="openEditBlockModal(slot)" class="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-semibold cursor-pointer transition-colors" title="Editar bloqueo">
+                              Editar
+                            </button>
+                            <button (click)="deleteBlockedSlot(slot.id)" class="px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold cursor-pointer transition-colors" title="Eliminar bloqueo">
+                              Eliminar
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     }
@@ -5352,10 +5308,10 @@
   @if (showBlockModal()) {
     <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3">
       <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md p-6 flex flex-col gap-4">
-        <h3 class="font-bold text-base text-slate-900">Añadir Pausa o Bloqueo</h3>
+        <h3 class="font-bold text-base text-slate-900">{{ editingBlockId() ? 'Editar Pausa o Bloqueo' : 'Añadir Pausa o Bloqueo' }}</h3>
 
         <div>
-          <label class="block text-xs font-semibold mb-1">Título de la Pausa</label>
+          <label class="block text-xs font-semibold mb-1">Título de la Pausa / Bloqueo</label>
           <input type="text" [(ngModel)]="blockForm.title" placeholder="Ej: Almuerzo del Equipo" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200" />
         </div>
 
@@ -5382,9 +5338,25 @@
           </div>
         </div>
 
-        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-          <button (click)="showBlockModal.set(false)" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer">Cancelar</button>
-          <button (click)="saveBlockedSlot()" class="px-4 py-2 rounded-xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-md cursor-pointer">Guardar Bloqueo</button>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Motivo / Observación (Opcional)</label>
+          <input type="text" [(ngModel)]="blockForm.reason" placeholder="Ej: Pausa para almuerzo o capacitación" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200" />
+        </div>
+
+        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+          <div>
+            @if (editingBlockId()) {
+              <button (click)="deleteBlockedSlotFromModal()" class="px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors">
+                Eliminar Bloqueo
+              </button>
+            }
+          </div>
+          <div class="flex items-center gap-2">
+            <button (click)="showBlockModal.set(false)" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer">Cancelar</button>
+            <button (click)="saveBlockedSlot()" class="px-4 py-2 rounded-xl bg-[#00C975] hover:bg-[#00b067] text-white text-xs font-bold shadow-md cursor-pointer transition-colors">
+              {{ editingBlockId() ? 'Actualizar Bloqueo' : 'Guardar Bloqueo' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
